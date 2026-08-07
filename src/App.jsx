@@ -643,7 +643,7 @@ function App() {
           borderRight: '1px solid #e2e8f0'
         }}>
           <div>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', backgroundColor: '#fef3c7', color: '#92400e', padding: '6px 12px', borderRadius: '20px', fontSize: '11px', fontWeight: 600, border: '1px solid #fde68a' }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', backgroundColor: '#fef3c7', color: '#92400e', padding: '6px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 600, border: '1px solid #fde68a' }}>
               <span>🛡️</span> Enterprise Asset Management
             </div>
             
@@ -651,7 +651,7 @@ function App() {
               ระบบบริหารจัดการ<br />ทรัพย์สินไอทีระดับองค์กร
             </h1>
             
-            <p style={{ color: '#475569', fontSize: '12px', lineHeight: 1.6, fontWeight: 400 }}>
+            <p style={{ color: '#475569', fontSize: '13px', lineHeight: 1.6, fontWeight: 400 }}>
               ศูนย์กลางควบคุม ตรวจสอบ และติดตามสถานะอุปกรณ์ไอทีทุกประเภท พร้อมระบบ Smart Detect จำแนกผู้ถือครองอัตโนมัติ
             </p>
           </div>
@@ -660,29 +660,29 @@ function App() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', backgroundColor: 'rgba(255, 255, 255, 0.75)', padding: '10px 12px', borderRadius: '8px', border: '1px solid #fef08a', backdropFilter: 'blur(4px)' }}>
               <div style={{ backgroundColor: '#fef3c7', padding: '6px 8px', borderRadius: '6px', fontSize: '14px' }}>📦</div>
               <div>
-                <div style={{ fontSize: '12px', fontWeight: 600, color: '#0f172a' }}>Smart Asset Detection</div>
-                <div style={{ fontSize: '10px', color: '#64748b' }}>จำแนกผู้ถือครองและแผนกอัตโนมัติ</div>
+                <div style={{ fontSize: '13px', fontWeight: 600, color: '#0f172a' }}>Smart Asset Detection</div>
+                <div style={{ fontSize: '11px', color: '#64748b' }}>จำแนกผู้ถือครองและแผนกอัตโนมัติ</div>
               </div>
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', backgroundColor: 'rgba(255, 255, 255, 0.75)', padding: '10px 12px', borderRadius: '8px', border: '1px solid #fef08a', backdropFilter: 'blur(4px)' }}>
               <div style={{ backgroundColor: '#fef3c7', padding: '6px 8px', borderRadius: '6px', fontSize: '14px' }}>🔑</div>
               <div>
-                <div style={{ fontSize: '12px', fontWeight: 600, color: '#0f172a' }}>Role-Based Access</div>
-                <div style={{ fontSize: '10px', color: '#64748b' }}>แยกสิทธิ์ Admin และ Viewer</div>
+                <div style={{ fontSize: '13px', fontWeight: 600, color: '#0f172a' }}>Role-Based Access</div>
+                <div style={{ fontSize: '11px', color: '#64748b' }}>แยกสิทธิ์ Admin และ Viewer</div>
               </div>
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', backgroundColor: 'rgba(255, 255, 255, 0.75)', padding: '10px 12px', borderRadius: '8px', border: '1px solid #fef08a', backdropFilter: 'blur(4px)' }}>
               <div style={{ backgroundColor: '#fef3c7', padding: '6px 8px', borderRadius: '6px', fontSize: '14px' }}>⚡</div>
               <div>
-                <div style={{ fontSize: '12px', fontWeight: 600, color: '#0f172a' }}>Real-Time Tracking</div>
-                <div style={{ fontSize: '10px', color: '#64748b' }}>ค้นหารวดเร็วและ Export CSV ได้ง่าย</div>
+                <div style={{ fontSize: '13px', fontWeight: 600, color: '#0f172a' }}>Real-Time Tracking</div>
+                <div style={{ fontSize: '11px', color: '#64748b' }}>ค้นหารวดเร็วและ Export CSV ได้ง่าย</div>
               </div>
             </div>
           </div>
 
-          <div style={{ fontSize: '10px', color: '#64748b', borderTop: '1px solid #cbd5e1', paddingTop: '14px' }}>
+          <div style={{ fontSize: '11px', color: '#64748b', borderTop: '1px solid #cbd5e1', paddingTop: '14px' }}>
             © {new Date().getFullYear()} IT Asset Management System.
           </div>
         </div>
@@ -699,11 +699,11 @@ function App() {
         }}>
           <div style={{ width: '100%', maxWidth: '380px', backgroundColor: '#ffffff', padding: '36px 32px', borderRadius: '12px', border: '1px solid #cbd5e1', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)' }}>
             <div style={{ marginBottom: '24px' }}>
-              <div style={{ backgroundColor: '#f1f5f9', color: '#0f172a', border: '1px solid #cbd5e1', borderRadius: '6px', fontWeight: 500, padding: '3px 8px', fontSize: '11px', display: 'inline-block', marginBottom: '10px' }}>
+              <div style={{ backgroundColor: '#f1f5f9', color: '#0f172a', border: '1px solid #cbd5e1', borderRadius: '6px', fontWeight: 500, padding: '3px 8px', fontSize: '12px', display: 'inline-block', marginBottom: '10px' }}>
                 IT Portal
               </div>
               <h2 style={{ fontSize: '20px', fontWeight: 600, color: '#0f172a', margin: 0 }}>เข้าสู่ระบบบริหารทรัพย์สิน</h2>
-              <p style={{ fontSize: '12px', color: '#64748b', marginTop: '4px' }}>ระบุอีเมลและรหัสผ่านเพื่อเข้าใช้งานระบบ</p>
+              <p style={{ fontSize: '13px', color: '#64748b', marginTop: '4px' }}>ระบุอีเมลและรหัสผ่านเพื่อเข้าใช้งานระบบ</p>
             </div>
 
             <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -715,7 +715,7 @@ function App() {
                   onChange={e => setLoginEmail(e.target.value)} 
                   placeholder="name@company.com" 
                   required 
-                  style={{ width: '100%', padding: '9px 12px', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '13px', boxSizing: 'border-box', color: '#0f172a', outline: 'none' }} 
+                  style={{ width: '100%', height: '36px', padding: '0 12px', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '13px', boxSizing: 'border-box', color: '#0f172a', outline: 'none' }} 
                 />
               </div>
 
@@ -727,7 +727,7 @@ function App() {
                   onChange={e => setLoginPassword(e.target.value)} 
                   placeholder="••••••••" 
                   required 
-                  style={{ width: '100%', padding: '9px 12px', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '13px', boxSizing: 'border-box', color: '#0f172a', outline: 'none' }} 
+                  style={{ width: '100%', height: '36px', padding: '0 12px', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '13px', boxSizing: 'border-box', color: '#0f172a', outline: 'none' }} 
                 />
               </div>
 
@@ -736,7 +736,7 @@ function App() {
                 disabled={authLoading} 
                 style={{ 
                   width: '100%', 
-                  padding: '10px', 
+                  height: '36px',
                   backgroundColor: '#0f172a', 
                   color: '#ffffff', 
                   border: 'none', 
@@ -775,7 +775,7 @@ function App() {
         </div>
         
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div style={{ backgroundColor: '#ffffff', border: '1px solid #cbd5e1', color: '#0f172a', padding: '4px 12px', borderRadius: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{ backgroundColor: '#ffffff', border: '1px solid #cbd5e1', color: '#0f172a', padding: '4px 12px', borderRadius: '20px', display: 'flex', alignItems: 'center', gap: '8px', height: '32px', boxSizing: 'border-box' }}>
             <span style={{ width: '8px', height: '8px', backgroundColor: '#10b981', borderRadius: '50%' }}></span>
             <span style={{ fontWeight: 500, color: '#0f172a', fontSize: '12px' }}>
               {currentDateTime || '📅 กำลังโหลดเวลา...'}
@@ -788,7 +788,7 @@ function App() {
             </span>
             <span style={{ 
               fontSize: '11px', 
-              padding: '2px 6px', 
+              padding: '3px 8px', 
               borderRadius: '4px', 
               border: '1px solid #cbd5e1', 
               backgroundColor: userRole === 'admin' ? '#fef3c7' : '#f1f5f9',
@@ -808,11 +808,14 @@ function App() {
                   backgroundColor: '#ffffff',
                   color: '#0f172a',
                   border: '1px solid #cbd5e1',
-                  padding: '4px 10px',
+                  height: '32px',
+                  padding: '0 10px',
                   borderRadius: '4px',
                   cursor: 'pointer',
                   fontSize: '12px',
-                  fontWeight: 500
+                  fontWeight: 500,
+                  display: 'inline-flex',
+                  alignItems: 'center'
                 }}
               >
                 ⚙️ ตั้งค่า
@@ -821,7 +824,7 @@ function App() {
 
             <button 
               onClick={handleLogout}
-              style={{ backgroundColor: '#ffffff', color: '#0f172a', border: '1px solid #cbd5e1', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', fontWeight: 500 }}
+              style={{ backgroundColor: '#ffffff', color: '#0f172a', border: '1px solid #cbd5e1', height: '32px', padding: '0 10px', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', fontWeight: 500, display: 'inline-flex', alignItems: 'center' }}
             >
               ออกจากระบบ
             </button>
@@ -834,7 +837,7 @@ function App() {
         
         {/* Page Header */}
         <div style={{ marginBottom: '16px' }}>
-          <h1 style={{ color: '#0f172a', fontWeight: 500, fontSize: '20px', margin: 0 }}>IT Asset Overview</h1>
+          <h1 style={{ color: '#0f172a', fontWeight: 600, fontSize: '20px', margin: 0 }}>IT Asset Overview</h1>
           <p style={{ color: '#475569', fontSize: '13px', fontWeight: 400, margin: '2px 0 0' }}>ระบบบริหารจัดการ ตรวจสอบ และจำแนกผู้ถือครองทรัพย์สินไอทีระดับองค์กร</p>
         </div>
 
@@ -844,7 +847,7 @@ function App() {
             <div>
               <span style={{ color: '#475569', fontWeight: 500, fontSize: '12px', display: 'block' }}>รวมทรัพย์สินไอทีในระบบ</span>
               <div style={{ marginTop: '2px', display: 'flex', alignItems: 'baseline', gap: '4px' }}>
-                <span style={{ color: '#0f172a', fontWeight: 500, fontSize: '24px' }}>{allRawAssets.length.toLocaleString()}</span>
+                <span style={{ color: '#0f172a', fontWeight: 600, fontSize: '24px' }}>{allRawAssets.length.toLocaleString()}</span>
                 <span style={{ color: '#475569', fontSize: '12px', fontWeight: 400 }}>รายการ</span>
               </div>
             </div>
@@ -855,7 +858,7 @@ function App() {
             <div>
               <span style={{ color: '#475569', fontWeight: 500, fontSize: '12px', display: 'block' }}>มุมมองสิทธิ์การครอบครอง</span>
               <div style={{ marginTop: '2px' }}>
-                <span style={{ fontSize: '15px', color: '#0f172a', fontWeight: 500 }}>
+                <span style={{ fontSize: '15px', color: '#0f172a', fontWeight: 600 }}>
                   {viewMode === 'all' && 'ทรัพย์สินทั้งหมด'}
                   {viewMode === 'person' && 'ถือครองรายบุคคล'}
                   {viewMode === 'dept' && 'ส่วนกลาง / แผนก'}
@@ -871,7 +874,7 @@ function App() {
             <div>
               <span style={{ color: '#475569', fontWeight: 500, fontSize: '12px', display: 'block' }}>หมวดหมู่อุปกรณ์ไอที</span>
               <div style={{ marginTop: '2px', display: 'flex', alignItems: 'baseline', gap: '4px' }}>
-                <span style={{ color: '#0f172a', fontWeight: 500, fontSize: '24px' }}>{summary.length}</span>
+                <span style={{ color: '#0f172a', fontWeight: 600, fontSize: '24px' }}>{summary.length}</span>
                 <span style={{ color: '#475569', fontSize: '12px', fontWeight: 400 }}>จำพวก</span>
               </div>
             </div>
@@ -882,7 +885,7 @@ function App() {
             <div>
               <span style={{ color: '#475569', fontWeight: 500, fontSize: '12px', display: 'block' }}>รายการตรวจพบตามตัวกรอง</span>
               <div style={{ marginTop: '2px', display: 'flex', alignItems: 'baseline', gap: '4px' }}>
-                <span style={{ color: '#0f172a', fontWeight: 500, fontSize: '24px' }}>
+                <span style={{ color: '#0f172a', fontWeight: 600, fontSize: '24px' }}>
                   {totalFilteredCount.toLocaleString()}
                 </span>
                 <span style={{ color: '#475569', fontSize: '12px', fontWeight: 400 }}>รายการ</span>
@@ -900,15 +903,18 @@ function App() {
             <button 
               onClick={() => handleViewModeChange('all')}
               style={{
-                padding: '8px 14px',
+                height: '36px',
+                padding: '0 16px',
                 borderRadius: '6px 6px 0 0',
                 border: '1px solid #cbd5e1',
                 borderBottom: viewMode === 'all' ? '2px solid #0f172a' : '1px solid #cbd5e1',
                 backgroundColor: viewMode === 'all' ? '#ffffff' : '#f1f5f9',
                 color: '#0f172a',
-                fontWeight: 500,
+                fontWeight: 600,
                 cursor: 'pointer',
-                fontSize: '13px'
+                fontSize: '13px',
+                display: 'inline-flex',
+                alignItems: 'center'
               }}
             >
               📦 ทั้งหมด ({allRawAssets.length.toLocaleString()})
@@ -917,15 +923,18 @@ function App() {
             <button 
               onClick={() => handleViewModeChange('person')}
               style={{
-                padding: '8px 14px',
+                height: '36px',
+                padding: '0 16px',
                 borderRadius: '6px 6px 0 0',
                 border: '1px solid #cbd5e1',
                 borderBottom: viewMode === 'person' ? '2px solid #0f172a' : '1px solid #cbd5e1',
                 backgroundColor: viewMode === 'person' ? '#ffffff' : '#f1f5f9',
                 color: '#0f172a',
-                fontWeight: 500,
+                fontWeight: 600,
                 cursor: 'pointer',
-                fontSize: '13px'
+                fontSize: '13px',
+                display: 'inline-flex',
+                alignItems: 'center'
               }}
             >
               👤 รายบุคคลถือครอง
@@ -934,25 +943,28 @@ function App() {
             <button 
               onClick={() => handleViewModeChange('dept')}
               style={{
-                padding: '8px 14px',
+                height: '36px',
+                padding: '0 16px',
                 borderRadius: '6px 6px 0 0',
                 border: '1px solid #cbd5e1',
                 borderBottom: viewMode === 'dept' ? '2px solid #0f172a' : '1px solid #cbd5e1',
                 backgroundColor: viewMode === 'dept' ? '#ffffff' : '#f1f5f9',
                 color: '#0f172a',
-                fontWeight: 500,
+                fontWeight: 600,
                 cursor: 'pointer',
-                fontSize: '13px'
+                fontSize: '13px',
+                display: 'inline-flex',
+                alignItems: 'center'
               }}
             >
               🏢 รายแผนก / ส่วนกลางถือครอง
             </button>
           </div>
 
-          {/* Controls Bar */}
+          {/* Controls Bar - Standardized 36px Height */}
           <div style={{ padding: '12px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px', borderBottom: '1px solid #e2e8f0' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <span style={{ color: '#0f172a', fontWeight: 500, fontSize: '15px' }}>
+              <span style={{ color: '#0f172a', fontWeight: 600, fontSize: '15px' }}>
                 {viewMode === 'all' && 'รายการทรัพย์สินทั้งหมด'}
                 {viewMode === 'person' && `โปรไฟล์การถือครองรายบุคคล (${groupedPersons.length} คน)`}
                 {viewMode === 'dept' && 'รายการทรัพย์สิน (ส่วนกลางถือครอง)'}
@@ -963,8 +975,8 @@ function App() {
                   <button
                     onClick={() => setPersonDisplayFormat('cards')}
                     style={{
-                      padding: '3px 8px',
-                      fontSize: '11px',
+                      padding: '4px 10px',
+                      fontSize: '12px',
                       border: personDisplayFormat === 'cards' ? '1px solid #cbd5e1' : 'none',
                       borderRadius: '4px',
                       cursor: 'pointer',
@@ -978,8 +990,8 @@ function App() {
                   <button
                     onClick={() => setPersonDisplayFormat('table')}
                     style={{
-                      padding: '3px 8px',
-                      fontSize: '11px',
+                      padding: '4px 10px',
+                      fontSize: '12px',
                       border: personDisplayFormat === 'table' ? '1px solid #cbd5e1' : 'none',
                       borderRadius: '4px',
                       cursor: 'pointer',
@@ -1011,7 +1023,8 @@ function App() {
                     cursor: 'pointer',
                     display: 'inline-flex',
                     alignItems: 'center',
-                    gap: '6px'
+                    gap: '6px',
+                    boxSizing: 'border-box'
                   }}
                 >
                   ➕ เพิ่มทรัพย์สิน
@@ -1027,12 +1040,13 @@ function App() {
                   fontWeight: 500, 
                   borderRadius: '6px', 
                   height: '36px',
-                  padding: '0 12px', 
+                  padding: '0 14px', 
                   fontSize: '13px',
                   cursor: 'pointer',
                   display: 'inline-flex',
                   alignItems: 'center',
-                  gap: '4px'
+                  gap: '6px',
+                  boxSizing: 'border-box'
                 }}
               >
                 📥 Export CSV
@@ -1041,7 +1055,7 @@ function App() {
               <select
                 style={{
                   height: '36px',
-                  padding: '0 10px',
+                  padding: '0 12px',
                   border: '1px solid #cbd5e1',
                   borderRadius: '6px',
                   fontSize: '13px',
@@ -1049,7 +1063,8 @@ function App() {
                   cursor: 'pointer',
                   backgroundColor: '#ffffff',
                   color: '#0f172a',
-                  fontWeight: 500
+                  fontWeight: 500,
+                  boxSizing: 'border-box'
                 }}
                 value={selectedCategory}
                 onChange={handleCategoryChange}
@@ -1065,7 +1080,7 @@ function App() {
               <select 
                 style={{ 
                   height: '36px',
-                  padding: '0 10px', 
+                  padding: '0 12px', 
                   border: '1px solid #cbd5e1', 
                   borderRadius: '6px', 
                   fontSize: '13px', 
@@ -1073,7 +1088,8 @@ function App() {
                   cursor: 'pointer', 
                   backgroundColor: '#ffffff', 
                   color: '#0f172a', 
-                  fontWeight: 500 
+                  fontWeight: 500,
+                  boxSizing: 'border-box'
                 }}
                 value={selectedDept}
                 onChange={handleDeptChange}
@@ -1092,15 +1108,16 @@ function App() {
                 onChange={handleSearchChange}
                 style={{ 
                   height: '36px',
-                  width: '200px',
+                  width: '220px',
                   border: '1px solid #cbd5e1', 
                   borderRadius: '6px', 
-                  padding: '0 10px', 
+                  padding: '0 12px', 
                   fontSize: '13px',
                   boxSizing: 'border-box',
                   color: '#0f172a',
                   fontWeight: 400,
-                  backgroundColor: '#ffffff'
+                  backgroundColor: '#ffffff',
+                  outline: 'none'
                 }}
               />
             </div>
@@ -1119,7 +1136,7 @@ function App() {
                     <div key={pIdx} style={{ border: '1px solid #cbd5e1', backgroundColor: '#ffffff', borderRadius: '8px', overflow: 'hidden' }}>
                       <div style={{ padding: '10px 12px', backgroundColor: '#f8fafc', borderBottom: '1px solid #cbd5e1', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <div>
-                          <div style={{ color: person.isResigned ? '#dc2626' : '#0f172a', fontWeight: 500, fontSize: '14px' }}>{person.name}</div>
+                          <div style={{ color: person.isResigned ? '#dc2626' : '#0f172a', fontWeight: 600, fontSize: '13px' }}>{person.name}</div>
                           <div style={{ color: '#475569', fontSize: '11px', fontWeight: 400 }}>แผนก: {person.dept}</div>
                         </div>
                         <span style={{ backgroundColor: '#ffffff', color: '#0f172a', border: '1px solid #cbd5e1', borderRadius: '12px', fontSize: '11px', padding: '2px 8px', fontWeight: 500 }}>{person.assets.length} ชิ้น</span>
@@ -1141,8 +1158,8 @@ function App() {
                                 <div style={{ overflow: 'hidden' }}>
                                   <div style={{ color: '#0f172a', fontWeight: 500, fontSize: '12px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{asset.asset_name || 'อุปกรณ์ไอที'}</div>
                                   <div style={{ display: 'flex', gap: '4px', marginTop: '2px' }}>
-                                    <span style={{ fontSize: '10px', padding: '1px 4px', backgroundColor: '#ffffff', color: '#0f172a', border: '1px solid #cbd5e1', borderRadius: '3px', fontWeight: 500 }}>{asset.asset_no || '-'}</span>
-                                    <span style={{ fontSize: '10px', fontWeight: 400 }}>{ageInfo.label}</span>
+                                    <span style={{ fontSize: '11px', padding: '1px 5px', backgroundColor: '#ffffff', color: '#0f172a', border: '1px solid #cbd5e1', borderRadius: '3px', fontWeight: 500 }}>{asset.asset_no || '-'}</span>
+                                    <span style={{ fontSize: '11px', fontWeight: 400 }}>{ageInfo.label}</span>
                                   </div>
                                 </div>
                               </div>
@@ -1151,13 +1168,13 @@ function App() {
                                 <div style={{ display: 'flex', gap: '4px' }} onClick={(e) => e.stopPropagation()}>
                                   <button
                                     onClick={() => handleOpenReturnModal(asset)}
-                                    style={{ padding: '2px 6px', fontSize: '10px', backgroundColor: '#ffffff', color: '#0f172a', border: '1px solid #cbd5e1', borderRadius: '4px', cursor: 'pointer', fontWeight: 500 }}
+                                    style={{ padding: '2px 6px', fontSize: '11px', backgroundColor: '#ffffff', color: '#0f172a', border: '1px solid #cbd5e1', borderRadius: '4px', cursor: 'pointer', fontWeight: 500 }}
                                   >
                                     🔄 คืน
                                   </button>
                                   <button
                                     onClick={() => handleOpenEditModal(asset)}
-                                    style={{ padding: '2px 6px', fontSize: '10px', backgroundColor: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '4px', cursor: 'pointer' }}
+                                    style={{ padding: '2px 6px', fontSize: '11px', backgroundColor: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '4px', cursor: 'pointer' }}
                                   >
                                     ✏️
                                   </button>
@@ -1173,23 +1190,23 @@ function App() {
               )}
             </div>
           ) : (
-            /* 📋 CASE 2: ตาราง */
+            /* 📋 CASE 2: ตารางมาตรฐาน */
             <div style={{ overflowX: 'auto', width: '100%' }}>
               {loading ? (
                 <div style={{ padding: '30px', textAlign: 'center', color: '#475569', fontWeight: 400 }}>กำลังดึงข้อมูล...</div>
               ) : displayedAssets.length === 0 ? (
                 <div style={{ padding: '30px', textAlign: 'center', color: '#475569', fontWeight: 400 }}>ไม่พบข้อมูลตามคำค้นหา/ตัวกรอง</div>
               ) : (
-                <table style={{ borderCollapse: 'collapse', width: '100%', minWidth: '850px' }}>
+                <table style={{ borderCollapse: 'collapse', width: '100%', minWidth: '950px' }}>
                   <thead>
-                    <tr style={{ backgroundColor: '#f1f5f9', borderBottom: '1px solid #cbd5e1' }}>
-                      <th style={{ padding: '10px 12px', textAlign: 'left', width: '130px', color: '#0f172a', fontWeight: 500, fontSize: '12px' }}>ASSET NO</th>
-                      <th style={{ padding: '10px 12px', textAlign: 'left', color: '#0f172a', fontWeight: 500, fontSize: '12px' }}>ชื่ออุปกรณ์</th>
-                      <th style={{ padding: '10px 12px', textAlign: 'left', color: '#0f172a', fontWeight: 500, fontSize: '12px' }}>ผู้ถือครอง (SMART DETECT)</th>
-                      <th style={{ padding: '10px 12px', textAlign: 'left', width: '110px', color: '#0f172a', fontWeight: 500, fontSize: '12px' }}>ลักษณะถือครอง</th>
-                      <th style={{ padding: '10px 12px', textAlign: 'left', width: '90px', color: '#0f172a', fontWeight: 500, fontSize: '12px' }}>ประเภท</th>
-                      <th style={{ padding: '10px 12px', textAlign: 'left', width: '80px', color: '#0f172a', fontWeight: 500, fontSize: '12px' }}>แผนก</th>
-                      <th style={{ padding: '10px 12px', textAlign: 'right', width: '140px', color: '#0f172a', fontWeight: 500, fontSize: '12px' }}>จัดการ</th>
+                    <tr style={{ backgroundColor: '#f8fafc', borderBottom: '1px solid #cbd5e1' }}>
+                      <th style={{ padding: '10px 14px', textAlign: 'left', width: '140px', color: '#0f172a', fontWeight: 600, fontSize: '12px' }}>ASSET NO</th>
+                      <th style={{ padding: '10px 14px', textAlign: 'left', color: '#0f172a', fontWeight: 600, fontSize: '12px' }}>ชื่ออุปกรณ์</th>
+                      <th style={{ padding: '10px 14px', textAlign: 'left', color: '#0f172a', fontWeight: 600, fontSize: '12px' }}>ผู้ถือครอง (SMART DETECT)</th>
+                      <th style={{ padding: '10px 14px', textAlign: 'center', width: '120px', color: '#0f172a', fontWeight: 600, fontSize: '12px' }}>ลักษณะถือครอง</th>
+                      <th style={{ padding: '10px 14px', textAlign: 'center', width: '110px', color: '#0f172a', fontWeight: 600, fontSize: '12px' }}>ประเภท</th>
+                      <th style={{ padding: '10px 14px', textAlign: 'center', width: '100px', color: '#0f172a', fontWeight: 600, fontSize: '12px' }}>แผนก</th>
+                      <th style={{ padding: '10px 14px', textAlign: 'center', width: '110px', color: '#0f172a', fontWeight: 600, fontSize: '12px' }}>จัดการ</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -1202,49 +1219,51 @@ function App() {
                           onClick={() => setSelectedAsset(item)}
                           style={{ backgroundColor: isResigned ? '#fef2f2' : 'transparent', borderBottom: '1px solid #e2e8f0', cursor: 'pointer' }}
                         >
-                          <td style={{ padding: '8px 12px' }}>
-                            <span style={{ backgroundColor: '#ffffff', color: '#0f172a', border: '1px solid #cbd5e1', fontWeight: 500, fontSize: '11px', padding: '2px 6px', borderRadius: '4px' }}>{item.asset_no || '-'}</span>
+                          <td style={{ padding: '10px 14px' }}>
+                            <span style={{ backgroundColor: '#ffffff', color: '#0f172a', border: '1px solid #cbd5e1', fontWeight: 500, fontSize: '12px', padding: '3px 8px', borderRadius: '4px', display: 'inline-block' }}>
+                              {item.asset_no || '-'}
+                            </span>
                           </td>
 
-                          <td style={{ padding: '8px 12px', fontWeight: 500, color: '#0f172a', fontSize: '13px', maxWidth: '240px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          <td style={{ padding: '10px 14px', fontWeight: 500, color: '#0f172a', fontSize: '13px', maxWidth: '280px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                             {item.asset_name || '-'}
                           </td>
                           
-                          <td style={{ padding: '8px 12px' }}>
+                          <td style={{ padding: '10px 14px' }}>
                             <span style={{ color: isResigned ? '#dc2626' : '#0f172a', fontWeight: 500, fontSize: '13px' }}>
                               {realHolder}
                             </span>
                             {isResigned && (
-                              <span style={{ backgroundColor: '#fee2e2', color: '#991b1b', fontSize: '10px', fontWeight: 500, padding: '1px 5px', borderRadius: '4px', marginLeft: '6px', border: '1px solid #fca5a5' }}>
+                              <span style={{ backgroundColor: '#fee2e2', color: '#991b1b', fontSize: '11px', fontWeight: 500, padding: '2px 6px', borderRadius: '4px', marginLeft: '6px', border: '1px solid #fca5a5' }}>
                                 🔴 ลาออก
                               </span>
                             )}
                           </td>
 
-                          <td style={{ padding: '8px 12px' }}>
+                          <td style={{ padding: '10px 14px', textAlign: 'center' }}>
                             {holderType === 'PERSON' ? (
-                              <span style={{ backgroundColor: '#ffffff', color: '#0f172a', border: '1px solid #cbd5e1', fontWeight: 500, fontSize: '11px', padding: '2px 6px', borderRadius: '12px', display: 'inline-block' }}>👤 บุคคล</span>
+                              <span style={{ backgroundColor: '#ffffff', color: '#0f172a', border: '1px solid #cbd5e1', fontWeight: 500, fontSize: '12px', padding: '3px 10px', borderRadius: '12px', display: 'inline-block' }}>👤 บุคคล</span>
                             ) : (
-                              <span style={{ backgroundColor: '#ffffff', color: '#475569', border: '1px solid #cbd5e1', fontWeight: 400, fontSize: '11px', padding: '2px 6px', borderRadius: '12px', display: 'inline-block' }}>🏢 ส่วนกลาง</span>
+                              <span style={{ backgroundColor: '#ffffff', color: '#475569', border: '1px solid #cbd5e1', fontWeight: 500, fontSize: '12px', padding: '3px 10px', borderRadius: '12px', display: 'inline-block' }}>🏢 ส่วนกลาง</span>
                             )}
                           </td>
 
-                          <td style={{ padding: '8px 12px' }}>
-                            <span style={{ backgroundColor: '#ffffff', color: '#0f172a', border: '1px solid #cbd5e1', fontWeight: 400, fontSize: '11px', padding: '2px 6px', borderRadius: '4px' }}>{item.type || '-'}</span>
+                          <td style={{ padding: '10px 14px', textAlign: 'center' }}>
+                            <span style={{ backgroundColor: '#ffffff', color: '#0f172a', border: '1px solid #cbd5e1', fontWeight: 500, fontSize: '12px', padding: '3px 8px', borderRadius: '4px', display: 'inline-block' }}>{item.type || '-'}</span>
                           </td>
 
-                          <td style={{ padding: '8px 12px' }}>
-                            <span style={{ backgroundColor: '#ffffff', color: '#0f172a', border: '1px solid #cbd5e1', fontWeight: 400, fontSize: '11px', padding: '2px 6px', borderRadius: '4px' }}>{item.dept || '-'}</span>
+                          <td style={{ padding: '10px 14px', textAlign: 'center' }}>
+                            <span style={{ backgroundColor: '#ffffff', color: '#0f172a', border: '1px solid #cbd5e1', fontWeight: 500, fontSize: '12px', padding: '3px 8px', borderRadius: '4px', display: 'inline-block' }}>{item.dept || '-'}</span>
                           </td>
                           
-                          <td style={{ padding: '8px 12px', textAlign: 'right' }} onClick={(e) => e.stopPropagation()}>
+                          <td style={{ padding: '10px 14px', textAlign: 'center' }} onClick={(e) => e.stopPropagation()}>
                             {userRole === 'admin' ? (
-                              <div style={{ display: 'inline-flex', gap: '4px', alignItems: 'center' }}>
+                              <div style={{ display: 'inline-flex', gap: '6px', alignItems: 'center' }}>
                                 {holderType === 'PERSON' && (
                                   <button
                                     onClick={() => handleOpenReturnModal(item)}
                                     title="รับคืนเข้าส่วนกลาง"
-                                    style={{ backgroundColor: '#ffffff', color: '#0f172a', border: '1px solid #cbd5e1', fontWeight: 500, fontSize: '11px', padding: '3px 8px', borderRadius: '4px', cursor: 'pointer' }}
+                                    style={{ backgroundColor: '#ffffff', color: '#0f172a', border: '1px solid #cbd5e1', fontWeight: 500, fontSize: '12px', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer', height: '28px', display: 'inline-flex', alignItems: 'center' }}
                                   >
                                     🔄 คืน
                                   </button>
@@ -1253,7 +1272,7 @@ function App() {
                                 <button
                                   onClick={() => handleOpenEditModal(item)}
                                   title="แก้ไข"
-                                  style={{ backgroundColor: '#ffffff', border: '1px solid #cbd5e1', padding: '3px 6px', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}
+                                  style={{ backgroundColor: '#ffffff', border: '1px solid #cbd5e1', width: '28px', height: '28px', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
                                 >
                                   ✏️
                                 </button>
@@ -1261,13 +1280,13 @@ function App() {
                                 <button
                                   onClick={() => handleDeleteAsset(item)}
                                   title="ลบ"
-                                  style={{ backgroundColor: '#ffffff', border: '1px solid #fca5a5', padding: '3px 6px', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', color: '#ef4444' }}
+                                  style={{ backgroundColor: '#ffffff', border: '1px solid #fca5a5', width: '28px', height: '28px', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', color: '#ef4444', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
                                 >
                                   🗑️
                                 </button>
                               </div>
                             ) : (
-                              <span style={{ fontSize: '11px', color: '#94a3b8' }}>👁️ อ่านอย่างเดียว</span>
+                              <span style={{ fontSize: '12px', color: '#94a3b8' }}>👁️ อ่านอย่างเดียว</span>
                             )}
                           </td>
                         </tr>
@@ -1281,7 +1300,7 @@ function App() {
 
           {/* Pagination Footer */}
           {(viewMode !== 'person' || personDisplayFormat === 'table') && (
-            <div style={{ padding: '10px 16px', borderTop: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#ffffff' }}>
+            <div style={{ padding: '12px 16px', borderTop: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#ffffff' }}>
               <span style={{ fontSize: '12px', color: '#0f172a', fontWeight: 500 }}>
                 หน้า {currentPage} จาก {totalPages} (รวม {totalFilteredCount.toLocaleString()} รายการ)
               </span>
@@ -1289,14 +1308,14 @@ function App() {
                 <button
                   disabled={currentPage === 1 || loading}
                   onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                  style={{ padding: '4px 10px', borderRadius: '4px', border: '1px solid #cbd5e1', backgroundColor: currentPage === 1 ? '#f8fafc' : '#ffffff', color: currentPage === 1 ? '#94a3b8' : '#0f172a', cursor: currentPage === 1 ? 'not-allowed' : 'pointer', fontSize: '12px', fontWeight: 500 }}
+                  style={{ height: '32px', padding: '0 12px', borderRadius: '4px', border: '1px solid #cbd5e1', backgroundColor: currentPage === 1 ? '#f8fafc' : '#ffffff', color: currentPage === 1 ? '#94a3b8' : '#0f172a', cursor: currentPage === 1 ? 'not-allowed' : 'pointer', fontSize: '12px', fontWeight: 500 }}
                 >
                   ◀ ก่อนหน้า
                 </button>
                 <button
                   disabled={currentPage >= totalPages || loading}
                   onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                  style={{ padding: '4px 10px', borderRadius: '4px', border: '1px solid #cbd5e1', backgroundColor: currentPage >= totalPages ? '#f8fafc' : '#ffffff', color: currentPage >= totalPages ? '#94a3b8' : '#0f172a', cursor: currentPage >= totalPages ? 'not-allowed' : 'pointer', fontSize: '12px', fontWeight: 500 }}
+                  style={{ height: '32px', padding: '0 12px', borderRadius: '4px', border: '1px solid #cbd5e1', backgroundColor: currentPage >= totalPages ? '#f8fafc' : '#ffffff', color: currentPage >= totalPages ? '#94a3b8' : '#0f172a', cursor: currentPage >= totalPages ? 'not-allowed' : 'pointer', fontSize: '12px', fontWeight: 500 }}
                 >
                   ถัดไป ▶
                 </button>
@@ -1312,46 +1331,46 @@ function App() {
         <div className="modal-overlay" onClick={() => setIsSettingsOpen(false)}>
           <div className="modal-card" style={{ maxWidth: '700px', border: '1px solid #cbd5e1', borderRadius: '8px' }} onClick={(e) => e.stopPropagation()}>
             <div className="modal-header" style={{ borderBottom: '1px solid #e2e8f0', padding: '12px 16px' }}>
-              <span style={{ fontSize: '15px', fontWeight: 500, color: '#0f172a' }}>⚙️ ตั้งค่าระบบ & จัดการผู้ใช้งาน</span>
+              <span style={{ fontSize: '15px', fontWeight: 600, color: '#0f172a' }}>⚙️ ตั้งค่าระบบ & จัดการผู้ใช้งาน</span>
               <button onClick={() => setIsSettingsOpen(false)} style={{ background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer', color: '#475569' }}>✕</button>
             </div>
 
             <div style={{ padding: '16px', maxHeight: '70vh', overflowY: 'auto' }}>
               
               <div style={{ backgroundColor: '#f8fafc', padding: '14px', borderRadius: '6px', border: '1px solid #cbd5e1', marginBottom: '20px' }}>
-                <div style={{ fontSize: '13px', fontWeight: 500, color: '#0f172a', marginBottom: '8px' }}>
+                <div style={{ fontSize: '13px', fontWeight: 600, color: '#0f172a', marginBottom: '8px' }}>
                   ➕ เพิ่มผู้ใช้งานใหม่ (สิทธิ์ Viewer)
                 </div>
 
                 <form onSubmit={handleAddViewerUser} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto', gap: '10px', alignItems: 'flex-end' }}>
                   <div>
-                    <label style={{ fontSize: '11px', color: '#475569', display: 'block', marginBottom: '2px' }}>อีเมลผู้ใช้ *</label>
+                    <label style={{ fontSize: '12px', color: '#475569', display: 'block', marginBottom: '4px' }}>อีเมลผู้ใช้ *</label>
                     <input 
                       type="email" 
                       placeholder="user@company.com" 
                       value={newUserEmail} 
                       onChange={e => setNewUserEmail(e.target.value)} 
                       required 
-                      style={{ width: '100%', padding: '6px 10px', border: '1px solid #cbd5e1', borderRadius: '4px', fontSize: '12px', boxSizing: 'border-box' }} 
+                      style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #cbd5e1', borderRadius: '4px', fontSize: '12px', boxSizing: 'border-box' }} 
                     />
                   </div>
 
                   <div>
-                    <label style={{ fontSize: '11px', color: '#475569', display: 'block', marginBottom: '2px' }}>รหัสผ่าน (อย่างน้อย 6 ตัว) *</label>
+                    <label style={{ fontSize: '12px', color: '#475569', display: 'block', marginBottom: '4px' }}>รหัสผ่าน (อย่างน้อย 6 ตัว) *</label>
                     <input 
                       type="password" 
                       placeholder="••••••••" 
                       value={newUserPassword} 
                       onChange={e => setNewUserPassword(e.target.value)} 
                       required 
-                      style={{ width: '100%', padding: '6px 10px', border: '1px solid #cbd5e1', borderRadius: '4px', fontSize: '12px', boxSizing: 'border-box' }} 
+                      style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #cbd5e1', borderRadius: '4px', fontSize: '12px', boxSizing: 'border-box' }} 
                     />
                   </div>
 
                   <button 
                     type="submit" 
                     disabled={addingUser}
-                    style={{ backgroundColor: '#ffffff', color: '#0f172a', border: '1px solid #cbd5e1', padding: '6px 14px', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', fontWeight: 500, height: '31px' }}
+                    style={{ backgroundColor: '#ffffff', color: '#0f172a', border: '1px solid #cbd5e1', padding: '0 14px', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', fontWeight: 500, height: '36px' }}
                   >
                     {addingUser ? 'กำลังบันทึก...' : '➕ บันทึกเพิ่มผู้ใช้'}
                   </button>
@@ -1362,7 +1381,7 @@ function App() {
               </div>
 
               <div>
-                <div style={{ fontSize: '13px', fontWeight: 500, color: '#0f172a', marginBottom: '8px' }}>
+                <div style={{ fontSize: '13px', fontWeight: 600, color: '#0f172a', marginBottom: '8px' }}>
                   👥 รายชื่อผู้ใช้งานในระบบ ({profilesList.length} คน)
                 </div>
 
@@ -1372,9 +1391,9 @@ function App() {
                   <table style={{ width: '100%', borderCollapse: 'collapse', border: '1px solid #cbd5e1', borderRadius: '6px', overflow: 'hidden' }}>
                     <thead>
                       <tr style={{ backgroundColor: '#f1f5f9', borderBottom: '1px solid #cbd5e1' }}>
-                        <th style={{ padding: '8px 12px', textAlign: 'left', fontSize: '12px', color: '#0f172a', fontWeight: 500 }}>อีเมล (Email)</th>
-                        <th style={{ padding: '8px 12px', textAlign: 'center', fontSize: '12px', color: '#0f172a', fontWeight: 500, width: '120px' }}>สิทธิ์ใช้งาน (Role)</th>
-                        <th style={{ padding: '8px 12px', textAlign: 'left', fontSize: '12px', color: '#0f172a', fontWeight: 500 }}>User ID</th>
+                        <th style={{ padding: '8px 12px', textAlign: 'left', fontSize: '12px', color: '#0f172a', fontWeight: 600 }}>อีเมล (Email)</th>
+                        <th style={{ padding: '8px 12px', textAlign: 'center', fontSize: '12px', color: '#0f172a', fontWeight: 600, width: '120px' }}>สิทธิ์ใช้งาน (Role)</th>
+                        <th style={{ padding: '8px 12px', textAlign: 'left', fontSize: '12px', color: '#0f172a', fontWeight: 600 }}>User ID</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -1385,7 +1404,7 @@ function App() {
                             <td style={{ padding: '8px 12px', fontSize: '12px', color: '#0f172a', fontWeight: 500 }}>{prof.email || '-'}</td>
                             <td style={{ padding: '8px 12px', textAlign: 'center' }}>
                               <span style={{
-                                fontSize: '10px',
+                                fontSize: '11px',
                                 padding: '2px 8px',
                                 borderRadius: '4px',
                                 border: '1px solid #cbd5e1',
@@ -1408,7 +1427,7 @@ function App() {
             </div>
 
             <div style={{ padding: '10px 16px', borderTop: '1px solid #e2e8f0', display: 'flex', justifyContent: 'flex-end' }}>
-              <button onClick={() => setIsSettingsOpen(false)} style={{ padding: '6px 14px', backgroundColor: '#ffffff', color: '#0f172a', border: '1px solid #cbd5e1', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 500 }}>ปิดหน้าต่าง</button>
+              <button onClick={() => setIsSettingsOpen(false)} style={{ height: '36px', padding: '0 16px', backgroundColor: '#ffffff', color: '#0f172a', border: '1px solid #cbd5e1', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 500 }}>ปิดหน้าต่าง</button>
             </div>
           </div>
         </div>
@@ -1419,7 +1438,7 @@ function App() {
         <div className="modal-overlay" onClick={() => setReturningAsset(null)}>
           <div className="modal-card" style={{ maxWidth: '500px', border: '1px solid #cbd5e1', borderRadius: '8px' }} onClick={(e) => e.stopPropagation()}>
             <div className="modal-header" style={{ borderBottom: '1px solid #e2e8f0', padding: '12px 16px' }}>
-              <span style={{ fontSize: '15px', fontWeight: 500, color: '#0f172a' }}>
+              <span style={{ fontSize: '15px', fontWeight: 600, color: '#0f172a' }}>
                 🔄 รับคืนทรัพย์สินเข้าส่วนกลาง / ย้ายสังกัด
               </span>
               <button onClick={() => setReturningAsset(null)} style={{ background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer', color: '#475569' }}>✕</button>
@@ -1428,7 +1447,7 @@ function App() {
             <form onSubmit={executeReturnToStock}>
               <div style={{ padding: '16px' }}>
                 <div style={{ backgroundColor: '#f1f5f9', padding: '10px 12px', borderRadius: '6px', border: '1px solid #cbd5e1', marginBottom: '12px' }}>
-                  <div style={{ fontSize: '13px', fontWeight: 500, color: '#0f172a' }}>
+                  <div style={{ fontSize: '13px', fontWeight: 600, color: '#0f172a' }}>
                     {returningAsset.asset_name || 'อุปกรณ์ไอที'} ({returningAsset.asset_no || 'ไม่ระบุ Asset No'})
                   </div>
                   <div style={{ fontSize: '12px', color: '#475569', marginTop: '2px', fontWeight: 400 }}>
@@ -1442,7 +1461,7 @@ function App() {
                     <select
                       value={returnFormData.dept}
                       onChange={(e) => setReturnFormData(prev => ({ ...prev, dept: e.target.value }))}
-                      style={{ width: '100%', padding: '6px 10px', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '13px', marginTop: '4px', backgroundColor: '#fff', color: '#0f172a', fontWeight: 400 }}
+                      style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '13px', marginTop: '4px', backgroundColor: '#fff', color: '#0f172a', fontWeight: 400 }}
                       required
                     >
                       <option value="แผนกสารสนเทศ">แผนกสารสนเทศ (IT)</option>
@@ -1459,7 +1478,7 @@ function App() {
                       type="text" 
                       value={returnFormData.owner}
                       onChange={(e) => setReturnFormData(prev => ({ ...prev, owner: e.target.value }))}
-                      style={{ width: '100%', padding: '6px 10px', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '13px', marginTop: '4px', color: '#0f172a', fontWeight: 400 }}
+                      style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '13px', marginTop: '4px', color: '#0f172a', fontWeight: 400 }}
                     />
                   </div>
 
@@ -1469,7 +1488,7 @@ function App() {
                       type="text" 
                       value={returnFormData.location}
                       onChange={(e) => setReturnFormData(prev => ({ ...prev, location: e.target.value }))}
-                      style={{ width: '100%', padding: '6px 10px', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '13px', marginTop: '4px', color: '#0f172a', fontWeight: 400 }}
+                      style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '13px', marginTop: '4px', color: '#0f172a', fontWeight: 400 }}
                     />
                   </div>
 
@@ -1479,15 +1498,15 @@ function App() {
                       value={returnFormData.remark}
                       onChange={(e) => setReturnFormData(prev => ({ ...prev, remark: e.target.value }))}
                       rows="2"
-                      style={{ width: '100%', padding: '6px 10px', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '13px', marginTop: '4px', resize: 'vertical', color: '#0f172a', fontWeight: 400 }}
+                      style={{ width: '100%', padding: '8px 10px', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '13px', marginTop: '4px', resize: 'vertical', color: '#0f172a', fontWeight: 400 }}
                     ></textarea>
                   </div>
                 </div>
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', borderTop: '1px solid #e2e8f0', padding: '10px 16px' }}>
-                <button type="button" onClick={() => setReturningAsset(null)} style={{ padding: '6px 14px', backgroundColor: '#ffffff', color: '#0f172a', border: '1px solid #cbd5e1', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 500 }}>ยกเลิก</button>
-                <button type="submit" disabled={loading} style={{ padding: '6px 16px', backgroundColor: '#ffffff', color: '#0f172a', border: '1px solid #cbd5e1', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 500 }}>{loading ? 'กำลังบันทึก...' : 'ย้าย/รับคืนอุปกรณ์'}</button>
+                <button type="button" onClick={() => setReturningAsset(null)} style={{ height: '36px', padding: '0 16px', backgroundColor: '#ffffff', color: '#0f172a', border: '1px solid #cbd5e1', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 500 }}>ยกเลิก</button>
+                <button type="submit" disabled={loading} style={{ height: '36px', padding: '0 16px', backgroundColor: '#ffffff', color: '#0f172a', border: '1px solid #cbd5e1', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 500 }}>{loading ? 'กำลังบันทึก...' : 'ย้าย/รับคืนอุปกรณ์'}</button>
               </div>
             </form>
           </div>
@@ -1499,7 +1518,7 @@ function App() {
         <div className="modal-overlay" onClick={() => setIsFormOpen(false)}>
           <div className="modal-card" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '600px', border: '1px solid #cbd5e1', borderRadius: '8px' }}>
             <div className="modal-header" style={{ borderBottom: '1px solid #e2e8f0', padding: '12px 16px' }}>
-              <span style={{ fontSize: '15px', fontWeight: 500, color: '#0f172a' }}>{editingAsset ? '✏️ แก้ไขข้อมูลทรัพย์สิน' : '➕ เพิ่มทรัพย์สินใหม่'}</span>
+              <span style={{ fontSize: '15px', fontWeight: 600, color: '#0f172a' }}>{editingAsset ? '✏️ แก้ไขข้อมูลทรัพย์สิน' : '➕ เพิ่มทรัพย์สินใหม่'}</span>
               <button onClick={() => setIsFormOpen(false)} style={{ background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer', color: '#475569' }}>✕</button>
             </div>
 
@@ -1508,46 +1527,46 @@ function App() {
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                   <div>
                     <label style={{ color: '#0f172a', fontWeight: 500, fontSize: '12px' }}>เลขทรัพย์สิน (Asset No)</label>
-                    <input type="text" name="asset_no" value={formData.asset_no} onChange={handleFormChange} style={{ width: '100%', padding: '6px 10px', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '12px', marginTop: '4px', color: '#0f172a', fontWeight: 400 }} />
+                    <input type="text" name="asset_no" value={formData.asset_no} onChange={handleFormChange} style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '12px', marginTop: '4px', color: '#0f172a', fontWeight: 400 }} />
                   </div>
                   <div>
                     <label style={{ color: '#0f172a', fontWeight: 500, fontSize: '12px' }}>ประเภท (Type) *</label>
-                    <input type="text" name="type" value={formData.type} onChange={handleFormChange} style={{ width: '100%', padding: '6px 10px', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '12px', marginTop: '4px', color: '#0f172a', fontWeight: 400 }} required />
+                    <input type="text" name="type" value={formData.type} onChange={handleFormChange} style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '12px', marginTop: '4px', color: '#0f172a', fontWeight: 400 }} required />
                   </div>
                   <div style={{ gridColumn: 'span 2' }}>
                     <label style={{ color: '#0f172a', fontWeight: 500, fontSize: '12px' }}>ชื่ออุปกรณ์ (Asset Name) *</label>
-                    <input type="text" name="asset_name" value={formData.asset_name} onChange={handleFormChange} style={{ width: '100%', padding: '6px 10px', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '12px', marginTop: '4px', color: '#0f172a', fontWeight: 400 }} required />
+                    <input type="text" name="asset_name" value={formData.asset_name} onChange={handleFormChange} style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '12px', marginTop: '4px', color: '#0f172a', fontWeight: 400 }} required />
                   </div>
                   <div>
                     <label style={{ color: '#0f172a', fontWeight: 500, fontSize: '12px' }}>ยี่ห้อ (Brand)</label>
-                    <input type="text" name="brand" value={formData.brand} onChange={handleFormChange} style={{ width: '100%', padding: '6px 10px', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '12px', marginTop: '4px', color: '#0f172a', fontWeight: 400 }} />
+                    <input type="text" name="brand" value={formData.brand} onChange={handleFormChange} style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '12px', marginTop: '4px', color: '#0f172a', fontWeight: 400 }} />
                   </div>
                   <div>
                     <label style={{ color: '#0f172a', fontWeight: 500, fontSize: '12px' }}>รุ่น (Model)</label>
-                    <input type="text" name="model" value={formData.model} onChange={handleFormChange} style={{ width: '100%', padding: '6px 10px', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '12px', marginTop: '4px', color: '#0f172a', fontWeight: 400 }} />
+                    <input type="text" name="model" value={formData.model} onChange={handleFormChange} style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '12px', marginTop: '4px', color: '#0f172a', fontWeight: 400 }} />
                   </div>
                   <div>
                     <label style={{ color: '#0f172a', fontWeight: 500, fontSize: '12px' }}>แผนก (Department)</label>
-                    <input type="text" name="dept" value={formData.dept} onChange={handleFormChange} style={{ width: '100%', padding: '6px 10px', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '12px', marginTop: '4px', color: '#0f172a', fontWeight: 400 }} />
+                    <input type="text" name="dept" value={formData.dept} onChange={handleFormChange} style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '12px', marginTop: '4px', color: '#0f172a', fontWeight: 400 }} />
                   </div>
                   <div>
                     <label style={{ color: '#0f172a', fontWeight: 500, fontSize: '12px' }}>ผู้ถือครอง / ผู้ใช้งาน</label>
-                    <input type="text" name="owner" value={formData.owner} onChange={handleFormChange} style={{ width: '100%', padding: '6px 10px', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '12px', marginTop: '4px', color: '#0f172a', fontWeight: 400 }} />
+                    <input type="text" name="owner" value={formData.owner} onChange={handleFormChange} style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '12px', marginTop: '4px', color: '#0f172a', fontWeight: 400 }} />
                   </div>
                   <div style={{ gridColumn: 'span 2' }}>
                     <label style={{ color: '#0f172a', fontWeight: 500, fontSize: '12px' }}>สถานที่ตั้ง (Location)</label>
-                    <input type="text" name="location" value={formData.location} onChange={handleFormChange} style={{ width: '100%', padding: '6px 10px', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '12px', marginTop: '4px', color: '#0f172a', fontWeight: 400 }} />
+                    <input type="text" name="location" value={formData.location} onChange={handleFormChange} style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '12px', marginTop: '4px', color: '#0f172a', fontWeight: 400 }} />
                   </div>
                   <div style={{ gridColumn: 'span 2' }}>
                     <label style={{ color: '#0f172a', fontWeight: 500, fontSize: '12px' }}>หมายเหตุ (Remark)</label>
-                    <textarea name="Remark" value={formData.Remark} onChange={handleFormChange} rows="2" style={{ width: '100%', padding: '6px 10px', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '12px', marginTop: '4px', resize: 'vertical', color: '#0f172a', fontWeight: 400 }}></textarea>
+                    <textarea name="Remark" value={formData.Remark} onChange={handleFormChange} rows="2" style={{ width: '100%', padding: '8px 10px', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '12px', marginTop: '4px', resize: 'vertical', color: '#0f172a', fontWeight: 400 }}></textarea>
                   </div>
                 </div>
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', borderTop: '1px solid #e2e8f0', padding: '10px 16px' }}>
-                <button type="button" onClick={() => setIsFormOpen(false)} style={{ padding: '6px 14px', backgroundColor: '#ffffff', color: '#0f172a', border: '1px solid #cbd5e1', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 500 }}>ยกเลิก</button>
-                <button type="submit" disabled={submitting} style={{ padding: '6px 16px', backgroundColor: '#ffffff', color: '#0f172a', border: '1px solid #cbd5e1', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 500 }}>{submitting ? 'กำลังบันทึก...' : 'บันทึกข้อมูล'}</button>
+                <button type="button" onClick={() => setIsFormOpen(false)} style={{ height: '36px', padding: '0 16px', backgroundColor: '#ffffff', color: '#0f172a', border: '1px solid #cbd5e1', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 500 }}>ยกเลิก</button>
+                <button type="submit" disabled={submitting} style={{ height: '36px', padding: '0 16px', backgroundColor: '#ffffff', color: '#0f172a', border: '1px solid #cbd5e1', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 500 }}>{submitting ? 'กำลังบันทึก...' : 'บันทึกข้อมูล'}</button>
               </div>
             </form>
           </div>
@@ -1559,7 +1578,7 @@ function App() {
         <div className="modal-overlay" onClick={() => setSelectedAsset(null)}>
           <div className="modal-card" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px', border: '1px solid #cbd5e1', borderRadius: '8px' }}>
             <div className="modal-header" style={{ borderBottom: '1px solid #e2e8f0', padding: '12px 16px' }}>
-              <span style={{ fontSize: '15px', fontWeight: 500, color: '#0f172a' }}>📋 รายละเอียดทรัพย์สิน</span>
+              <span style={{ fontSize: '15px', fontWeight: 600, color: '#0f172a' }}>📋 รายละเอียดทรัพย์สิน</span>
               <button onClick={() => setSelectedAsset(null)} style={{ background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer', color: '#475569' }}>✕</button>
             </div>
 
@@ -1579,14 +1598,14 @@ function App() {
                 {userRole === 'admin' && (
                   <>
                     {getRealAssetHolder(selectedAsset).holderType === 'PERSON' && (
-                      <button onClick={() => handleOpenReturnModal(selectedAsset)} style={{ backgroundColor: '#ffffff', color: '#0f172a', border: '1px solid #cbd5e1', fontWeight: 500, fontSize: '11px', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer' }}>🔄 คืนเข้าส่วนกลาง</button>
+                      <button onClick={() => handleOpenReturnModal(selectedAsset)} style={{ height: '32px', backgroundColor: '#ffffff', color: '#0f172a', border: '1px solid #cbd5e1', fontWeight: 500, fontSize: '12px', padding: '0 10px', borderRadius: '4px', cursor: 'pointer' }}>🔄 คืนเข้าส่วนกลาง</button>
                     )}
-                    <button onClick={() => handleOpenEditModal(selectedAsset)} style={{ padding: '4px 10px', fontSize: '11px', fontWeight: 500, backgroundColor: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '4px', cursor: 'pointer' }}>✏️ แก้ไข</button>
-                    <button onClick={() => handleDeleteAsset(selectedAsset)} style={{ padding: '4px 10px', fontSize: '11px', fontWeight: 500, backgroundColor: '#ffffff', border: '1px solid #fca5a5', color: '#ef4444', borderRadius: '4px', cursor: 'pointer' }}>🗑️ ลบ</button>
+                    <button onClick={() => handleOpenEditModal(selectedAsset)} style={{ height: '32px', padding: '0 10px', fontSize: '12px', fontWeight: 500, backgroundColor: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '4px', cursor: 'pointer' }}>✏️ แก้ไข</button>
+                    <button onClick={() => handleDeleteAsset(selectedAsset)} style={{ height: '32px', padding: '0 10px', fontSize: '12px', fontWeight: 500, backgroundColor: '#ffffff', border: '1px solid #fca5a5', color: '#ef4444', borderRadius: '4px', cursor: 'pointer' }}>🗑️ ลบ</button>
                   </>
                 )}
               </div>
-              <button onClick={() => setSelectedAsset(null)} style={{ padding: '6px 14px', backgroundColor: '#ffffff', color: '#0f172a', border: '1px solid #cbd5e1', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 500 }}>ปิดหน้าต่าง</button>
+              <button onClick={() => setSelectedAsset(null)} style={{ height: '36px', padding: '0 16px', backgroundColor: '#ffffff', color: '#0f172a', border: '1px solid #cbd5e1', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 500 }}>ปิดหน้าต่าง</button>
             </div>
           </div>
         </div>
