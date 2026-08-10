@@ -4,6 +4,7 @@ import { supabase } from './supabaseClient'
 import './App.css'
 
 const PAGE_SIZE = 20
+const DEFAULT_DOMAIN = '@gmail.com' // 💡 สามารถเปลี่ยนเป็นโดเมนอีเมลองค์กรของคุณได้ที่นี่
 
 // 🔍 ตรวจจับ "ชื่อคน"
 function isPersonName(text) {
@@ -202,7 +203,6 @@ function App() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session)
       
-      // ดักจับ Event เมื่อเปิดเว็บมาจากลิงก์ในอีเมลรีเซ็ตรหัสผ่าน
       if (event === 'PASSWORD_RECOVERY') {
         setIsResettingPassword(true)
       }
@@ -245,11 +245,19 @@ function App() {
     }
   }
 
+  // 🔐 ฟังก์ชัน Login รองรับทั้ง Email และ Username สั้นๆ
   async function handleLogin(e) {
     e.preventDefault()
     setAuthLoading(true)
+
+    let formattedEmail = loginEmail.trim()
+    // หากพิมพ์เฉพาะ Username (ไม่มี @) ระบบจะแอบเติม DEFAULT_DOMAIN ให้อัตโนมัติ
+    if (!formattedEmail.includes('@')) {
+      formattedEmail = `${formattedEmail}${DEFAULT_DOMAIN}`
+    }
+
     const { error } = await supabase.auth.signInWithPassword({
-      email: loginEmail,
+      email: formattedEmail,
       password: loginPassword,
     })
 
@@ -262,14 +270,19 @@ function App() {
   // 🔑 ส่งอีเมลขอลิงก์รีเซ็ตรหัสผ่าน
   async function handleSendResetEmail(e) {
     e.preventDefault()
-    if (!resetEmail.trim()) {
-      alert('กรุณากรอกอีเมล')
+    let targetEmail = resetEmail.trim()
+    if (!targetEmail) {
+      alert('กรุณากรอกอีเมลหรือ Username')
       return
+    }
+
+    if (!targetEmail.includes('@')) {
+      targetEmail = `${targetEmail}${DEFAULT_DOMAIN}`
     }
 
     setAuthLoading(true)
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(resetEmail.trim(), {
+      const { error } = await supabase.auth.resetPasswordForEmail(targetEmail, {
         redirectTo: window.location.origin
       })
 
@@ -342,9 +355,14 @@ function App() {
   // ➕ ฟังก์ชันสร้าง User ใหม่สิทธิ์ Viewer
   async function handleAddViewerUser(e) {
     e.preventDefault()
-    if (!newUserEmail.trim() || !newUserPassword.trim()) {
-      alert('กรุณากรอกอีเมลและรหัสผ่านให้ครบถ้วน')
+    let formattedUserEmail = newUserEmail.trim()
+    if (!formattedUserEmail || !newUserPassword.trim()) {
+      alert('กรุณากรอกอีเมล/Username และรหัสผ่านให้ครบถ้วน')
       return
+    }
+
+    if (!formattedUserEmail.includes('@')) {
+      formattedUserEmail = `${formattedUserEmail}${DEFAULT_DOMAIN}`
     }
 
     if (newUserPassword.length < 6) {
@@ -359,13 +377,13 @@ function App() {
 
       const tempClient = createClient(supabaseUrl, supabaseAnonKey, { auth: { persistSession: false } })
       const { error } = await tempClient.auth.signUp({
-        email: newUserEmail.trim(),
+        email: formattedUserEmail,
         password: newUserPassword.trim(),
       })
 
       if (error) throw error
 
-      alert(`เพิ่มผู้ใช้งาน "${newUserEmail}" สิทธิ์ Viewer เรียบร้อยแล้ว!`)
+      alert(`เพิ่มผู้ใช้งาน "${formattedUserEmail}" สิทธิ์ Viewer เรียบร้อยแล้ว!`)
       setNewUserEmail('')
       setNewUserPassword('')
       loadProfilesList()
@@ -788,7 +806,7 @@ function App() {
             </h1>
             
             <p style={{ color: '#475569', fontSize: '13px', lineHeight: 1.6, fontWeight: 400 }}>
-              ศูนย์กลางควบคุม ตรวจสอบ และติดตามสถานะอุปกรณ์ไอทีทุกประเภท พร้อมระบบ Smart Detect
+              ศูนย์กลางควบคุม ตรวจสอบ และติดตามสถานะอุปกรณ์ไอทีทุกประเภท พร้อมระบบ Smart Detect จำแนกผู้ถือครองอัตโนมัติ
             </p>
           </div>
 
@@ -843,25 +861,25 @@ function App() {
                     Password Recovery
                   </div>
                   <h2 style={{ fontSize: '20px', fontWeight: 600, color: '#0f172a', margin: 0 }}>ลืมรหัสผ่าน?</h2>
-                  <p style={{ fontSize: '13px', color: '#64748b', marginTop: '4px' }}>กรอกอีเมลของคุณเพื่อรับลิงก์สำหรับรีเซ็ตรหัสผ่าน</p>
+                  <p style={{ fontSize: '13px', color: '#64748b', marginTop: '4px' }}>กรอกอีเมล หรือ Username ของคุณเพื่อรับลิงก์รีเซ็ต</p>
                 </div>
 
                 {resetSent ? (
                   <div style={{ backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0', padding: '16px', borderRadius: '8px', marginBottom: '16px' }}>
                     <div style={{ color: '#166534', fontWeight: 600, fontSize: '13px', marginBottom: '4px' }}>✉️ ส่งอีเมลเรียบร้อยแล้ว!</div>
                     <p style={{ color: '#15803d', fontSize: '12px', margin: 0, lineHeight: 1.5 }}>
-                      ระบบได้ส่งลิงก์รีเซ็ตรหัสผ่านไปยัง <strong>{resetEmail}</strong> แล้ว กรุณาเช็กกล่องข้อความในอีเมลของคุณ
+                      ระบบได้ส่งลิงก์รีเซ็ตรหัสผ่านไปยังอีเมลผู้ใช้เรียบร้อยแล้ว กรุณาเช็กกล่องข้อความของคุณ
                     </p>
                   </div>
                 ) : (
                   <form onSubmit={handleSendResetEmail} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                     <div>
-                      <label style={{ fontSize: '12px', fontWeight: 500, color: '#0f172a', display: 'block', marginBottom: '6px' }}>อีเมล (Email)</label>
+                      <label style={{ fontSize: '12px', fontWeight: 500, color: '#0f172a', display: 'block', marginBottom: '6px' }}>อีเมล หรือ Username</label>
                       <input 
-                        type="email" 
+                        type="text" 
                         value={resetEmail} 
                         onChange={e => setResetEmail(e.target.value)} 
-                        placeholder="name@company.com" 
+                        placeholder="admin หรือ name@company.com" 
                         required 
                         style={{ width: '100%', height: '36px', padding: '0 12px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '13px', boxSizing: 'border-box', color: '#0f172a', outline: 'none' }} 
                       />
@@ -907,20 +925,20 @@ function App() {
               <div>
                 <div style={{ marginBottom: '24px' }}>
                   <div style={{ backgroundColor: '#f1f5f9', color: '#0f172a', borderRadius: '6px', fontWeight: 500, padding: '3px 8px', fontSize: '12px', display: 'inline-block', marginBottom: '10px' }}>
-                  IT Teeraporn Hospital
+                    IT Portal
                   </div>
                   <h2 style={{ fontSize: '20px', fontWeight: 600, color: '#0f172a', margin: 0 }}>เข้าสู่ระบบบริหารทรัพย์สิน</h2>
-                  <p style={{ fontSize: '13px', color: '#64748b', marginTop: '4px' }}>ระบุอีเมลและรหัสผ่านเพื่อเข้าใช้งานระบบ</p>
+                  <p style={{ fontSize: '13px', color: '#64748b', marginTop: '4px' }}>ระบุ Username หรืออีเมลเพื่อเข้าใช้งานระบบ</p>
                 </div>
 
                 <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                   <div>
-                    <label style={{ fontSize: '12px', fontWeight: 500, color: '#0f172a', display: 'block', marginBottom: '6px' }}>อีเมล (Email)</label>
+                    <label style={{ fontSize: '12px', fontWeight: 500, color: '#0f172a', display: 'block', marginBottom: '6px' }}>Username หรือ อีเมล (Email)</label>
                     <input 
-                      type="email" 
+                      type="text" 
                       value={loginEmail} 
                       onChange={e => setLoginEmail(e.target.value)} 
-                      placeholder="name@company.com" 
+                      placeholder="admin หรือ name@company.com" 
                       required 
                       style={{ width: '100%', height: '36px', padding: '0 12px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '13px', boxSizing: 'border-box', color: '#0f172a', outline: 'none' }} 
                     />
@@ -1182,7 +1200,7 @@ function App() {
             </button>
           </div>
 
-          {/* Controls Bar - Standardized 36px Height */}
+          {/* Controls Bar */}
           <div style={{ padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px', borderBottom: '1px solid #e2e8f0' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
               <span style={{ color: '#0f172a', fontWeight: 600, fontSize: '15px' }}>
@@ -1413,7 +1431,7 @@ function App() {
               )}
             </div>
           ) : (
-            /* 📋 CASE 2: ตารางมาตรฐานสมดุลสากล (Symmetrical Table, No Clipped Buttons) */
+            /* 📋 CASE 2: ตารางมาตรฐาน */
             <div style={{ overflowX: 'auto', width: '100%' }}>
               {loading ? (
                 <div style={{ padding: '30px', textAlign: 'center', color: '#64748b', fontWeight: 400 }}>กำลังดึงข้อมูล...</div>
@@ -1442,19 +1460,16 @@ function App() {
                           onClick={() => setSelectedAsset(item)}
                           style={{ backgroundColor: isResigned ? '#fff1f2' : 'transparent', borderBottom: '1px solid #f1f5f9', cursor: 'pointer', transition: 'background 0.15s' }}
                         >
-                          {/* ASSET NO */}
                           <td style={{ padding: '12px 16px', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
                             <span style={{ fontFamily: 'monospace', fontWeight: 600, fontSize: '13px', color: '#0f172a', backgroundColor: '#f1f5f9', padding: '4px 8px', borderRadius: '4px', display: 'inline-block' }}>
                               {item.asset_no || '-'}
                             </span>
                           </td>
 
-                          {/* ชื่ออุปกรณ์ */}
                           <td style={{ padding: '12px 16px', verticalAlign: 'middle', fontWeight: 500, color: '#0f172a', fontSize: '13px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                             {item.asset_name || '-'}
                           </td>
                           
-                          {/* ผู้ถือครอง */}
                           <td style={{ padding: '12px 16px', verticalAlign: 'middle' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                               <span style={{ color: isResigned ? '#e11d48' : '#0f172a', fontWeight: 500, fontSize: '13px' }}>
@@ -1468,7 +1483,6 @@ function App() {
                             </div>
                           </td>
 
-                          {/* ลักษณะถือครอง */}
                           <td style={{ padding: '12px 16px', verticalAlign: 'middle', textAlign: 'center', whiteSpace: 'nowrap' }}>
                             {holderType === 'PERSON' ? (
                               <span style={{ backgroundColor: '#e0f2fe', color: '#0369a1', fontWeight: 600, fontSize: '11px', padding: '4px 10px', borderRadius: '20px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
@@ -1481,21 +1495,18 @@ function App() {
                             )}
                           </td>
 
-                          {/* ประเภท */}
                           <td style={{ padding: '12px 16px', verticalAlign: 'middle', textAlign: 'center', whiteSpace: 'nowrap' }}>
                             <span style={{ color: '#334155', fontWeight: 500, fontSize: '12px' }}>
                               {item.type || '-'}
                             </span>
                           </td>
 
-                          {/* แผนก */}
                           <td style={{ padding: '12px 16px', verticalAlign: 'middle', textAlign: 'center', whiteSpace: 'nowrap' }}>
                             <span style={{ color: '#334155', fontWeight: 500, fontSize: '12px' }}>
                               {item.dept || '-'}
                             </span>
                           </td>
                           
-                          {/* ปุ่มจัดการ */}
                           <td style={{ padding: '12px 16px', verticalAlign: 'middle', textAlign: 'center', whiteSpace: 'nowrap' }} onClick={(e) => e.stopPropagation()}>
                             {userRole === 'admin' ? (
                               <div style={{ display: 'inline-flex', gap: '6px', alignItems: 'center', justifyContent: 'center' }}>
@@ -1626,10 +1637,10 @@ function App() {
 
                 <form onSubmit={handleAddViewerUser} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto', gap: '10px', alignItems: 'flex-end' }}>
                   <div>
-                    <label style={{ fontSize: '12px', color: '#64748b', display: 'block', marginBottom: '4px' }}>อีเมลผู้ใช้ *</label>
+                    <label style={{ fontSize: '12px', color: '#64748b', display: 'block', marginBottom: '4px' }}>Username หรือ อีเมล *</label>
                     <input 
-                      type="email" 
-                      placeholder="user@company.com" 
+                      type="text" 
+                      placeholder="user หรือ user@company.com" 
                       value={newUserEmail} 
                       onChange={e => setNewUserEmail(e.target.value)} 
                       required 
@@ -1859,7 +1870,7 @@ function App() {
         <div className="modal-overlay" onClick={() => setSelectedAsset(null)}>
           <div className="modal-card" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px', borderRadius: '12px', boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1)' }}>
             <div className="modal-header" style={{ borderBottom: '1px solid #e2e8f0', padding: '16px 20px' }}>
-              <span style={{ fontSize: '16px', fontWeight: 600, color: '#0f172a' }}>📋 รายรายละเอียดทรัพย์สิน</span>
+              <span style={{ fontSize: '16px', fontWeight: 600, color: '#0f172a' }}>📋 รายละเอียดทรัพย์สิน</span>
               <button onClick={() => setSelectedAsset(null)} style={{ background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer', color: '#64748b' }}>✕</button>
             </div>
 
