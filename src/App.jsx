@@ -4,7 +4,7 @@ import { supabase } from './supabaseClient'
 import './App.css'
 
 const PAGE_SIZE = 20
-const DEFAULT_DOMAIN = '@gmail.com' // 💡 สามารถเปลี่ยนเป็นโดเมนอีเมลองค์กรของคุณได้ที่นี่
+const DEFAULT_DOMAIN = '@gmail.com'
 
 // 🔍 ตรวจจับ "ชื่อคน"
 function isPersonName(text) {
@@ -54,7 +54,7 @@ function getRealAssetHolder(item) {
   }
 }
 
-// ⏳ คำนวณอายุอุปกรณ์
+// ⏳ คำนวณอายุอุปกรณ์ ฮาร์ดแวร์
 function getAssetAgeInfo(item) {
   let yearAD = null
   const rawDate = item.Date || item.purchase || ''
@@ -88,7 +88,7 @@ function getAssetAgeInfo(item) {
   }
 }
 
-// 💻 เลือกไอคอนประเภทอุปกรณ์
+// 💻 ไอคอนประเภทอุปกรณ์ ฮาร์ดแวร์
 function getAssetTypeIcon(typeStr) {
   const t = (typeStr || '').toUpperCase()
   if (t.includes('NB') || t.includes('NOTEBOOK') || t.includes('LAPTOP')) return '💻'
@@ -101,7 +101,33 @@ function getAssetTypeIcon(typeStr) {
   return '📦'
 }
 
-const emptyForm = {
+// 🛡️ วิเคราะห์สถานะวันหมดอายุของ ซอฟต์แวร์
+function getSoftwareExpireStatus(expireStr) {
+  if (!expireStr) return { label: '⚪ ไม่ระบุ', color: '#64748b', bg: '#f1f5f9' }
+  const str = String(expireStr).trim()
+  if (str.toLowerCase().includes('lifetime')) {
+    return { label: '🟢 Lifetime (ตลอดชีพ)', color: '#15803d', bg: '#dcfce7' }
+  }
+
+  const expDate = new Date(expireStr)
+  if (!isNaN(expDate.getTime())) {
+    const now = new Date()
+    const diffDays = Math.ceil((expDate - now) / (1000 * 60 * 60 * 24))
+    const formattedDate = expDate.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' })
+
+    if (diffDays < 0) {
+      return { label: `🔴 หมดอายุ (${formattedDate})`, color: '#9f1239', bg: '#ffe4e6' }
+    } else if (diffDays <= 60) {
+      return { label: `🟡 ใกล้หมดอายุ (${formattedDate})`, color: '#92400e', bg: '#fef3c7' }
+    } else {
+      return { label: `🟢 ปกติ (${formattedDate})`, color: '#15803d', bg: '#dcfce7' }
+    }
+  }
+
+  return { label: `🔵 ${expireStr}`, color: '#0369a1', bg: '#e0f2fe' }
+}
+
+const emptyHardwareForm = {
   asset_no: '',
   asset_name: '',
   type: '',
@@ -112,6 +138,19 @@ const emptyForm = {
   owner: '',
   location: '',
   Remark: ''
+}
+
+const emptySoftwareForm = {
+  'NO': '',
+  'Software name': '',
+  'Version': '',
+  'Installed on': '',
+  'Vendor': '',
+  'No. of License': 1,
+  'Purchase date': '',
+  'Expire Date': '',
+  'Contract Number': '',
+  'รหัสทะเบียน': ''
 }
 
 function App() {
@@ -138,24 +177,22 @@ function App() {
   const [newUserPassword, setNewUserPassword] = useState('')
   const [addingUser, setAddingUser] = useState(false)
 
-  // 📦 Asset System States
+  // 🔀 Main System View Tab ( 'hardware' | 'software' )
+  const [mainTab, setMainTab] = useState('hardware')
+
+  // 📦 Hardware States
   const [allRawAssets, setAllRawAssets] = useState([])
   const [displayedAssets, setDisplayedAssets] = useState([])
   const [summary, setSummary] = useState([])
   const [deptList, setDeptList] = useState([])
-  const [loading, setLoading] = useState(true)
-
-  const [currentDateTime, setCurrentDateTime] = useState('')
-
+  const [loadingHardware, setLoadingHardware] = useState(true)
   const [viewMode, setViewMode] = useState('all')
   const [personDisplayFormat, setPersonDisplayFormat] = useState('cards')
   const [selectedAsset, setSelectedAsset] = useState(null)
-
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [editingAsset, setEditingAsset] = useState(null)
-  const [formData, setFormData] = useState(emptyForm)
+  const [formData, setFormData] = useState(emptyHardwareForm)
   const [submitting, setSubmitting] = useState(false)
-
   const [returningAsset, setReturningAsset] = useState(null)
   const [returnFormData, setReturnFormData] = useState({
     dept: 'แผนกสารสนเทศ',
@@ -163,12 +200,25 @@ function App() {
     location: 'ห้องเก็บของ IT',
     remark: ''
   })
-
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedDept, setSelectedDept] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
   const [totalFilteredCount, setTotalFilteredCount] = useState(0)
+
+  // 💻 Software States
+  const [softwareList, setSoftwareList] = useState([])
+  const [loadingSoftware, setLoadingSoftware] = useState(true)
+  const [swSearchTerm, setSwSearchTerm] = useState('')
+  const [swSelectedVendor, setSwSelectedVendor] = useState('')
+  const [swSelectedInstalledOn, setSwSelectedInstalledOn] = useState('')
+  const [selectedSoftware, setSelectedSoftware] = useState(null)
+  const [isSoftwareFormOpen, setIsSoftwareFormOpen] = useState(false)
+  const [editingSoftware, setEditingSoftware] = useState(null)
+  const [softwareFormData, setSoftwareFormData] = useState(emptySoftwareForm)
+  const [swSubmitting, setSwSubmitting] = useState(false)
+
+  const [currentDateTime, setCurrentDateTime] = useState('')
 
   // 🕒 นาฬิกาและวันที่
   useEffect(() => {
@@ -202,11 +252,7 @@ function App() {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session)
-      
-      if (event === 'PASSWORD_RECOVERY') {
-        setIsResettingPassword(true)
-      }
-
+      if (event === 'PASSWORD_RECOVERY') setIsResettingPassword(true)
       if (session) fetchUserRole(session.user.id)
       else setUserRole('viewer')
     })
@@ -216,7 +262,8 @@ function App() {
 
   useEffect(() => {
     if (session && !isResettingPassword) {
-      loadAllData()
+      loadHardwareData()
+      loadSoftwareData()
     }
   }, [session, isResettingPassword])
 
@@ -245,13 +292,12 @@ function App() {
     }
   }
 
-  // 🔐 ฟังก์ชัน Login รองรับทั้ง Email และ Username สั้นๆ
+  // 🔐 ฟังก์ชัน Login
   async function handleLogin(e) {
     e.preventDefault()
     setAuthLoading(true)
 
     let formattedEmail = loginEmail.trim()
-    // หากพิมพ์เฉพาะ Username (ไม่มี @) ระบบจะแอบเติม DEFAULT_DOMAIN ให้อัตโนมัติ
     if (!formattedEmail.includes('@')) {
       formattedEmail = `${formattedEmail}${DEFAULT_DOMAIN}`
     }
@@ -261,9 +307,7 @@ function App() {
       password: loginPassword,
     })
 
-    if (error) {
-      alert('เข้าสู่ระบบไม่สำเร็จ: ' + error.message)
-    }
+    if (error) alert('เข้าสู่ระบบไม่สำเร็จ: ' + error.message)
     setAuthLoading(false)
   }
 
@@ -272,7 +316,7 @@ function App() {
     e.preventDefault()
     let targetEmail = resetEmail.trim()
     if (!targetEmail) {
-      alert('กรุณากรอกอีเมลหรือ Username')
+      alert('กรุณากรอกอีเมล หรือ Username')
       return
     }
 
@@ -285,9 +329,7 @@ function App() {
       const { error } = await supabase.auth.resetPasswordForEmail(targetEmail, {
         redirectTo: window.location.origin
       })
-
       if (error) throw error
-
       setResetSent(true)
     } catch (err) {
       console.error('Reset password error:', err)
@@ -312,12 +354,8 @@ function App() {
 
     setAuthLoading(true)
     try {
-      const { error } = await supabase.auth.updateUser({
-        password: newPassword
-      })
-
+      const { error } = await supabase.auth.updateUser({ password: newPassword })
       if (error) throw error
-
       alert('ตั้งค่ารหัสผ่านใหม่เรียบร้อยแล้ว!')
       setIsResettingPassword(false)
       setNewPassword('')
@@ -338,11 +376,7 @@ function App() {
   async function loadProfilesList() {
     setLoadingProfiles(true)
     try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .order('email', { ascending: true })
-
+      const { data, error } = await supabase.from('profiles').select('*').order('email', { ascending: true })
       if (error) throw error
       setProfilesList(data || [])
     } catch (err) {
@@ -352,7 +386,7 @@ function App() {
     }
   }
 
-  // ➕ ฟังก์ชันสร้าง User ใหม่สิทธิ์ Viewer
+  // ➕ เพิ่ม User ใหม่ สิทธิ์ Viewer
   async function handleAddViewerUser(e) {
     e.preventDefault()
     let formattedUserEmail = newUserEmail.trim()
@@ -395,38 +429,14 @@ function App() {
     }
   }
 
-  const handleSearchChange = (e) => {
-    setSearchTerm(e.target.value)
-    setCurrentPage(1)
-  }
-
-  const handleDeptChange = (e) => {
-    setSelectedDept(e.target.value)
-    setCurrentPage(1)
-  }
-
-  const handleCategoryChange = (e) => {
-    setSelectedCategory(e.target.value)
-    setCurrentPage(1)
-  }
-
-  const handleViewModeChange = (mode) => {
-    setViewMode(mode)
-    setCurrentPage(1)
-  }
-
-  async function loadAllData() {
-    setLoading(true)
+  // 📦 โหลดข้อมูล Hardware
+  async function loadHardwareData() {
+    setLoadingHardware(true)
     try {
-      const { data: summaryData } = await supabase
-        .from('view_asset_summary_by_type')
-        .select('*')
+      const { data: summaryData } = await supabase.from('view_asset_summary_by_type').select('*')
       setSummary(summaryData || [])
 
-      const { data: assetData, error } = await supabase
-        .from('assets_v2')
-        .select('*')
-
+      const { data: assetData, error } = await supabase.from('assets_v2').select('*')
       if (error) {
         console.error('Fetch error:', error)
       } else if (assetData) {
@@ -435,9 +445,30 @@ function App() {
         setDeptList(uniqueDepts)
       }
     } catch (err) {
-      console.error('Error loading data:', err)
+      console.error('Error loading hardware data:', err)
     } finally {
-      setLoading(false)
+      setLoadingHardware(false)
+    }
+  }
+
+  // 💻 โหลดข้อมูล Software
+  async function loadSoftwareData() {
+    setLoadingSoftware(true)
+    try {
+      const { data, error } = await supabase.from('software_assets').select('*')
+      if (error) {
+        console.error('Fetch software error:', error)
+      } else if (data) {
+        const validSoftware = data.filter(item => {
+          const name = item['Software name'] || item.software_name || item.name
+          return name && String(name).trim() !== '' && String(name) !== 'Software name'
+        })
+        setSoftwareList(validSoftware)
+      }
+    } catch (err) {
+      console.error('Error loading software data:', err)
+    } finally {
+      setLoadingSoftware(false)
     }
   }
 
@@ -521,6 +552,28 @@ function App() {
     return Object.values(personMap)
   }
 
+  // 💻 ตัวกรอง Software
+  function getFilteredSoftwareList() {
+    let result = [...softwareList]
+
+    if (swSelectedVendor) {
+      result = result.filter(item => (item['Vendor'] || item.vendor || '') === swSelectedVendor)
+    }
+
+    if (swSelectedInstalledOn) {
+      result = result.filter(item => (item['Installed on'] || item.installed_on || '') === swSelectedInstalledOn)
+    }
+
+    if (swSearchTerm.trim() !== '') {
+      const term = swSearchTerm.toLowerCase().trim()
+      result = result.filter(item => {
+        return JSON.stringify(item).toLowerCase().includes(term)
+      })
+    }
+
+    return result
+  }
+
   function handleOpenReturnModal(item) {
     if (userRole !== 'admin') {
       alert('คุณไม่มีสิทธิ์ในการดำเนินรายการนี้ (Admin Only)')
@@ -541,7 +594,7 @@ function App() {
     if (!returningAsset) return
 
     try {
-      setLoading(true)
+      setLoadingHardware(true)
       const updatePayload = {
         dept: returnFormData.dept,
         owner: returnFormData.owner,
@@ -562,12 +615,12 @@ function App() {
       alert(`รับคืนทรัพย์สินเข้าแผนก "${returnFormData.dept}" เรียบร้อยแล้ว!`)
       setReturningAsset(null)
       setSelectedAsset(null)
-      loadAllData()
+      loadHardwareData()
     } catch (err) {
       console.error('Return error:', err)
       alert('เกิดข้อผิดพลาด: ' + err.message)
     } finally {
-      setLoading(false)
+      setLoadingHardware(false)
     }
   }
 
@@ -577,7 +630,7 @@ function App() {
       return
     }
     setEditingAsset(null)
-    setFormData(emptyForm)
+    setFormData(emptyHardwareForm)
     setIsFormOpen(true)
   }
 
@@ -600,11 +653,6 @@ function App() {
       Remark: item.Remark || item.remark || ''
     })
     setIsFormOpen(true)
-  }
-
-  function handleFormChange(e) {
-    const { name, value } = e.target
-    setFormData(prev => ({ ...prev, [name]: value }))
   }
 
   async function handleFormSubmit(e) {
@@ -634,7 +682,7 @@ function App() {
 
       setIsFormOpen(false)
       setSelectedAsset(null)
-      loadAllData()
+      loadHardwareData()
     } catch (err) {
       console.error('Submit error:', err)
       alert('เกิดข้อผิดพลาด: ' + err.message)
@@ -652,7 +700,7 @@ function App() {
     if (!window.confirm(`คุณแน่ใจหรือไม่ว่าต้องการลบ "${assetIdentifier}" ออกจากระบบ?`)) return
 
     try {
-      setLoading(true)
+      setLoadingHardware(true)
       let query = supabase.from('assets_v2').delete()
       if (item.id) {
         query = query.eq('id', item.id)
@@ -664,16 +712,114 @@ function App() {
 
       alert('ลบทรัพย์สินเรียบร้อยแล้ว')
       setSelectedAsset(null)
-      loadAllData()
+      loadHardwareData()
     } catch (err) {
       console.error('Delete error:', err)
       alert('เกิดข้อผิดพลาดในการลบ: ' + err.message)
     } finally {
-      setLoading(false)
+      setLoadingHardware(false)
     }
   }
 
-  function exportToCSV() {
+  // 💻 ซอฟต์แวร์ Modal CRUD Handlers
+  function handleOpenAddSoftwareModal() {
+    if (userRole !== 'admin') {
+      alert('คุณไม่มีสิทธิ์เพิ่มซอฟต์แวร์ (Admin Only)')
+      return
+    }
+    setEditingSoftware(null)
+    setSoftwareFormData(emptySoftwareForm)
+    setIsSoftwareFormOpen(true)
+  }
+
+  function handleOpenEditSoftwareModal(item) {
+    if (userRole !== 'admin') {
+      alert('คุณไม่มีสิทธิ์แก้ไขซอฟต์แวร์ (Admin Only)')
+      return
+    }
+    setEditingSoftware(item)
+    setSoftwareFormData({
+      'NO': item['NO'] || item.NO || item.asset_no || '',
+      'Software name': item['Software name'] || item.software_name || item.name || '',
+      'Version': item['Version'] || item.version || '',
+      'Installed on': item['Installed on'] || item.installed_on || '',
+      'Vendor': item['Vendor'] || item.vendor || '',
+      'No. of License': item['No. of License'] || item.no_of_license || 1,
+      'Purchase date': item['Purchase date'] || item.purchase_date || '',
+      'Expire Date': item['Expire Date'] || item.expire_date || '',
+      'Contract Number': item['Contract Number'] || item.contract_number || '',
+      'รหัสทะเบียน': item['รหัสทะเบียน'] || item.registration_code || ''
+    })
+    setIsSoftwareFormOpen(true)
+  }
+
+  async function handleSoftwareFormSubmit(e) {
+    e.preventDefault()
+    if (!softwareFormData['Software name'].trim()) {
+      alert('กรุณากรอกชื่อซอฟต์แวร์')
+      return
+    }
+
+    setSwSubmitting(true)
+    try {
+      if (editingSoftware) {
+        let query = supabase.from('software_assets').update(softwareFormData)
+        if (editingSoftware.id) {
+          query = query.eq('id', editingSoftware.id)
+        } else {
+          query = query.eq('Software name', editingSoftware['Software name'])
+        }
+        const { error } = await query
+        if (error) throw error
+        alert('แก้ไขข้อมูลซอฟต์แวร์สำเร็จ!')
+      } else {
+        const { error } = await supabase.from('software_assets').insert([softwareFormData])
+        if (error) throw error
+        alert('เพิ่มข้อมูลซอฟต์แวร์สำเร็จ!')
+      }
+
+      setIsSoftwareFormOpen(false)
+      setSelectedSoftware(null)
+      loadSoftwareData()
+    } catch (err) {
+      console.error('Software Submit error:', err)
+      alert('เกิดข้อผิดพลาด: ' + err.message)
+    } finally {
+      setSwSubmitting(false)
+    }
+  }
+
+  async function handleDeleteSoftware(item) {
+    if (userRole !== 'admin') {
+      alert('คุณไม่มีสิทธิ์ลบซอฟต์แวร์ (Admin Only)')
+      return
+    }
+    const swName = item['Software name'] || item.software_name || 'รายการนี้'
+    if (!window.confirm(`คุณแน่ใจหรือไม่ว่าต้องการลบซอฟต์แวร์ "${swName}" ออกจากระบบ?`)) return
+
+    try {
+      setLoadingSoftware(true)
+      let query = supabase.from('software_assets').delete()
+      if (item.id) {
+        query = query.eq('id', item.id)
+      } else {
+        query = query.eq('Software name', item['Software name'])
+      }
+      const { error } = await query
+      if (error) throw error
+
+      alert('ลบข้อมูลซอฟต์แวร์เรียบร้อยแล้ว')
+      setSelectedSoftware(null)
+      loadSoftwareData()
+    } catch (err) {
+      console.error('Delete software error:', err)
+      alert('เกิดข้อผิดพลาดในการลบ: ' + err.message)
+    } finally {
+      setLoadingSoftware(false)
+    }
+  }
+
+  function exportHardwareToCSV() {
     if (!allRawAssets || allRawAssets.length === 0) {
       alert('ไม่มีข้อมูลสำหรับ Export')
       return
@@ -703,15 +849,49 @@ function App() {
     const url = URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.setAttribute('href', url)
-    link.setAttribute('download', `IT_Assets_Export_${new Date().toISOString().slice(0, 10)}.csv`)
+    link.setAttribute('download', `Hardware_Assets_${new Date().toISOString().slice(0, 10)}.csv`)
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
   }
 
-  // ----------------------------------------------------
-  // 🔑 หน้าจอตั้งรหัสผ่านใหม่ (เมื่อคลิกลิงก์จากอีเมล)
-  // ----------------------------------------------------
+  function exportSoftwareToCSV() {
+    if (!softwareList || softwareList.length === 0) {
+      alert('ไม่มีข้อมูลซอฟต์แวร์สำหรับ Export')
+      return
+    }
+
+    const headers = ['NO', 'Software Name', 'Version', 'Installed On', 'Vendor', 'No. of License', 'Purchase Date', 'Expire Date', 'Contract Number', 'รหัสทะเบียน']
+    const csvRows = [headers.join(',')]
+
+    softwareList.forEach(item => {
+      const row = [
+        `"${item['NO'] || item.asset_no || ''}"`,
+        `"${(item['Software name'] || item.software_name || '').replace(/"/g, '""')}"`,
+        `"${item['Version'] || item.version || ''}"`,
+        `"${item['Installed on'] || item.installed_on || ''}"`,
+        `"${item['Vendor'] || item.vendor || ''}"`,
+        `"${item['No. of License'] || item.no_of_license || 1}"`,
+        `"${item['Purchase date'] || item.purchase_date || ''}"`,
+        `"${item['Expire Date'] || item.expire_date || ''}"`,
+        `"${item['Contract Number'] || item.contract_number || ''}"`,
+        `"${item['รหัสทะเบียน'] || item.registration_code || ''}"`
+      ]
+      csvRows.push(row.join(','))
+    })
+
+    const csvContent = '\uFEFF' + csvRows.join('\n')
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.setAttribute('href', url)
+    link.setAttribute('download', `Software_Licenses_${new Date().toISOString().slice(0, 10)}.csv`)
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }
+
+  // 🔑 หน้าจอตั้งรหัสผ่านใหม่
   if (isResettingPassword) {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#f8fafc', fontFamily: 'Sarabun, Inter, sans-serif' }}>
@@ -773,14 +953,12 @@ function App() {
     )
   }
 
-  // ----------------------------------------------------
-  // 🔑 หน้าจอ Login / ลืมรหัสผ่าน (30 / 70 Enterprise Layout)
-  // ----------------------------------------------------
+  // 🔑 หน้าจอ Login / ลืมรหัสผ่าน
   if (!session) {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', fontFamily: 'Sarabun, Inter, sans-serif', backgroundColor: '#ffffff' }}>
         
-        {/* ฝั่งซ้าย: Enterprise Banner (30%) */}
+        {/* ฝั่งซ้าย Enterprise Banner (30%) */}
         <div style={{
           flex: '0 0 30%',
           minWidth: '320px',
@@ -806,7 +984,7 @@ function App() {
             </h1>
             
             <p style={{ color: '#475569', fontSize: '13px', lineHeight: 1.6, fontWeight: 400 }}>
-              ศูนย์กลางควบคุม ตรวจสอบ และติดตามสถานะอุปกรณ์ไอทีทุกประเภท พร้อมระบบ Smart Detect จำแนกผู้ถือครองอัตโนมัติ
+              ศูนย์กลางควบคุม ตรวจสอบ และติดตามสถานะฮาร์ดแวร์และลิขสิทธิ์ซอฟต์แวร์ทุกประเภท
             </p>
           </div>
 
@@ -814,8 +992,8 @@ function App() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', backgroundColor: 'rgba(255, 255, 255, 0.75)', padding: '10px 12px', borderRadius: '8px', backdropFilter: 'blur(4px)' }}>
               <div style={{ backgroundColor: '#fef3c7', padding: '6px 8px', borderRadius: '6px', fontSize: '14px' }}>📦</div>
               <div>
-                <div style={{ fontSize: '13px', fontWeight: 600, color: '#0f172a' }}>Smart Asset Detection</div>
-                <div style={{ fontSize: '11px', color: '#64748b' }}>จำแนกผู้ถือครองและแผนกอัตโนมัติ</div>
+                <div style={{ fontSize: '13px', fontWeight: 600, color: '#0f172a' }}>Hardware & Software Inventory</div>
+                <div style={{ fontSize: '11px', color: '#64748b' }}>จัดการฮาร์ดแวร์และซอฟต์แวร์ในระบบเดียว</div>
               </div>
             </div>
 
@@ -826,14 +1004,6 @@ function App() {
                 <div style={{ fontSize: '11px', color: '#64748b' }}>แยกสิทธิ์ Admin และ Viewer</div>
               </div>
             </div>
-
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', backgroundColor: 'rgba(255, 255, 255, 0.75)', padding: '10px 12px', borderRadius: '8px', backdropFilter: 'blur(4px)' }}>
-              <div style={{ backgroundColor: '#fef3c7', padding: '6px 8px', borderRadius: '6px', fontSize: '14px' }}>⚡</div>
-              <div>
-                <div style={{ fontSize: '13px', fontWeight: 600, color: '#0f172a' }}>Real-Time Tracking</div>
-                <div style={{ fontSize: '11px', color: '#64748b' }}>ค้นหารวดเร็วและ Export CSV ได้ง่าย</div>
-              </div>
-            </div>
           </div>
 
           <div style={{ fontSize: '11px', color: '#64748b', borderTop: '1px solid #cbd5e1', paddingTop: '14px' }}>
@@ -841,7 +1011,7 @@ function App() {
           </div>
         </div>
 
-        {/* ฝั่งขวา: Login / Forgot Password Form (70%) */}
+        {/* ฝั่งขวา Login Form (70%) */}
         <div style={{
           flex: '1',
           display: 'flex',
@@ -853,7 +1023,6 @@ function App() {
         }}>
           <div style={{ width: '100%', maxWidth: '380px', backgroundColor: '#ffffff', padding: '36px 32px', borderRadius: '12px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)' }}>
             
-            {/* 🔄 MODE 1: หน้าขอลิงก์ลืมรหัสผ่าน */}
             {isForgotPassword ? (
               <div>
                 <div style={{ marginBottom: '24px' }}>
@@ -861,20 +1030,20 @@ function App() {
                     Password Recovery
                   </div>
                   <h2 style={{ fontSize: '20px', fontWeight: 600, color: '#0f172a', margin: 0 }}>ลืมรหัสผ่าน?</h2>
-                  <p style={{ fontSize: '13px', color: '#64748b', marginTop: '4px' }}>กรอกอีเมล หรือ Username ของคุณเพื่อรับลิงก์รีเซ็ต</p>
+                  <p style={{ fontSize: '13px', color: '#64748b', marginTop: '4px' }}>กรอก Username หรืออีเมลเพื่อรับลิงก์รีเซ็ต</p>
                 </div>
 
                 {resetSent ? (
                   <div style={{ backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0', padding: '16px', borderRadius: '8px', marginBottom: '16px' }}>
                     <div style={{ color: '#166534', fontWeight: 600, fontSize: '13px', marginBottom: '4px' }}>✉️ ส่งอีเมลเรียบร้อยแล้ว!</div>
                     <p style={{ color: '#15803d', fontSize: '12px', margin: 0, lineHeight: 1.5 }}>
-                      ระบบได้ส่งลิงก์รีเซ็ตรหัสผ่านไปยังอีเมลผู้ใช้เรียบร้อยแล้ว กรุณาเช็กกล่องข้อความของคุณ
+                      ระบบได้ส่งลิงก์รีเซ็ตรหัสผ่านไปยังอีเมลผู้ใช้เรียบร้อยแล้ว
                     </p>
                   </div>
                 ) : (
                   <form onSubmit={handleSendResetEmail} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                     <div>
-                      <label style={{ fontSize: '12px', fontWeight: 500, color: '#0f172a', display: 'block', marginBottom: '6px' }}>อีเมล หรือ Username</label>
+                      <label style={{ fontSize: '12px', fontWeight: 500, color: '#0f172a', display: 'block', marginBottom: '6px' }}>Username หรือ อีเมล</label>
                       <input 
                         type="text" 
                         value={resetEmail} 
@@ -898,8 +1067,7 @@ function App() {
                         cursor: 'pointer', 
                         fontSize: '13px', 
                         fontWeight: 500, 
-                        marginTop: '4px',
-                        boxShadow: '0 2px 4px rgba(15, 23, 42, 0.15)'
+                        marginTop: '4px'
                       }}
                     >
                       {authLoading ? 'กำลังส่งอีเมล...' : 'ส่งลิงก์รีเซ็ตรหัสผ่าน'}
@@ -921,7 +1089,6 @@ function App() {
                 </div>
               </div>
             ) : (
-              /* 🔐 MODE 2: หน้าเข้าสู่ระบบปกติ */
               <div>
                 <div style={{ marginBottom: '24px' }}>
                   <div style={{ backgroundColor: '#f1f5f9', color: '#0f172a', borderRadius: '6px', fontWeight: 500, padding: '3px 8px', fontSize: '12px', display: 'inline-block', marginBottom: '10px' }}>
@@ -981,9 +1148,7 @@ function App() {
                       cursor: 'pointer', 
                       fontSize: '13px', 
                       fontWeight: 500, 
-                      marginTop: '8px',
-                      boxShadow: '0 2px 4px rgba(15, 23, 42, 0.15)',
-                      transition: 'background-color 0.2s'
+                      marginTop: '8px'
                     }}
                   >
                     {authLoading ? 'กำลังเข้าสู่ระบบ...' : 'เข้าสู่ระบบ'}
@@ -1000,6 +1165,13 @@ function App() {
 
   const totalPages = Math.ceil(totalFilteredCount / PAGE_SIZE) || 1
   const groupedPersons = getGroupedPersonAssets()
+  const filteredSoftware = getFilteredSoftwareList()
+
+  // คำนวณสรุปสถิติ Software
+  const totalSoftwareLicenseCount = softwareList.reduce((sum, item) => sum + (Number(item['No. of License'] || item.no_of_license) || 0), 0)
+  const lifetimeSoftwareCount = softwareList.filter(item => String(item['Expire Date'] || item.expire_date || '').toLowerCase().includes('lifetime')).length
+  const vendorsList = [...new Set(softwareList.map(item => item['Vendor'] || item.vendor).filter(Boolean))].sort()
+  const installedOnList = [...new Set(softwareList.map(item => item['Installed on'] || item.installed_on).filter(Boolean))].sort()
 
   // ----------------------------------------------------
   // 🖥️ หน้าจอหลักเมื่อเข้าสู่ระบบเรียบร้อยแล้ว
@@ -1009,9 +1181,53 @@ function App() {
       
       {/* Top Navbar */}
       <header style={{ backgroundColor: '#ffffff', borderBottom: '1px solid #e2e8f0', padding: '0 24px', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', boxShadow: '0 1px 3px rgba(0,0,0,0.02)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <div style={{ backgroundColor: '#0f172a', color: '#ffffff', borderRadius: '6px', fontWeight: 600, padding: '4px 8px', fontSize: '13px' }}>IT</div>
-          <span style={{ color: '#0f172a', fontWeight: 600, fontSize: '16px', letterSpacing: '-0.2px' }}>IT Asset Management System</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{ backgroundColor: '#0f172a', color: '#ffffff', borderRadius: '6px', fontWeight: 600, padding: '4px 8px', fontSize: '13px' }}>IT</div>
+            <span style={{ color: '#0f172a', fontWeight: 600, fontSize: '16px', letterSpacing: '-0.2px' }}>IT Asset Management</span>
+          </div>
+
+          {/* 🔀 Main Navigation Switcher */}
+          <div style={{ display: 'flex', backgroundColor: '#f1f5f9', padding: '3px', borderRadius: '8px', marginLeft: '12px' }}>
+            <button
+              onClick={() => setMainTab('hardware')}
+              style={{
+                border: 'none',
+                padding: '6px 14px',
+                borderRadius: '6px',
+                fontSize: '13px',
+                fontWeight: mainTab === 'hardware' ? 600 : 500,
+                backgroundColor: mainTab === 'hardware' ? '#ffffff' : 'transparent',
+                color: mainTab === 'hardware' ? '#0f172a' : '#64748b',
+                cursor: 'pointer',
+                boxShadow: mainTab === 'hardware' ? '0 1px 2px rgba(0,0,0,0.05)' : 'none',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px'
+              }}
+            >
+              📦 ทรัพย์สินฮาร์ดแวร์
+            </button>
+            <button
+              onClick={() => setMainTab('software')}
+              style={{
+                border: 'none',
+                padding: '6px 14px',
+                borderRadius: '6px',
+                fontSize: '13px',
+                fontWeight: mainTab === 'software' ? 600 : 500,
+                backgroundColor: mainTab === 'software' ? '#ffffff' : 'transparent',
+                color: mainTab === 'software' ? '#0f172a' : '#64748b',
+                cursor: 'pointer',
+                boxShadow: mainTab === 'software' ? '0 1px 2px rgba(0,0,0,0.05)' : 'none',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px'
+              }}
+            >
+              💻 ลิขสิทธิ์ซอฟต์แวร์ ({softwareList.length})
+            </button>
+          </div>
         </div>
         
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -1052,9 +1268,7 @@ function App() {
                   borderRadius: '6px',
                   cursor: 'pointer',
                   fontSize: '12px',
-                  fontWeight: 500,
-                  display: 'inline-flex',
-                  alignItems: 'center'
+                  fontWeight: 500
                 }}
               >
                 ⚙️ ตั้งค่า
@@ -1063,7 +1277,7 @@ function App() {
 
             <button 
               onClick={handleLogout}
-              style={{ backgroundColor: '#f8fafc', color: '#0f172a', border: 'none', height: '32px', padding: '0 12px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 500, display: 'inline-flex', alignItems: 'center' }}
+              style={{ backgroundColor: '#f8fafc', color: '#0f172a', border: 'none', height: '32px', padding: '0 12px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 500 }}
             >
               ออกจากระบบ
             </button>
@@ -1076,547 +1290,677 @@ function App() {
         
         {/* Page Header */}
         <div style={{ marginBottom: '16px' }}>
-          <h1 style={{ color: '#0f172a', fontWeight: 600, fontSize: '20px', margin: 0 }}>IT Asset Overview</h1>
-          <p style={{ color: '#64748b', fontSize: '13px', fontWeight: 400, margin: '2px 0 0' }}>ระบบบริหารจัดการ ตรวจสอบ และจำแนกผู้ถือครองทรัพย์สินไอทีระดับองค์กร</p>
+          <h1 style={{ color: '#0f172a', fontWeight: 600, fontSize: '20px', margin: 0 }}>
+            {mainTab === 'hardware' ? 'IT Hardware Overview' : 'Software License Management'}
+          </h1>
+          <p style={{ color: '#64748b', fontSize: '13px', fontWeight: 400, margin: '2px 0 0' }}>
+            {mainTab === 'hardware' 
+              ? 'ระบบบริหารจัดการ ตรวจสอบ และจำแนกผู้ถือครองทรัพย์สินฮาร์ดแวร์ไอที' 
+              : 'ศูนย์ควบคุมและติดตามสถานะลิขสิทธิ์ซอฟต์แวร์ สัญญา และวันหมดอายุ'}
+          </p>
         </div>
 
-        {/* Top Executive KPI Cards */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', marginBottom: '16px' }}>
-          <div style={{ backgroundColor: '#ffffff', borderRadius: '8px', padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 1px 3px rgba(0,0,0,0.02)', border: '1px solid #f1f5f9' }}>
-            <div>
-              <span style={{ color: '#64748b', fontWeight: 500, fontSize: '12px', display: 'block' }}>รวมทรัพย์สินไอทีในระบบ</span>
-              <div style={{ marginTop: '4px', display: 'flex', alignItems: 'baseline', gap: '4px' }}>
-                <span style={{ color: '#0f172a', fontWeight: 600, fontSize: '24px' }}>{allRawAssets.length.toLocaleString()}</span>
-                <span style={{ color: '#64748b', fontSize: '12px', fontWeight: 400 }}>รายการ</span>
-              </div>
-            </div>
-            <div style={{ backgroundColor: '#f8fafc', color: '#0f172a', borderRadius: '8px', padding: '10px', fontSize: '18px' }}>📦</div>
-          </div>
-
-          <div style={{ backgroundColor: '#ffffff', borderRadius: '8px', padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 1px 3px rgba(0,0,0,0.02)', border: '1px solid #f1f5f9' }}>
-            <div>
-              <span style={{ color: '#64748b', fontWeight: 500, fontSize: '12px', display: 'block' }}>มุมมองสิทธิ์การครอบครอง</span>
-              <div style={{ marginTop: '4px' }}>
-                <span style={{ fontSize: '15px', color: '#0f172a', fontWeight: 600 }}>
-                  {viewMode === 'all' && 'ทรัพย์สินทั้งหมด'}
-                  {viewMode === 'person' && 'ถือครองรายบุคคล'}
-                  {viewMode === 'dept' && 'ส่วนกลาง / แผนก'}
-                </span>
-              </div>
-            </div>
-            <div style={{ backgroundColor: '#f8fafc', color: '#0f172a', borderRadius: '8px', padding: '10px', fontSize: '18px' }}>
-              {viewMode === 'person' ? '👤' : viewMode === 'dept' ? '🏢' : '🌐'}
-            </div>
-          </div>
-
-          <div style={{ backgroundColor: '#ffffff', borderRadius: '8px', padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 1px 3px rgba(0,0,0,0.02)', border: '1px solid #f1f5f9' }}>
-            <div>
-              <span style={{ color: '#64748b', fontWeight: 500, fontSize: '12px', display: 'block' }}>หมวดหมู่อุปกรณ์ไอที</span>
-              <div style={{ marginTop: '4px', display: 'flex', alignItems: 'baseline', gap: '4px' }}>
-                <span style={{ color: '#0f172a', fontWeight: 600, fontSize: '24px' }}>{summary.length}</span>
-                <span style={{ color: '#64748b', fontSize: '12px', fontWeight: 400 }}>จำพวก</span>
-              </div>
-            </div>
-            <div style={{ backgroundColor: '#f8fafc', color: '#0f172a', borderRadius: '8px', padding: '10px', fontSize: '18px' }}>🏷️</div>
-          </div>
-
-          <div style={{ backgroundColor: '#ffffff', borderRadius: '8px', padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 1px 3px rgba(0,0,0,0.02)', border: '1px solid #f1f5f9' }}>
-            <div>
-              <span style={{ color: '#64748b', fontWeight: 500, fontSize: '12px', display: 'block' }}>รายการตรวจพบตามตัวกรอง</span>
-              <div style={{ marginTop: '4px', display: 'flex', alignItems: 'baseline', gap: '4px' }}>
-                <span style={{ color: '#0f172a', fontWeight: 600, fontSize: '24px' }}>
-                  {totalFilteredCount.toLocaleString()}
-                </span>
-                <span style={{ color: '#64748b', fontSize: '12px', fontWeight: 400 }}>รายการ</span>
-              </div>
-            </div>
-            <div style={{ backgroundColor: '#f8fafc', color: '#0f172a', borderRadius: '8px', padding: '10px', fontSize: '18px' }}>🎯</div>
-          </div>
-        </div>
-
-        {/* Main Panel */}
-        <div style={{ backgroundColor: '#ffffff', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.02)', overflow: 'hidden', border: '1px solid #e2e8f0' }}>
-          
-          {/* Tabs */}
-          <div style={{ padding: '12px 16px 0', borderBottom: '1px solid #e2e8f0', display: 'flex', gap: '6px', backgroundColor: '#f8fafc' }}>
-            <button 
-              onClick={() => handleViewModeChange('all')}
-              style={{
-                height: '36px',
-                padding: '0 16px',
-                borderRadius: '6px 6px 0 0',
-                border: 'none',
-                borderBottom: viewMode === 'all' ? '2px solid #0f172a' : '2px solid transparent',
-                backgroundColor: viewMode === 'all' ? '#ffffff' : 'transparent',
-                color: viewMode === 'all' ? '#0f172a' : '#64748b',
-                fontWeight: viewMode === 'all' ? 600 : 500,
-                cursor: 'pointer',
-                fontSize: '13px',
-                display: 'inline-flex',
-                alignItems: 'center'
-              }}
-            >
-              📦 ทั้งหมด ({allRawAssets.length.toLocaleString()})
-            </button>
-
-            <button 
-              onClick={() => handleViewModeChange('person')}
-              style={{
-                height: '36px',
-                padding: '0 16px',
-                borderRadius: '6px 6px 0 0',
-                border: 'none',
-                borderBottom: viewMode === 'person' ? '2px solid #0f172a' : '2px solid transparent',
-                backgroundColor: viewMode === 'person' ? '#ffffff' : 'transparent',
-                color: viewMode === 'person' ? '#0f172a' : '#64748b',
-                fontWeight: viewMode === 'person' ? 600 : 500,
-                cursor: 'pointer',
-                fontSize: '13px',
-                display: 'inline-flex',
-                alignItems: 'center'
-              }}
-            >
-              👤 รายบุคคลถือครอง
-            </button>
-
-            <button 
-              onClick={() => handleViewModeChange('dept')}
-              style={{
-                height: '36px',
-                padding: '0 16px',
-                borderRadius: '6px 6px 0 0',
-                border: 'none',
-                borderBottom: viewMode === 'dept' ? '2px solid #0f172a' : '2px solid transparent',
-                backgroundColor: viewMode === 'dept' ? '#ffffff' : 'transparent',
-                color: viewMode === 'dept' ? '#0f172a' : '#64748b',
-                fontWeight: viewMode === 'dept' ? 600 : 500,
-                cursor: 'pointer',
-                fontSize: '13px',
-                display: 'inline-flex',
-                alignItems: 'center'
-              }}
-            >
-              🏢 รายแผนก / ส่วนกลางถือครอง
-            </button>
-          </div>
-
-          {/* Controls Bar */}
-          <div style={{ padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px', borderBottom: '1px solid #e2e8f0' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <span style={{ color: '#0f172a', fontWeight: 600, fontSize: '15px' }}>
-                {viewMode === 'all' && 'รายการทรัพย์สินทั้งหมด'}
-                {viewMode === 'person' && `โปรไฟล์การถือครองรายบุคคล (${groupedPersons.length} คน)`}
-                {viewMode === 'dept' && 'รายการทรัพย์สิน (ส่วนกลางถือครอง)'}
-              </span>
-
-              {viewMode === 'person' && (
-                <div style={{ display: 'flex', background: '#f1f5f9', borderRadius: '6px', padding: '2px' }}>
-                  <button
-                    onClick={() => setPersonDisplayFormat('cards')}
-                    style={{
-                      padding: '4px 12px',
-                      fontSize: '12px',
-                      border: 'none',
-                      borderRadius: '4px',
-                      cursor: 'pointer',
-                      fontWeight: 500,
-                      backgroundColor: personDisplayFormat === 'cards' ? '#ffffff' : 'transparent',
-                      color: personDisplayFormat === 'cards' ? '#0f172a' : '#64748b',
-                      boxShadow: personDisplayFormat === 'cards' ? '0 1px 2px rgba(0,0,0,0.05)' : 'none'
-                    }}
-                  >
-                    🎴 การ์ด
-                  </button>
-                  <button
-                    onClick={() => setPersonDisplayFormat('table')}
-                    style={{
-                      padding: '4px 12px',
-                      fontSize: '12px',
-                      border: 'none',
-                      borderRadius: '4px',
-                      cursor: 'pointer',
-                      fontWeight: 500,
-                      backgroundColor: personDisplayFormat === 'table' ? '#ffffff' : 'transparent',
-                      color: personDisplayFormat === 'table' ? '#0f172a' : '#64748b',
-                      boxShadow: personDisplayFormat === 'table' ? '0 1px 2px rgba(0,0,0,0.05)' : 'none'
-                    }}
-                  >
-                    📋 ตาราง
-                  </button>
+        {/* ---------------------------------------------------- */}
+        {/* 📦 VIEW 1: HARDWARE ASSETS MANAGEMENT */}
+        {/* ---------------------------------------------------- */}
+        {mainTab === 'hardware' && (
+          <div>
+            {/* Top Executive KPI Cards */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', marginBottom: '16px' }}>
+              <div style={{ backgroundColor: '#ffffff', borderRadius: '8px', padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 1px 3px rgba(0,0,0,0.02)', border: '1px solid #f1f5f9' }}>
+                <div>
+                  <span style={{ color: '#64748b', fontWeight: 500, fontSize: '12px', display: 'block' }}>รวมทรัพย์สินฮาร์ดแวร์</span>
+                  <div style={{ marginTop: '4px', display: 'flex', alignItems: 'baseline', gap: '4px' }}>
+                    <span style={{ color: '#0f172a', fontWeight: 600, fontSize: '24px' }}>{allRawAssets.length.toLocaleString()}</span>
+                    <span style={{ color: '#64748b', fontSize: '12px', fontWeight: 400 }}>รายการ</span>
+                  </div>
                 </div>
-              )}
+                <div style={{ backgroundColor: '#f8fafc', color: '#0f172a', borderRadius: '8px', padding: '10px', fontSize: '18px' }}>📦</div>
+              </div>
+
+              <div style={{ backgroundColor: '#ffffff', borderRadius: '8px', padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 1px 3px rgba(0,0,0,0.02)', border: '1px solid #f1f5f9' }}>
+                <div>
+                  <span style={{ color: '#64748b', fontWeight: 500, fontSize: '12px', display: 'block' }}>มุมมองสิทธิ์การครอบครอง</span>
+                  <div style={{ marginTop: '4px' }}>
+                    <span style={{ fontSize: '15px', color: '#0f172a', fontWeight: 600 }}>
+                      {viewMode === 'all' && 'ทรัพย์สินทั้งหมด'}
+                      {viewMode === 'person' && 'ถือครองรายบุคคล'}
+                      {viewMode === 'dept' && 'ส่วนกลาง / แผนก'}
+                    </span>
+                  </div>
+                </div>
+                <div style={{ backgroundColor: '#f8fafc', color: '#0f172a', borderRadius: '8px', padding: '10px', fontSize: '18px' }}>
+                  {viewMode === 'person' ? '👤' : viewMode === 'dept' ? '🏢' : '🌐'}
+                </div>
+              </div>
+
+              <div style={{ backgroundColor: '#ffffff', borderRadius: '8px', padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 1px 3px rgba(0,0,0,0.02)', border: '1px solid #f1f5f9' }}>
+                <div>
+                  <span style={{ color: '#64748b', fontWeight: 500, fontSize: '12px', display: 'block' }}>หมวดหมู่อุปกรณ์</span>
+                  <div style={{ marginTop: '4px', display: 'flex', alignItems: 'baseline', gap: '4px' }}>
+                    <span style={{ color: '#0f172a', fontWeight: 600, fontSize: '24px' }}>{summary.length}</span>
+                    <span style={{ color: '#64748b', fontSize: '12px', fontWeight: 400 }}>จำพวก</span>
+                  </div>
+                </div>
+                <div style={{ backgroundColor: '#f8fafc', color: '#0f172a', borderRadius: '8px', padding: '10px', fontSize: '18px' }}>🏷️</div>
+              </div>
+
+              <div style={{ backgroundColor: '#ffffff', borderRadius: '8px', padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 1px 3px rgba(0,0,0,0.02)', border: '1px solid #f1f5f9' }}>
+                <div>
+                  <span style={{ color: '#64748b', fontWeight: 500, fontSize: '12px', display: 'block' }}>รายการตรวจพบตามตัวกรอง</span>
+                  <div style={{ marginTop: '4px', display: 'flex', alignItems: 'baseline', gap: '4px' }}>
+                    <span style={{ color: '#0f172a', fontWeight: 600, fontSize: '24px' }}>
+                      {totalFilteredCount.toLocaleString()}
+                    </span>
+                    <span style={{ color: '#64748b', fontSize: '12px', fontWeight: 400 }}>รายการ</span>
+                  </div>
+                </div>
+                <div style={{ backgroundColor: '#f8fafc', color: '#0f172a', borderRadius: '8px', padding: '10px', fontSize: '18px' }}>🎯</div>
+              </div>
             </div>
-            
-            <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+
+            {/* Hardware Main Panel */}
+            <div style={{ backgroundColor: '#ffffff', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.02)', overflow: 'hidden', border: '1px solid #e2e8f0' }}>
               
-              {userRole === 'admin' && (
+              {/* Tabs */}
+              <div style={{ padding: '12px 16px 0', borderBottom: '1px solid #e2e8f0', display: 'flex', gap: '6px', backgroundColor: '#f8fafc' }}>
                 <button 
-                  onClick={handleOpenAddModal}
+                  onClick={() => { setViewMode('all'); setCurrentPage(1); }}
                   style={{
-                    backgroundColor: '#0f172a',
-                    color: '#ffffff',
-                    border: 'none',
-                    borderRadius: '6px',
                     height: '36px',
                     padding: '0 16px',
-                    fontSize: '13px',
-                    fontWeight: 500,
+                    borderRadius: '6px 6px 0 0',
+                    border: 'none',
+                    borderBottom: viewMode === 'all' ? '2px solid #0f172a' : '2px solid transparent',
+                    backgroundColor: viewMode === 'all' ? '#ffffff' : 'transparent',
+                    color: viewMode === 'all' ? '#0f172a' : '#64748b',
+                    fontWeight: viewMode === 'all' ? 600 : 500,
                     cursor: 'pointer',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    boxSizing: 'border-box'
+                    fontSize: '13px'
                   }}
                 >
-                  ➕ เพิ่มทรัพย์สิน
+                  📦 ทั้งหมด ({allRawAssets.length.toLocaleString()})
                 </button>
-              )}
 
-              <button 
-                onClick={exportToCSV} 
-                style={{ 
-                  backgroundColor: '#f8fafc', 
-                  color: '#0f172a', 
-                  border: '1px solid #e2e8f0', 
-                  fontWeight: 500, 
-                  borderRadius: '6px', 
-                  height: '36px',
-                  padding: '0 16px', 
-                  fontSize: '13px',
-                  cursor: 'pointer',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  boxSizing: 'border-box'
-                }}
-              >
-                📥 Export CSV
-              </button>
-
-              <select
-                style={{
-                  height: '36px',
-                  padding: '0 12px',
-                  border: '1px solid #e2e8f0',
-                  borderRadius: '6px',
-                  fontSize: '13px',
-                  outline: 'none',
-                  cursor: 'pointer',
-                  backgroundColor: '#f8fafc',
-                  color: '#0f172a',
-                  fontWeight: 500,
-                  boxSizing: 'border-box'
-                }}
-                value={selectedCategory}
-                onChange={handleCategoryChange}
-              >
-                <option value="">🏷️ ทุกหมวดหมู่ ({summary.length})</option>
-                {summary.map((cat, idx) => (
-                  <option key={idx} value={cat.asset_type}>
-                    {getAssetTypeIcon(cat.asset_type)} {cat.asset_type} ({cat.total_count})
-                  </option>
-                ))}
-              </select>
-
-              <select 
-                style={{ 
-                  height: '36px',
-                  padding: '0 12px', 
-                  border: '1px solid #e2e8f0', 
-                  borderRadius: '6px', 
-                  fontSize: '13px', 
-                  outline: 'none', 
-                  cursor: 'pointer', 
-                  backgroundColor: '#f8fafc', 
-                  color: '#0f172a', 
-                  fontWeight: 500,
-                  boxSizing: 'border-box'
-                }}
-                value={selectedDept}
-                onChange={handleDeptChange}
-              >
-                <option value="">🏢 ทุกแผนก ({deptList.length})</option>
-                <option value="__UNASSIGNED__">⚠️ ไม่ระบุแผนก</option>
-                {deptList.map((dept, idx) => (
-                  <option key={idx} value={dept}>{dept}</option>
-                ))}
-              </select>
-
-              <input 
-                type="text" 
-                placeholder="ค้นหา Asset No, ชื่อคน..." 
-                value={searchTerm}
-                onChange={handleSearchChange}
-                style={{ 
-                  height: '36px',
-                  width: '220px',
-                  border: '1px solid #e2e8f0', 
-                  borderRadius: '6px', 
-                  padding: '0 12px', 
-                  fontSize: '13px',
-                  boxSizing: 'border-box',
-                  color: '#0f172a',
-                  fontWeight: 400,
-                  backgroundColor: '#f8fafc',
-                  outline: 'none'
-                }}
-              />
-            </div>
-          </div>
-
-          {/* 🎴 CASE 1: การ์ดพนักงาน */}
-          {viewMode === 'person' && personDisplayFormat === 'cards' ? (
-            <div style={{ padding: '16px' }}>
-              {loading ? (
-                <div style={{ padding: '30px', textAlign: 'center', color: '#64748b', fontWeight: 400 }}>กำลังดึงข้อมูล...</div>
-              ) : groupedPersons.length === 0 ? (
-                <div style={{ padding: '30px', textAlign: 'center', color: '#64748b', fontWeight: 400 }}>ไม่พบรายชื่อพนักงานตามตัวกรอง</div>
-              ) : (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px' }}>
-                  {groupedPersons.map((person, pIdx) => (
-                    <div key={pIdx} style={{ border: '1px solid #e2e8f0', backgroundColor: '#ffffff', borderRadius: '8px', overflow: 'hidden' }}>
-                      <div style={{ padding: '12px 16px', backgroundColor: '#f8fafc', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <div>
-                          <div style={{ color: person.isResigned ? '#dc2626' : '#0f172a', fontWeight: 600, fontSize: '14px' }}>{person.name}</div>
-                          <div style={{ color: '#64748b', fontSize: '11px', fontWeight: 400 }}>แผนก: {person.dept}</div>
-                        </div>
-                        <span style={{ backgroundColor: '#f1f5f9', color: '#0f172a', borderRadius: '12px', fontSize: '11px', padding: '2px 8px', fontWeight: 600 }}>{person.assets.length} ชิ้น</span>
-                      </div>
-
-                      <div style={{ padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                        {person.assets.map((asset, aIdx) => {
-                          const ageInfo = getAssetAgeInfo(asset)
-                          const icon = getAssetTypeIcon(asset.type)
-
-                          return (
-                            <div 
-                              key={aIdx} 
-                              onClick={() => setSelectedAsset(asset)}
-                              style={{ cursor: 'pointer', backgroundColor: '#f8fafc', borderRadius: '6px', padding: '10px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
-                            >
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', overflow: 'hidden' }}>
-                                <span style={{ fontSize: '16px' }}>{icon}</span>
-                                <div style={{ overflow: 'hidden' }}>
-                                  <div style={{ color: '#0f172a', fontWeight: 500, fontSize: '13px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{asset.asset_name || 'อุปกรณ์ไอที'}</div>
-                                  <div style={{ display: 'flex', gap: '6px', alignItems: 'center', marginTop: '2px' }}>
-                                    <span style={{ fontSize: '11px', padding: '1px 6px', backgroundColor: '#ffffff', color: '#0f172a', borderRadius: '4px', fontWeight: 500 }}>{asset.asset_no || '-'}</span>
-                                    <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 400 }}>{ageInfo.label}</span>
-                                  </div>
-                                </div>
-                              </div>
-
-                              {userRole === 'admin' && (
-                                <div style={{ display: 'flex', gap: '6px' }} onClick={(e) => e.stopPropagation()}>
-                                  <button
-                                    onClick={() => handleOpenReturnModal(asset)}
-                                    style={{ padding: '4px 8px', fontSize: '11px', backgroundColor: '#ffffff', color: '#0f172a', border: '1px solid #e2e8f0', borderRadius: '4px', cursor: 'pointer', fontWeight: 500 }}
-                                  >
-                                    🔄 คืน
-                                  </button>
-                                  <button
-                                    onClick={() => handleOpenEditModal(asset)}
-                                    style={{ padding: '4px 8px', fontSize: '11px', backgroundColor: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '4px', cursor: 'pointer' }}
-                                  >
-                                    ✏️
-                                  </button>
-                                </div>
-                              )}
-                            </div>
-                          )
-                        })}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          ) : (
-            /* 📋 CASE 2: ตารางมาตรฐาน */
-            <div style={{ overflowX: 'auto', width: '100%' }}>
-              {loading ? (
-                <div style={{ padding: '30px', textAlign: 'center', color: '#64748b', fontWeight: 400 }}>กำลังดึงข้อมูล...</div>
-              ) : displayedAssets.length === 0 ? (
-                <div style={{ padding: '30px', textAlign: 'center', color: '#64748b', fontWeight: 400 }}>ไม่พบข้อมูลตามคำค้นหา/ตัวกรอง</div>
-              ) : (
-                <table style={{ borderCollapse: 'collapse', width: '100%', minWidth: '1100px', tableLayout: 'fixed' }}>
-                  <thead>
-                    <tr style={{ backgroundColor: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
-                      <th style={{ padding: '14px 16px', textAlign: 'left', width: '150px', color: '#64748b', fontWeight: 600, fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>ASSET NO</th>
-                      <th style={{ padding: '14px 16px', textAlign: 'left', color: '#64748b', fontWeight: 600, fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>ชื่ออุปกรณ์</th>
-                      <th style={{ padding: '14px 16px', textAlign: 'left', width: '220px', color: '#64748b', fontWeight: 600, fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>ผู้ถือครอง (SMART DETECT)</th>
-                      <th style={{ padding: '14px 16px', textAlign: 'center', width: '130px', color: '#64748b', fontWeight: 600, fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>ลักษณะถือครอง</th>
-                      <th style={{ padding: '14px 16px', textAlign: 'center', width: '110px', color: '#64748b', fontWeight: 600, fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>ประเภท</th>
-                      <th style={{ padding: '14px 16px', textAlign: 'center', width: '90px', color: '#64748b', fontWeight: 600, fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>แผนก</th>
-                      <th style={{ padding: '14px 16px', textAlign: 'center', width: '170px', color: '#64748b', fontWeight: 600, fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>จัดการ</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {displayedAssets.map((item, index) => {
-                      const { realHolder, holderType, isResigned } = getRealAssetHolder(item)
-
-                      return (
-                        <tr 
-                          key={index} 
-                          onClick={() => setSelectedAsset(item)}
-                          style={{ backgroundColor: isResigned ? '#fff1f2' : 'transparent', borderBottom: '1px solid #f1f5f9', cursor: 'pointer', transition: 'background 0.15s' }}
-                        >
-                          <td style={{ padding: '12px 16px', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
-                            <span style={{ fontFamily: 'monospace', fontWeight: 600, fontSize: '13px', color: '#0f172a', backgroundColor: '#f1f5f9', padding: '4px 8px', borderRadius: '4px', display: 'inline-block' }}>
-                              {item.asset_no || '-'}
-                            </span>
-                          </td>
-
-                          <td style={{ padding: '12px 16px', verticalAlign: 'middle', fontWeight: 500, color: '#0f172a', fontSize: '13px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                            {item.asset_name || '-'}
-                          </td>
-                          
-                          <td style={{ padding: '12px 16px', verticalAlign: 'middle' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                              <span style={{ color: isResigned ? '#e11d48' : '#0f172a', fontWeight: 500, fontSize: '13px' }}>
-                                {realHolder}
-                              </span>
-                              {isResigned && (
-                                <span style={{ backgroundColor: '#ffe4e6', color: '#9f1239', fontSize: '10px', fontWeight: 600, padding: '2px 6px', borderRadius: '4px', flexShrink: 0 }}>
-                                  ลาออก
-                                </span>
-                              )}
-                            </div>
-                          </td>
-
-                          <td style={{ padding: '12px 16px', verticalAlign: 'middle', textAlign: 'center', whiteSpace: 'nowrap' }}>
-                            {holderType === 'PERSON' ? (
-                              <span style={{ backgroundColor: '#e0f2fe', color: '#0369a1', fontWeight: 600, fontSize: '11px', padding: '4px 10px', borderRadius: '20px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                                👤 บุคคล
-                              </span>
-                            ) : (
-                              <span style={{ backgroundColor: '#f1f5f9', color: '#475569', fontWeight: 500, fontSize: '11px', padding: '4px 10px', borderRadius: '20px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                                🏢 ส่วนกลาง
-                              </span>
-                            )}
-                          </td>
-
-                          <td style={{ padding: '12px 16px', verticalAlign: 'middle', textAlign: 'center', whiteSpace: 'nowrap' }}>
-                            <span style={{ color: '#334155', fontWeight: 500, fontSize: '12px' }}>
-                              {item.type || '-'}
-                            </span>
-                          </td>
-
-                          <td style={{ padding: '12px 16px', verticalAlign: 'middle', textAlign: 'center', whiteSpace: 'nowrap' }}>
-                            <span style={{ color: '#334155', fontWeight: 500, fontSize: '12px' }}>
-                              {item.dept || '-'}
-                            </span>
-                          </td>
-                          
-                          <td style={{ padding: '12px 16px', verticalAlign: 'middle', textAlign: 'center', whiteSpace: 'nowrap' }} onClick={(e) => e.stopPropagation()}>
-                            {userRole === 'admin' ? (
-                              <div style={{ display: 'inline-flex', gap: '6px', alignItems: 'center', justifyContent: 'center' }}>
-                                {holderType === 'PERSON' ? (
-                                  <button
-                                    onClick={() => handleOpenReturnModal(item)}
-                                    title="รับคืนเข้าส่วนกลาง"
-                                    style={{
-                                      backgroundColor: '#f1f5f9',
-                                      color: '#0f172a',
-                                      border: 'none',
-                                      fontWeight: 600,
-                                      fontSize: '11px',
-                                      padding: '0 10px',
-                                      height: '30px',
-                                      borderRadius: '6px',
-                                      cursor: 'pointer',
-                                      display: 'inline-flex',
-                                      alignItems: 'center',
-                                      gap: '4px',
-                                      whiteSpace: 'nowrap',
-                                      boxSizing: 'border-box'
-                                    }}
-                                  >
-                                    🔄 คืน
-                                  </button>
-                                ) : (
-                                  <div style={{ width: '52px', height: '30px' }} />
-                                )}
-
-                                <button
-                                  onClick={() => handleOpenEditModal(item)}
-                                  title="แก้ไข"
-                                  style={{
-                                    backgroundColor: '#f8fafc',
-                                    border: '1px solid #e2e8f0',
-                                    width: '30px',
-                                    height: '30px',
-                                    borderRadius: '6px',
-                                    cursor: 'pointer',
-                                    fontSize: '13px',
-                                    display: 'inline-flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    boxSizing: 'border-box'
-                                  }}
-                                >
-                                  ✏️
-                                </button>
-
-                                <button
-                                  onClick={() => handleDeleteAsset(item)}
-                                  title="ลบ"
-                                  style={{
-                                    backgroundColor: '#fff1f2',
-                                    border: 'none',
-                                    width: '30px',
-                                    height: '30px',
-                                    borderRadius: '6px',
-                                    cursor: 'pointer',
-                                    fontSize: '13px',
-                                    color: '#e11d48',
-                                    display: 'inline-flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    boxSizing: 'border-box'
-                                  }}
-                                >
-                                  🗑️
-                                </button>
-                              </div>
-                            ) : (
-                              <span style={{ fontSize: '12px', color: '#94a3b8' }}>👁️ อ่านอย่างเดียว</span>
-                            )}
-                          </td>
-                        </tr>
-                      )
-                    })}
-                  </tbody>
-                </table>
-              )}
-            </div>
-          )}
-
-          {/* Pagination Footer */}
-          {(viewMode !== 'person' || personDisplayFormat === 'table') && (
-            <div style={{ padding: '12px 16px', borderTop: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#ffffff' }}>
-              <span style={{ fontSize: '12px', color: '#64748b', fontWeight: 500 }}>
-                หน้า {currentPage} จาก {totalPages} (รวม {totalFilteredCount.toLocaleString()} รายการ)
-              </span>
-              <div style={{ display: 'flex', gap: '6px' }}>
-                <button
-                  disabled={currentPage === 1 || loading}
-                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                  style={{ height: '32px', padding: '0 14px', borderRadius: '6px', border: 'none', backgroundColor: currentPage === 1 ? '#f1f5f9' : '#f8fafc', color: currentPage === 1 ? '#cbd5e1' : '#0f172a', cursor: currentPage === 1 ? 'not-allowed' : 'pointer', fontSize: '12px', fontWeight: 500 }}
+                <button 
+                  onClick={() => { setViewMode('person'); setCurrentPage(1); }}
+                  style={{
+                    height: '36px',
+                    padding: '0 16px',
+                    borderRadius: '6px 6px 0 0',
+                    border: 'none',
+                    borderBottom: viewMode === 'person' ? '2px solid #0f172a' : '2px solid transparent',
+                    backgroundColor: viewMode === 'person' ? '#ffffff' : 'transparent',
+                    color: viewMode === 'person' ? '#0f172a' : '#64748b',
+                    fontWeight: viewMode === 'person' ? 600 : 500,
+                    cursor: 'pointer',
+                    fontSize: '13px'
+                  }}
                 >
-                  ◀ ก่อนหน้า
+                  👤 รายบุคคลถือครอง
                 </button>
-                <button
-                  disabled={currentPage >= totalPages || loading}
-                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                  style={{ height: '32px', padding: '0 14px', borderRadius: '6px', border: 'none', backgroundColor: currentPage >= totalPages ? '#f1f5f9' : '#f8fafc', color: currentPage >= totalPages ? '#cbd5e1' : '#0f172a', cursor: currentPage >= totalPages ? '#cbd5e1' : '#0f172a', fontSize: '12px', fontWeight: 500 }}
+
+                <button 
+                  onClick={() => { setViewMode('dept'); setCurrentPage(1); }}
+                  style={{
+                    height: '36px',
+                    padding: '0 16px',
+                    borderRadius: '6px 6px 0 0',
+                    border: 'none',
+                    borderBottom: viewMode === 'dept' ? '2px solid #0f172a' : '2px solid transparent',
+                    backgroundColor: viewMode === 'dept' ? '#ffffff' : 'transparent',
+                    color: viewMode === 'dept' ? '#0f172a' : '#64748b',
+                    fontWeight: viewMode === 'dept' ? 600 : 500,
+                    cursor: 'pointer',
+                    fontSize: '13px'
+                  }}
                 >
-                  ถัดไป ▶
+                  🏢 รายแผนก / ส่วนกลางถือครอง
                 </button>
               </div>
-            </div>
-          )}
 
-        </div>
+              {/* Controls Bar */}
+              <div style={{ padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px', borderBottom: '1px solid #e2e8f0' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <span style={{ color: '#0f172a', fontWeight: 600, fontSize: '15px' }}>
+                    {viewMode === 'all' && 'รายการทรัพย์สินฮาร์ดแวร์ทั้งหมด'}
+                    {viewMode === 'person' && `โปรไฟล์การถือครองรายบุคคล (${groupedPersons.length} คน)`}
+                    {viewMode === 'dept' && 'รายการทรัพย์สิน (ส่วนกลางถือครอง)'}
+                  </span>
+
+                  {viewMode === 'person' && (
+                    <div style={{ display: 'flex', background: '#f1f5f9', borderRadius: '6px', padding: '2px' }}>
+                      <button
+                        onClick={() => setPersonDisplayFormat('cards')}
+                        style={{
+                          padding: '4px 12px',
+                          fontSize: '12px',
+                          border: 'none',
+                          borderRadius: '4px',
+                          cursor: 'pointer',
+                          fontWeight: 500,
+                          backgroundColor: personDisplayFormat === 'cards' ? '#ffffff' : 'transparent',
+                          color: personDisplayFormat === 'cards' ? '#0f172a' : '#64748b'
+                        }}
+                      >
+                        🎴 การ์ด
+                      </button>
+                      <button
+                        onClick={() => setPersonDisplayFormat('table')}
+                        style={{
+                          padding: '4px 12px',
+                          fontSize: '12px',
+                          border: 'none',
+                          borderRadius: '4px',
+                          cursor: 'pointer',
+                          fontWeight: 500,
+                          backgroundColor: personDisplayFormat === 'table' ? '#ffffff' : 'transparent',
+                          color: personDisplayFormat === 'table' ? '#0f172a' : '#64748b'
+                        }}
+                      >
+                        📋 ตาราง
+                      </button>
+                    </div>
+                  )}
+                </div>
+                
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                  {userRole === 'admin' && (
+                    <button 
+                      onClick={handleOpenAddModal}
+                      style={{
+                        backgroundColor: '#0f172a',
+                        color: '#ffffff',
+                        border: 'none',
+                        borderRadius: '6px',
+                        height: '36px',
+                        padding: '0 16px',
+                        fontSize: '13px',
+                        fontWeight: 500,
+                        cursor: 'pointer'
+                      }}
+                    >
+                      ➕ เพิ่มทรัพย์สิน
+                    </button>
+                  )}
+
+                  <button 
+                    onClick={exportHardwareToCSV} 
+                    style={{ 
+                      backgroundColor: '#f8fafc', 
+                      color: '#0f172a', 
+                      border: '1px solid #e2e8f0', 
+                      fontWeight: 500, 
+                      borderRadius: '6px', 
+                      height: '36px',
+                      padding: '0 16px', 
+                      fontSize: '13px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    📥 Export CSV
+                  </button>
+
+                  <select
+                    style={{
+                      height: '36px',
+                      padding: '0 12px',
+                      border: '1px solid #e2e8f0',
+                      borderRadius: '6px',
+                      fontSize: '13px',
+                      outline: 'none',
+                      backgroundColor: '#f8fafc',
+                      color: '#0f172a',
+                      fontWeight: 500
+                    }}
+                    value={selectedCategory}
+                    onChange={(e) => { setSelectedCategory(e.target.value); setCurrentPage(1); }}
+                  >
+                    <option value="">🏷️ ทุกหมวดหมู่ ({summary.length})</option>
+                    {summary.map((cat, idx) => (
+                      <option key={idx} value={cat.asset_type}>
+                        {getAssetTypeIcon(cat.asset_type)} {cat.asset_type} ({cat.total_count})
+                      </option>
+                    ))}
+                  </select>
+
+                  <select 
+                    style={{ 
+                      height: '36px',
+                      padding: '0 12px', 
+                      border: '1px solid #e2e8f0', 
+                      borderRadius: '6px', 
+                      fontSize: '13px', 
+                      outline: 'none', 
+                      backgroundColor: '#f8fafc', 
+                      color: '#0f172a', 
+                      fontWeight: 500
+                    }}
+                    value={selectedDept}
+                    onChange={(e) => { setSelectedDept(e.target.value); setCurrentPage(1); }}
+                  >
+                    <option value="">🏢 ทุกแผนก ({deptList.length})</option>
+                    <option value="__UNASSIGNED__">⚠️ ไม่ระบุแผนก</option>
+                    {deptList.map((dept, idx) => (
+                      <option key={idx} value={dept}>{dept}</option>
+                    ))}
+                  </select>
+
+                  <input 
+                    type="text" 
+                    placeholder="ค้นหา Asset No, ชื่อคน..." 
+                    value={searchTerm}
+                    onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
+                    style={{ 
+                      height: '36px',
+                      width: '220px',
+                      border: '1px solid #e2e8f0', 
+                      borderRadius: '6px', 
+                      padding: '0 12px', 
+                      fontSize: '13px',
+                      color: '#0f172a',
+                      backgroundColor: '#f8fafc',
+                      outline: 'none'
+                    }}
+                  />
+                </div>
+              </div>
+
+              {/* Hardware List Display */}
+              {viewMode === 'person' && personDisplayFormat === 'cards' ? (
+                <div style={{ padding: '16px' }}>
+                  {loadingHardware ? (
+                    <div style={{ padding: '30px', textAlign: 'center', color: '#64748b' }}>กำลังดึงข้อมูล...</div>
+                  ) : groupedPersons.length === 0 ? (
+                    <div style={{ padding: '30px', textAlign: 'center', color: '#64748b' }}>ไม่พบรายชื่อพนักงานตามตัวกรอง</div>
+                  ) : (
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px' }}>
+                      {groupedPersons.map((person, pIdx) => (
+                        <div key={pIdx} style={{ border: '1px solid #e2e8f0', backgroundColor: '#ffffff', borderRadius: '8px', overflow: 'hidden' }}>
+                          <div style={{ padding: '12px 16px', backgroundColor: '#f8fafc', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div>
+                              <div style={{ color: person.isResigned ? '#dc2626' : '#0f172a', fontWeight: 600, fontSize: '14px' }}>{person.name}</div>
+                              <div style={{ color: '#64748b', fontSize: '11px' }}>แผนก: {person.dept}</div>
+                            </div>
+                            <span style={{ backgroundColor: '#f1f5f9', color: '#0f172a', borderRadius: '12px', fontSize: '11px', padding: '2px 8px', fontWeight: 600 }}>{person.assets.length} ชิ้น</span>
+                          </div>
+
+                          <div style={{ padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            {person.assets.map((asset, aIdx) => {
+                              const ageInfo = getAssetAgeInfo(asset)
+                              const icon = getAssetTypeIcon(asset.type)
+
+                              return (
+                                <div 
+                                  key={aIdx} 
+                                  onClick={() => setSelectedAsset(asset)}
+                                  style={{ cursor: 'pointer', backgroundColor: '#f8fafc', borderRadius: '6px', padding: '10px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                                >
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', overflow: 'hidden' }}>
+                                    <span style={{ fontSize: '16px' }}>{icon}</span>
+                                    <div style={{ overflow: 'hidden' }}>
+                                      <div style={{ color: '#0f172a', fontWeight: 500, fontSize: '13px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{asset.asset_name || 'อุปกรณ์ไอที'}</div>
+                                      <div style={{ display: 'flex', gap: '6px', alignItems: 'center', marginTop: '2px' }}>
+                                        <span style={{ fontSize: '11px', padding: '1px 6px', backgroundColor: '#ffffff', color: '#0f172a', borderRadius: '4px', fontWeight: 500 }}>{asset.asset_no || '-'}</span>
+                                        <span style={{ fontSize: '11px', color: '#64748b' }}>{ageInfo.label}</span>
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  {userRole === 'admin' && (
+                                    <div style={{ display: 'flex', gap: '6px' }} onClick={(e) => e.stopPropagation()}>
+                                      <button onClick={() => handleOpenReturnModal(asset)} style={{ padding: '4px 8px', fontSize: '11px', backgroundColor: '#ffffff', color: '#0f172a', border: '1px solid #e2e8f0', borderRadius: '4px', cursor: 'pointer', fontWeight: 500 }}>🔄 คืน</button>
+                                      <button onClick={() => handleOpenEditModal(asset)} style={{ padding: '4px 8px', fontSize: '11px', backgroundColor: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '4px', cursor: 'pointer' }}>✏️</button>
+                                    </div>
+                                  )}
+                                </div>
+                              )
+                            })}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                /* Hardware Table */
+                <div style={{ overflowX: 'auto', width: '100%' }}>
+                  {loadingHardware ? (
+                    <div style={{ padding: '30px', textAlign: 'center', color: '#64748b' }}>กำลังดึงข้อมูล...</div>
+                  ) : displayedAssets.length === 0 ? (
+                    <div style={{ padding: '30px', textAlign: 'center', color: '#64748b' }}>ไม่พบข้อมูลตามคำค้นหา/ตัวกรอง</div>
+                  ) : (
+                    <table style={{ borderCollapse: 'collapse', width: '100%', minWidth: '1100px', tableLayout: 'fixed' }}>
+                      <thead>
+                        <tr style={{ backgroundColor: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
+                          <th style={{ padding: '14px 16px', textAlign: 'left', width: '150px', color: '#64748b', fontWeight: 600, fontSize: '12px' }}>ASSET NO</th>
+                          <th style={{ padding: '14px 16px', textAlign: 'left', color: '#64748b', fontWeight: 600, fontSize: '12px' }}>ชื่ออุปกรณ์</th>
+                          <th style={{ padding: '14px 16px', textAlign: 'left', width: '220px', color: '#64748b', fontWeight: 600, fontSize: '12px' }}>ผู้ถือครอง</th>
+                          <th style={{ padding: '14px 16px', textAlign: 'center', width: '130px', color: '#64748b', fontWeight: 600, fontSize: '12px' }}>ลักษณะถือครอง</th>
+                          <th style={{ padding: '14px 16px', textAlign: 'center', width: '110px', color: '#64748b', fontWeight: 600, fontSize: '12px' }}>ประเภท</th>
+                          <th style={{ padding: '14px 16px', textAlign: 'center', width: '90px', color: '#64748b', fontWeight: 600, fontSize: '12px' }}>แผนก</th>
+                          <th style={{ padding: '14px 16px', textAlign: 'center', width: '170px', color: '#64748b', fontWeight: 600, fontSize: '12px' }}>จัดการ</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {displayedAssets.map((item, index) => {
+                          const { realHolder, holderType, isResigned } = getRealAssetHolder(item)
+
+                          return (
+                            <tr key={index} onClick={() => setSelectedAsset(item)} style={{ backgroundColor: isResigned ? '#fff1f2' : 'transparent', borderBottom: '1px solid #f1f5f9', cursor: 'pointer' }}>
+                              <td style={{ padding: '12px 16px', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
+                                <span style={{ fontFamily: 'monospace', fontWeight: 600, fontSize: '13px', color: '#0f172a', backgroundColor: '#f1f5f9', padding: '4px 8px', borderRadius: '4px', display: 'inline-block' }}>
+                                  {item.asset_no || '-'}
+                                </span>
+                              </td>
+                              <td style={{ padding: '12px 16px', verticalAlign: 'middle', fontWeight: 500, color: '#0f172a', fontSize: '13px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                {item.asset_name || '-'}
+                              </td>
+                              <td style={{ padding: '12px 16px', verticalAlign: 'middle' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                  <span style={{ color: isResigned ? '#e11d48' : '#0f172a', fontWeight: 500, fontSize: '13px' }}>{realHolder}</span>
+                                  {isResigned && <span style={{ backgroundColor: '#ffe4e6', color: '#9f1239', fontSize: '10px', fontWeight: 600, padding: '2px 6px', borderRadius: '4px' }}>ลาออก</span>}
+                                </div>
+                              </td>
+                              <td style={{ padding: '12px 16px', verticalAlign: 'middle', textAlign: 'center', whiteSpace: 'nowrap' }}>
+                                {holderType === 'PERSON' ? (
+                                  <span style={{ backgroundColor: '#e0f2fe', color: '#0369a1', fontWeight: 600, fontSize: '11px', padding: '4px 10px', borderRadius: '20px' }}>👤 บุคคล</span>
+                                ) : (
+                                  <span style={{ backgroundColor: '#f1f5f9', color: '#475569', fontWeight: 500, fontSize: '11px', padding: '4px 10px', borderRadius: '20px' }}>🏢 ส่วนกลาง</span>
+                                )}
+                              </td>
+                              <td style={{ padding: '12px 16px', verticalAlign: 'middle', textAlign: 'center', whiteSpace: 'nowrap', fontSize: '12px', color: '#334155' }}>{item.type || '-'}</td>
+                              <td style={{ padding: '12px 16px', verticalAlign: 'middle', textAlign: 'center', whiteSpace: 'nowrap', fontSize: '12px', color: '#334155' }}>{item.dept || '-'}</td>
+                              <td style={{ padding: '12px 16px', verticalAlign: 'middle', textAlign: 'center', whiteSpace: 'nowrap' }} onClick={(e) => e.stopPropagation()}>
+                                {userRole === 'admin' ? (
+                                  <div style={{ display: 'inline-flex', gap: '6px', alignItems: 'center', justifyContent: 'center' }}>
+                                    {holderType === 'PERSON' ? (
+                                      <button onClick={() => handleOpenReturnModal(item)} title="รับคืนเข้าส่วนกลาง" style={{ backgroundColor: '#f1f5f9', color: '#0f172a', border: 'none', fontWeight: 600, fontSize: '11px', padding: '0 10px', height: '30px', borderRadius: '6px', cursor: 'pointer' }}>🔄 คืน</button>
+                                    ) : (
+                                      <div style={{ width: '52px', height: '30px' }} />
+                                    )}
+                                    <button onClick={() => handleOpenEditModal(item)} title="แก้ไข" style={{ backgroundColor: '#f8fafc', border: '1px solid #e2e8f0', width: '30px', height: '30px', borderRadius: '6px', cursor: 'pointer', fontSize: '13px' }}>✏️</button>
+                                    <button onClick={() => handleDeleteAsset(item)} title="ลบ" style={{ backgroundColor: '#fff1f2', border: 'none', width: '30px', height: '30px', borderRadius: '6px', cursor: 'pointer', fontSize: '13px', color: '#e11d48' }}>🗑️</button>
+                                  </div>
+                                ) : (
+                                  <span style={{ fontSize: '12px', color: '#94a3b8' }}>👁️ อ่านอย่างเดียว</span>
+                                )}
+                              </td>
+                            </tr>
+                          )
+                        })}
+                      </tbody>
+                    </table>
+                  )}
+                </div>
+              )}
+
+              {/* Hardware Pagination */}
+              {(viewMode !== 'person' || personDisplayFormat === 'table') && (
+                <div style={{ padding: '12px 16px', borderTop: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#ffffff' }}>
+                  <span style={{ fontSize: '12px', color: '#64748b', fontWeight: 500 }}>
+                    หน้า {currentPage} จาก {totalPages} (รวม {totalFilteredCount.toLocaleString()} รายการ)
+                  </span>
+                  <div style={{ display: 'flex', gap: '6px' }}>
+                    <button disabled={currentPage === 1 || loadingHardware} onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))} style={{ height: '32px', padding: '0 14px', borderRadius: '6px', border: 'none', backgroundColor: currentPage === 1 ? '#f1f5f9' : '#f8fafc', color: currentPage === 1 ? '#cbd5e1' : '#0f172a', cursor: currentPage === 1 ? 'not-allowed' : 'pointer', fontSize: '12px', fontWeight: 500 }}>◀ ก่อนหน้า</button>
+                    <button disabled={currentPage >= totalPages || loadingHardware} onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))} style={{ height: '32px', padding: '0 14px', borderRadius: '6px', border: 'none', backgroundColor: currentPage >= totalPages ? '#f1f5f9' : '#f8fafc', color: currentPage >= totalPages ? '#cbd5e1' : '#0f172a', cursor: currentPage >= totalPages ? 'not-allowed' : 'pointer', fontSize: '12px', fontWeight: 500 }}>ถัดไป ▶</button>
+                  </div>
+                </div>
+              )}
+
+            </div>
+          </div>
+        )}
+
+        {/* ---------------------------------------------------- */}
+        {/* 💻 VIEW 2: SOFTWARE LICENSES MANAGEMENT */}
+        {/* ---------------------------------------------------- */}
+        {mainTab === 'software' && (
+          <div>
+            {/* Top Software KPI Cards */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', marginBottom: '16px' }}>
+              <div style={{ backgroundColor: '#ffffff', borderRadius: '8px', padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 1px 3px rgba(0,0,0,0.02)', border: '1px solid #f1f5f9' }}>
+                <div>
+                  <span style={{ color: '#64748b', fontWeight: 500, fontSize: '12px', display: 'block' }}>จำพวกซอฟต์แวร์ในระบบ</span>
+                  <div style={{ marginTop: '4px', display: 'flex', alignItems: 'baseline', gap: '4px' }}>
+                    <span style={{ color: '#0f172a', fontWeight: 600, fontSize: '24px' }}>{softwareList.length}</span>
+                    <span style={{ color: '#64748b', fontSize: '12px', fontWeight: 400 }}>รายการ</span>
+                  </div>
+                </div>
+                <div style={{ backgroundColor: '#f8fafc', color: '#0f172a', borderRadius: '8px', padding: '10px', fontSize: '18px' }}>💻</div>
+              </div>
+
+              <div style={{ backgroundColor: '#ffffff', borderRadius: '8px', padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 1px 3px rgba(0,0,0,0.02)', border: '1px solid #f1f5f9' }}>
+                <div>
+                  <span style={{ color: '#64748b', fontWeight: 500, fontSize: '12px', display: 'block' }}>จำนวน License รวมทั้งหมด</span>
+                  <div style={{ marginTop: '4px', display: 'flex', alignItems: 'baseline', gap: '4px' }}>
+                    <span style={{ color: '#0f172a', fontWeight: 600, fontSize: '24px' }}>{totalSoftwareLicenseCount.toLocaleString()}</span>
+                    <span style={{ color: '#64748b', fontSize: '12px', fontWeight: 400 }}>สิทธิ์ (Licenses)</span>
+                  </div>
+                </div>
+                <div style={{ backgroundColor: '#f8fafc', color: '#0f172a', borderRadius: '8px', padding: '10px', fontSize: '18px' }}>🔑</div>
+              </div>
+
+              <div style={{ backgroundColor: '#ffffff', borderRadius: '8px', padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 1px 3px rgba(0,0,0,0.02)', border: '1px solid #f1f5f9' }}>
+                <div>
+                  <span style={{ color: '#64748b', fontWeight: 500, fontSize: '12px', display: 'block' }}>ลิขสิทธิ์ประเภท Lifetime</span>
+                  <div style={{ marginTop: '4px', display: 'flex', alignItems: 'baseline', gap: '4px' }}>
+                    <span style={{ color: '#166534', fontWeight: 600, fontSize: '24px' }}>{lifetimeSoftwareCount}</span>
+                    <span style={{ color: '#64748b', fontSize: '12px', fontWeight: 400 }}>รายการ</span>
+                  </div>
+                </div>
+                <div style={{ backgroundColor: '#f0fdf4', color: '#166534', borderRadius: '8px', padding: '10px', fontSize: '18px' }}>♾️</div>
+              </div>
+
+              <div style={{ backgroundColor: '#ffffff', borderRadius: '8px', padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 1px 3px rgba(0,0,0,0.02)', border: '1px solid #f1f5f9' }}>
+                <div>
+                  <span style={{ color: '#64748b', fontWeight: 500, fontSize: '12px', display: 'block' }}>Subscription / รายปี</span>
+                  <div style={{ marginTop: '4px', display: 'flex', alignItems: 'baseline', gap: '4px' }}>
+                    <span style={{ color: '#0284c7', fontWeight: 600, fontSize: '24px' }}>{softwareList.length - lifetimeSoftwareCount}</span>
+                    <span style={{ color: '#64748b', fontSize: '12px', fontWeight: 400 }}>รายการ</span>
+                  </div>
+                </div>
+                <div style={{ backgroundColor: '#e0f2fe', color: '#0369a1', borderRadius: '8px', padding: '10px', fontSize: '18px' }}>📅</div>
+              </div>
+            </div>
+
+            {/* Software Main Panel */}
+            <div style={{ backgroundColor: '#ffffff', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.02)', overflow: 'hidden', border: '1px solid #e2e8f0' }}>
+              
+              {/* Controls Bar */}
+              <div style={{ padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px', borderBottom: '1px solid #e2e8f0' }}>
+                <span style={{ color: '#0f172a', fontWeight: 600, fontSize: '15px' }}>
+                  รายการลิขสิทธิ์ซอฟต์แวร์ทั้งหมด ({filteredSoftware.length} รายการ)
+                </span>
+
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                  {userRole === 'admin' && (
+                    <button 
+                      onClick={handleOpenAddSoftwareModal}
+                      style={{
+                        backgroundColor: '#0f172a',
+                        color: '#ffffff',
+                        border: 'none',
+                        borderRadius: '6px',
+                        height: '36px',
+                        padding: '0 16px',
+                        fontSize: '13px',
+                        fontWeight: 500,
+                        cursor: 'pointer'
+                      }}
+                    >
+                      ➕ เพิ่มซอฟต์แวร์
+                    </button>
+                  )}
+
+                  <button 
+                    onClick={exportSoftwareToCSV} 
+                    style={{ 
+                      backgroundColor: '#f8fafc', 
+                      color: '#0f172a', 
+                      border: '1px solid #e2e8f0', 
+                      fontWeight: 500, 
+                      borderRadius: '6px', 
+                      height: '36px',
+                      padding: '0 16px', 
+                      fontSize: '13px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    📥 Export CSV
+                  </button>
+
+                  <select
+                    style={{
+                      height: '36px',
+                      padding: '0 12px',
+                      border: '1px solid #e2e8f0',
+                      borderRadius: '6px',
+                      fontSize: '13px',
+                      outline: 'none',
+                      backgroundColor: '#f8fafc',
+                      color: '#0f172a',
+                      fontWeight: 500
+                    }}
+                    value={swSelectedVendor}
+                    onChange={(e) => setSwSelectedVendor(e.target.value)}
+                  >
+                    <option value="">🏢 ทุก Vendor ({vendorsList.length})</option>
+                    {vendorsList.map((vendor, idx) => (
+                      <option key={idx} value={vendor}>{vendor}</option>
+                    ))}
+                  </select>
+
+                  <select 
+                    style={{ 
+                      height: '36px',
+                      padding: '0 12px', 
+                      border: '1px solid #e2e8f0', 
+                      borderRadius: '6px', 
+                      fontSize: '13px', 
+                      outline: 'none', 
+                      backgroundColor: '#f8fafc', 
+                      color: '#0f172a', 
+                      fontWeight: 500
+                    }}
+                    value={swSelectedInstalledOn}
+                    onChange={(e) => setSwSelectedInstalledOn(e.target.value)}
+                  >
+                    <option value="">🖥️ ทุกตำแหน่งติดตั้ง ({installedOnList.length})</option>
+                    {installedOnList.map((loc, idx) => (
+                      <option key={idx} value={loc}>{loc}</option>
+                    ))}
+                  </select>
+
+                  <input 
+                    type="text" 
+                    placeholder="ค้นหาชื่อซอฟต์แวร์, สัญญา..." 
+                    value={swSearchTerm}
+                    onChange={(e) => setSwSearchTerm(e.target.value)}
+                    style={{ 
+                      height: '36px',
+                      width: '220px',
+                      border: '1px solid #e2e8f0', 
+                      borderRadius: '6px', 
+                      padding: '0 12px', 
+                      fontSize: '13px',
+                      color: '#0f172a',
+                      backgroundColor: '#f8fafc',
+                      outline: 'none'
+                    }}
+                  />
+                </div>
+              </div>
+
+              {/* Software Table */}
+              <div style={{ overflowX: 'auto', width: '100%' }}>
+                {loadingSoftware ? (
+                  <div style={{ padding: '30px', textAlign: 'center', color: '#64748b' }}>กำลังดึงข้อมูลซอฟต์แวร์...</div>
+                ) : filteredSoftware.length === 0 ? (
+                  <div style={{ padding: '30px', textAlign: 'center', color: '#64748b' }}>ไม่พบข้อมูลซอฟต์แวร์ตามคำค้นหา/ตัวกรอง</div>
+                ) : (
+                  <table style={{ borderCollapse: 'collapse', width: '100%', minWidth: '1100px', tableLayout: 'fixed' }}>
+                    <thead>
+                      <tr style={{ backgroundColor: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
+                        <th style={{ padding: '14px 16px', textAlign: 'left', width: '150px', color: '#64748b', fontWeight: 600, fontSize: '12px' }}>รหัส / ASSET NO</th>
+                        <th style={{ padding: '14px 16px', textAlign: 'left', color: '#64748b', fontWeight: 600, fontSize: '12px' }}>ชื่อซอฟต์แวร์ (SOFTWARE NAME)</th>
+                        <th style={{ padding: '14px 16px', textAlign: 'center', width: '110px', color: '#64748b', fontWeight: 600, fontSize: '12px' }}>VERSION</th>
+                        <th style={{ padding: '14px 16px', textAlign: 'center', width: '110px', color: '#64748b', fontWeight: 600, fontSize: '12px' }}>ติดตั้งบน</th>
+                        <th style={{ padding: '14px 16px', textAlign: 'center', width: '130px', color: '#64748b', fontWeight: 600, fontSize: '12px' }}>VENDOR</th>
+                        <th style={{ padding: '14px 16px', textAlign: 'center', width: '90px', color: '#64748b', fontWeight: 600, fontSize: '12px' }}>LICENSE</th>
+                        <th style={{ padding: '14px 16px', textAlign: 'center', width: '180px', color: '#64748b', fontWeight: 600, fontSize: '12px' }}>วันหมดอายุ / สถานะ</th>
+                        <th style={{ padding: '14px 16px', textAlign: 'center', width: '100px', color: '#64748b', fontWeight: 600, fontSize: '12px' }}>จัดการ</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredSoftware.map((item, index) => {
+                        const swName = item['Software name'] || item.software_name || item.name || '-'
+                        const assetNo = item['NO'] || item['รหัสทะเบียน'] || item.asset_no || '-'
+                        const version = item['Version'] || item.version || '-'
+                        const installedOn = item['Installed on'] || item.installed_on || '-'
+                        const vendor = item['Vendor'] || item.vendor || '-'
+                        const licenseCount = item['No. of License'] || item.no_of_license || 1
+                        const expireVal = item['Expire Date'] || item.expire_date || '-'
+                        const statusInfo = getSoftwareExpireStatus(expireVal)
+
+                        return (
+                          <tr key={index} onClick={() => setSelectedSoftware(item)} style={{ borderBottom: '1px solid #f1f5f9', cursor: 'pointer' }}>
+                            <td style={{ padding: '12px 16px', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
+                              <span style={{ fontFamily: 'monospace', fontWeight: 600, fontSize: '12px', color: '#0f172a', backgroundColor: '#f1f5f9', padding: '4px 8px', borderRadius: '4px', display: 'inline-block' }}>
+                                {assetNo}
+                              </span>
+                            </td>
+
+                            <td style={{ padding: '12px 16px', verticalAlign: 'middle', fontWeight: 600, color: '#0f172a', fontSize: '13px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                              {swName}
+                            </td>
+
+                            <td style={{ padding: '12px 16px', verticalAlign: 'middle', textAlign: 'center', fontSize: '12px', color: '#334155' }}>
+                              {version}
+                            </td>
+
+                            <td style={{ padding: '12px 16px', verticalAlign: 'middle', textAlign: 'center', whiteSpace: 'nowrap' }}>
+                              <span style={{ backgroundColor: '#f1f5f9', color: '#475569', fontWeight: 500, fontSize: '11px', padding: '3px 8px', borderRadius: '4px' }}>
+                                {installedOn}
+                              </span>
+                            </td>
+
+                            <td style={{ padding: '12px 16px', verticalAlign: 'middle', textAlign: 'center', fontSize: '12px', color: '#334155', whiteSpace: 'nowrap' }}>
+                              {vendor}
+                            </td>
+
+                            <td style={{ padding: '12px 16px', verticalAlign: 'middle', textAlign: 'center', whiteSpace: 'nowrap' }}>
+                              <span style={{ fontWeight: 600, fontSize: '13px', color: '#0f172a' }}>{licenseCount}</span> <span style={{ fontSize: '11px', color: '#64748b' }}>สิทธิ์</span>
+                            </td>
+
+                            <td style={{ padding: '12px 16px', verticalAlign: 'middle', textAlign: 'center', whiteSpace: 'nowrap' }}>
+                              <span style={{ backgroundColor: statusInfo.bg, color: statusInfo.color, fontWeight: 600, fontSize: '11px', padding: '4px 10px', borderRadius: '20px' }}>
+                                {statusInfo.label}
+                              </span>
+                            </td>
+
+                            <td style={{ padding: '12px 16px', verticalAlign: 'middle', textAlign: 'center', whiteSpace: 'nowrap' }} onClick={(e) => e.stopPropagation()}>
+                              {userRole === 'admin' ? (
+                                <div style={{ display: 'inline-flex', gap: '6px', alignItems: 'center', justifyContent: 'center' }}>
+                                  <button onClick={() => handleOpenEditSoftwareModal(item)} title="แก้ไข" style={{ backgroundColor: '#f8fafc', border: '1px solid #e2e8f0', width: '30px', height: '30px', borderRadius: '6px', cursor: 'pointer', fontSize: '13px' }}>✏️</button>
+                                  <button onClick={() => handleDeleteSoftware(item)} title="ลบ" style={{ backgroundColor: '#fff1f2', border: 'none', width: '30px', height: '30px', borderRadius: '6px', cursor: 'pointer', fontSize: '13px', color: '#e11d48' }}>🗑️</button>
+                                </div>
+                              ) : (
+                                <span style={{ fontSize: '12px', color: '#94a3b8' }}>👁️ อ่านอย่างเดียว</span>
+                              )}
+                            </td>
+                          </tr>
+                        )
+                      })}
+                    </tbody>
+                  </table>
+                )}
+              </div>
+
+            </div>
+          </div>
+        )}
+
       </main>
 
       {/* ⚙️ Modal ตั้งค่า & จัดการผู้ใช้งาน */}
@@ -1629,7 +1973,6 @@ function App() {
             </div>
 
             <div style={{ padding: '20px', maxHeight: '70vh', overflowY: 'auto' }}>
-              
               <div style={{ backgroundColor: '#f8fafc', padding: '16px', borderRadius: '8px', marginBottom: '20px' }}>
                 <div style={{ fontSize: '13px', fontWeight: 600, color: '#0f172a', marginBottom: '10px' }}>
                   ➕ เพิ่มผู้ใช้งานใหม่ (สิทธิ์ Viewer)
@@ -1638,39 +1981,14 @@ function App() {
                 <form onSubmit={handleAddViewerUser} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto', gap: '10px', alignItems: 'flex-end' }}>
                   <div>
                     <label style={{ fontSize: '12px', color: '#64748b', display: 'block', marginBottom: '4px' }}>Username หรือ อีเมล *</label>
-                    <input 
-                      type="text" 
-                      placeholder="user หรือ user@company.com" 
-                      value={newUserEmail} 
-                      onChange={e => setNewUserEmail(e.target.value)} 
-                      required 
-                      style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '12px', boxSizing: 'border-box' }} 
-                    />
+                    <input type="text" placeholder="user หรือ user@company.com" value={newUserEmail} onChange={e => setNewUserEmail(e.target.value)} required style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '12px', boxSizing: 'border-box' }} />
                   </div>
-
                   <div>
                     <label style={{ fontSize: '12px', color: '#64748b', display: 'block', marginBottom: '4px' }}>รหัสผ่าน (อย่างน้อย 6 ตัว) *</label>
-                    <input 
-                      type="password" 
-                      placeholder="••••••••" 
-                      value={newUserPassword} 
-                      onChange={e => setNewUserPassword(e.target.value)} 
-                      required 
-                      style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '12px', boxSizing: 'border-box' }} 
-                    />
+                    <input type="password" placeholder="••••••••" value={newUserPassword} onChange={e => setNewUserPassword(e.target.value)} required style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '12px', boxSizing: 'border-box' }} />
                   </div>
-
-                  <button 
-                    type="submit" 
-                    disabled={addingUser}
-                    style={{ backgroundColor: '#0f172a', color: '#ffffff', border: 'none', padding: '0 16px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 500, height: '36px' }}
-                  >
-                    {addingUser ? 'กำลังบันทึก...' : '➕ บันทึก'}
-                  </button>
+                  <button type="submit" disabled={addingUser} style={{ backgroundColor: '#0f172a', color: '#ffffff', border: 'none', padding: '0 16px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 500, height: '36px' }}>{addingUser ? 'กำลังบันทึก...' : '➕ บันทึก'}</button>
                 </form>
-                <div style={{ fontSize: '11px', color: '#64748b', marginTop: '8px' }}>
-                  ℹ️ สิทธิ์การใช้งานของผู้ใช้ใหม่จะถูกกำหนดเป็น <strong>Viewer (ดูได้อย่างเดียว)</strong> โดยอัตโนมัติ
-                </div>
               </div>
 
               <div>
@@ -1696,14 +2014,7 @@ function App() {
                           <tr key={idx} style={{ borderBottom: '1px solid #f1f5f9' }}>
                             <td style={{ padding: '10px 12px', fontSize: '12px', color: '#0f172a', fontWeight: 500 }}>{prof.email || '-'}</td>
                             <td style={{ padding: '10px 12px', textAlign: 'center' }}>
-                              <span style={{
-                                fontSize: '11px',
-                                padding: '2px 8px',
-                                borderRadius: '4px',
-                                backgroundColor: isProfAdmin ? '#fef3c7' : '#f1f5f9',
-                                color: isProfAdmin ? '#92400e' : '#475569',
-                                fontWeight: 600
-                              }}>
+                              <span style={{ fontSize: '11px', padding: '2px 8px', borderRadius: '4px', backgroundColor: isProfAdmin ? '#fef3c7' : '#f1f5f9', color: isProfAdmin ? '#92400e' : '#475569', fontWeight: 600 }}>
                                 {isProfAdmin ? '🛡️ ADMIN' : '👁️ VIEWER'}
                               </span>
                             </td>
@@ -1715,7 +2026,6 @@ function App() {
                   </table>
                 )}
               </div>
-
             </div>
 
             <div style={{ padding: '12px 20px', borderTop: '1px solid #e2e8f0', display: 'flex', justifyContent: 'flex-end', backgroundColor: '#f8fafc' }}>
@@ -1725,92 +2035,61 @@ function App() {
         </div>
       )}
 
-      {/* 🔄 Modal รับคืนทรัพย์สิน */}
+      {/* 🔄 Modal รับคืน Hardware */}
       {returningAsset && userRole === 'admin' && (
         <div className="modal-overlay" onClick={() => setReturningAsset(null)}>
           <div className="modal-card" style={{ maxWidth: '500px', borderRadius: '12px', boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1)' }} onClick={(e) => e.stopPropagation()}>
             <div className="modal-header" style={{ borderBottom: '1px solid #e2e8f0', padding: '16px 20px' }}>
-              <span style={{ fontSize: '16px', fontWeight: 600, color: '#0f172a' }}>
-                🔄 รับคืนทรัพย์สินเข้าส่วนกลาง / ย้ายสังกัด
-              </span>
+              <span style={{ fontSize: '16px', fontWeight: 600, color: '#0f172a' }}>🔄 รับคืนทรัพย์สินเข้าส่วนกลาง</span>
               <button onClick={() => setReturningAsset(null)} style={{ background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer', color: '#64748b' }}>✕</button>
             </div>
 
             <form onSubmit={executeReturnToStock}>
               <div style={{ padding: '20px' }}>
                 <div style={{ backgroundColor: '#f8fafc', padding: '12px 16px', borderRadius: '8px', marginBottom: '16px' }}>
-                  <div style={{ fontSize: '13px', fontWeight: 600, color: '#0f172a' }}>
-                    {returningAsset.asset_name || 'อุปกรณ์ไอที'} ({returningAsset.asset_no || 'ไม่ระบุ Asset No'})
-                  </div>
-                  <div style={{ fontSize: '12px', color: '#64748b', marginTop: '2px', fontWeight: 400 }}>
-                    ผู้ถือครองเดิม: <span>{getRealAssetHolder(returningAsset).realHolder}</span>
-                  </div>
+                  <div style={{ fontSize: '13px', fontWeight: 600, color: '#0f172a' }}>{returningAsset.asset_name || 'อุปกรณ์ไอที'} ({returningAsset.asset_no || 'ไม่ระบุ Asset No'})</div>
+                  <div style={{ fontSize: '12px', color: '#64748b', marginTop: '2px' }}>ผู้ถือครองเดิม: <span>{getRealAssetHolder(returningAsset).realHolder}</span></div>
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                   <div>
-                    <label style={{ color: '#0f172a', fontWeight: 500, fontSize: '12px', display: 'block', marginBottom: '4px' }}>ย้ายไปอยู่แผนก (Department) *</label>
-                    <select
-                      value={returnFormData.dept}
-                      onChange={(e) => setReturnFormData(prev => ({ ...prev, dept: e.target.value }))}
-                      style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '13px', backgroundColor: '#fff', color: '#0f172a', fontWeight: 400 }}
-                      required
-                    >
+                    <label style={{ color: '#0f172a', fontWeight: 500, fontSize: '12px', display: 'block', marginBottom: '4px' }}>ย้ายไปอยู่แผนก *</label>
+                    <select value={returnFormData.dept} onChange={(e) => setReturnFormData(prev => ({ ...prev, dept: e.target.value }))} style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '13px' }} required>
                       <option value="แผนกสารสนเทศ">แผนกสารสนเทศ (IT)</option>
                       <option value="ส่วนกลาง">ส่วนกลางบริษัท</option>
-                      {deptList.map((d, i) => (
-                        <option key={i} value={d}>{d}</option>
-                      ))}
+                      {deptList.map((d, i) => <option key={i} value={d}>{d}</option>)}
                     </select>
                   </div>
-
                   <div>
-                    <label style={{ color: '#0f172a', fontWeight: 500, fontSize: '12px', display: 'block', marginBottom: '4px' }}>ผู้ถือครองใหม่ (Owner / Holder)</label>
-                    <input 
-                      type="text" 
-                      value={returnFormData.owner}
-                      onChange={(e) => setReturnFormData(prev => ({ ...prev, owner: e.target.value }))}
-                      style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '13px', color: '#0f172a', fontWeight: 400 }}
-                    />
+                    <label style={{ color: '#0f172a', fontWeight: 500, fontSize: '12px', display: 'block', marginBottom: '4px' }}>ผู้ถือครองใหม่</label>
+                    <input type="text" value={returnFormData.owner} onChange={(e) => setReturnFormData(prev => ({ ...prev, owner: e.target.value }))} style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '13px' }} />
                   </div>
-
                   <div>
-                    <label style={{ color: '#0f172a', fontWeight: 500, fontSize: '12px', display: 'block', marginBottom: '4px' }}>สถานที่จัดเก็บใหม่ (Location)</label>
-                    <input 
-                      type="text" 
-                      value={returnFormData.location}
-                      onChange={(e) => setReturnFormData(prev => ({ ...prev, location: e.target.value }))}
-                      style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '13px', color: '#0f172a', fontWeight: 400 }}
-                    />
+                    <label style={{ color: '#0f172a', fontWeight: 500, fontSize: '12px', display: 'block', marginBottom: '4px' }}>สถานที่จัดเก็บใหม่</label>
+                    <input type="text" value={returnFormData.location} onChange={(e) => setReturnFormData(prev => ({ ...prev, location: e.target.value }))} style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '13px' }} />
                   </div>
-
                   <div>
-                    <label style={{ color: '#0f172a', fontWeight: 500, fontSize: '12px', display: 'block', marginBottom: '4px' }}>หมายเหตุการรับคืน (Remark)</label>
-                    <textarea 
-                      value={returnFormData.remark}
-                      onChange={(e) => setReturnFormData(prev => ({ ...prev, remark: e.target.value }))}
-                      rows="2"
-                      style={{ width: '100%', padding: '8px 10px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '13px', resize: 'vertical', color: '#0f172a', fontWeight: 400 }}
-                    ></textarea>
+                    <label style={{ color: '#0f172a', fontWeight: 500, fontSize: '12px', display: 'block', marginBottom: '4px' }}>หมายเหตุ</label>
+                    <textarea value={returnFormData.remark} onChange={(e) => setReturnFormData(prev => ({ ...prev, remark: e.target.value }))} rows="2" style={{ width: '100%', padding: '8px 10px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '13px', resize: 'vertical' }}></textarea>
                   </div>
                 </div>
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', borderTop: '1px solid #e2e8f0', padding: '12px 20px', backgroundColor: '#f8fafc' }}>
                 <button type="button" onClick={() => setReturningAsset(null)} style={{ height: '36px', padding: '0 16px', backgroundColor: '#ffffff', color: '#0f172a', border: '1px solid #e2e8f0', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 500 }}>ยกเลิก</button>
-                <button type="submit" disabled={loading} style={{ height: '36px', padding: '0 16px', backgroundColor: '#0f172a', color: '#ffffff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 500 }}>{loading ? 'กำลังบันทึก...' : 'ย้าย/รับคืนอุปกรณ์'}</button>
+                <button type="submit" disabled={loadingHardware} style={{ height: '36px', padding: '0 16px', backgroundColor: '#0f172a', color: '#ffffff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 500 }}>{loadingHardware ? 'กำลังบันทึก...' : 'ย้าย/รับคืนอุปกรณ์'}</button>
               </div>
             </form>
           </div>
         </div>
       )}
 
-      {/* 📝 Modal Form */}
+      {/* 📝 Modal Form Hardware */}
       {isFormOpen && userRole === 'admin' && (
         <div className="modal-overlay" onClick={() => setIsFormOpen(false)}>
           <div className="modal-card" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '600px', borderRadius: '12px', boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1)' }}>
             <div className="modal-header" style={{ borderBottom: '1px solid #e2e8f0', padding: '16px 20px' }}>
-              <span style={{ fontSize: '16px', fontWeight: 600, color: '#0f172a' }}>{editingAsset ? '✏️ แก้ไขข้อมูลทรัพย์สิน' : '➕ เพิ่มทรัพย์สินใหม่'}</span>
+              <span style={{ fontSize: '16px', fontWeight: 600, color: '#0f172a' }}>{editingAsset ? '✏️ แก้ไขข้อมูลฮาร์ดแวร์' : '➕ เพิ่มฮาร์ดแวร์ใหม่'}</span>
               <button onClick={() => setIsFormOpen(false)} style={{ background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer', color: '#64748b' }}>✕</button>
             </div>
 
@@ -1819,39 +2098,31 @@ function App() {
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                   <div>
                     <label style={{ color: '#0f172a', fontWeight: 500, fontSize: '12px', display: 'block', marginBottom: '4px' }}>เลขทรัพย์สิน (Asset No)</label>
-                    <input type="text" name="asset_no" value={formData.asset_no} onChange={handleFormChange} style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '12px', color: '#0f172a', fontWeight: 400 }} />
+                    <input type="text" value={formData.asset_no} onChange={e => setFormData({ ...formData, asset_no: e.target.value })} style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '12px' }} />
                   </div>
                   <div>
                     <label style={{ color: '#0f172a', fontWeight: 500, fontSize: '12px', display: 'block', marginBottom: '4px' }}>ประเภท (Type) *</label>
-                    <input type="text" name="type" value={formData.type} onChange={handleFormChange} style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '12px', color: '#0f172a', fontWeight: 400 }} required />
+                    <input type="text" value={formData.type} onChange={e => setFormData({ ...formData, type: e.target.value })} style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '12px' }} required />
                   </div>
                   <div style={{ gridColumn: 'span 2' }}>
                     <label style={{ color: '#0f172a', fontWeight: 500, fontSize: '12px', display: 'block', marginBottom: '4px' }}>ชื่ออุปกรณ์ (Asset Name) *</label>
-                    <input type="text" name="asset_name" value={formData.asset_name} onChange={handleFormChange} style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '12px', color: '#0f172a', fontWeight: 400 }} required />
+                    <input type="text" value={formData.asset_name} onChange={e => setFormData({ ...formData, asset_name: e.target.value })} style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '12px' }} required />
                   </div>
                   <div>
                     <label style={{ color: '#0f172a', fontWeight: 500, fontSize: '12px', display: 'block', marginBottom: '4px' }}>ยี่ห้อ (Brand)</label>
-                    <input type="text" name="brand" value={formData.brand} onChange={handleFormChange} style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '12px', color: '#0f172a', fontWeight: 400 }} />
-                  </div>
-                  <div>
-                    <label style={{ color: '#0f172a', fontWeight: 500, fontSize: '12px', display: 'block', marginBottom: '4px' }}>รุ่น (Model)</label>
-                    <input type="text" name="model" value={formData.model} onChange={handleFormChange} style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '12px', color: '#0f172a', fontWeight: 400 }} />
+                    <input type="text" value={formData.brand} onChange={e => setFormData({ ...formData, brand: e.target.value })} style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '12px' }} />
                   </div>
                   <div>
                     <label style={{ color: '#0f172a', fontWeight: 500, fontSize: '12px', display: 'block', marginBottom: '4px' }}>แผนก (Department)</label>
-                    <input type="text" name="dept" value={formData.dept} onChange={handleFormChange} style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '12px', color: '#0f172a', fontWeight: 400 }} />
+                    <input type="text" value={formData.dept} onChange={e => setFormData({ ...formData, dept: e.target.value })} style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '12px' }} />
                   </div>
                   <div>
-                    <label style={{ color: '#0f172a', fontWeight: 500, fontSize: '12px', display: 'block', marginBottom: '4px' }}>ผู้ถือครอง / ผู้ใช้งาน</label>
-                    <input type="text" name="owner" value={formData.owner} onChange={handleFormChange} style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '12px', color: '#0f172a', fontWeight: 400 }} />
+                    <label style={{ color: '#0f172a', fontWeight: 500, fontSize: '12px', display: 'block', marginBottom: '4px' }}>ผู้ถือครอง</label>
+                    <input type="text" value={formData.owner} onChange={e => setFormData({ ...formData, owner: e.target.value })} style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '12px' }} />
                   </div>
-                  <div style={{ gridColumn: 'span 2' }}>
-                    <label style={{ color: '#0f172a', fontWeight: 500, fontSize: '12px', display: 'block', marginBottom: '4px' }}>สถานที่ตั้ง (Location)</label>
-                    <input type="text" name="location" value={formData.location} onChange={handleFormChange} style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '12px', color: '#0f172a', fontWeight: 400 }} />
-                  </div>
-                  <div style={{ gridColumn: 'span 2' }}>
-                    <label style={{ color: '#0f172a', fontWeight: 500, fontSize: '12px', display: 'block', marginBottom: '4px' }}>หมายเหตุ (Remark)</label>
-                    <textarea name="Remark" value={formData.Remark} onChange={handleFormChange} rows="2" style={{ width: '100%', padding: '8px 10px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '12px', resize: 'vertical', color: '#0f172a', fontWeight: 400 }}></textarea>
+                  <div>
+                    <label style={{ color: '#0f172a', fontWeight: 500, fontSize: '12px', display: 'block', marginBottom: '4px' }}>สถานที่ตั้ง</label>
+                    <input type="text" value={formData.location} onChange={e => setFormData({ ...formData, location: e.target.value })} style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '12px' }} />
                   </div>
                 </div>
               </div>
@@ -1865,12 +2136,72 @@ function App() {
         </div>
       )}
 
-      {/* 📋 Modal รายละเอียด */}
+      {/* 💻 Modal Form Software */}
+      {isSoftwareFormOpen && userRole === 'admin' && (
+        <div className="modal-overlay" onClick={() => setIsSoftwareFormOpen(false)}>
+          <div className="modal-card" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '600px', borderRadius: '12px', boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1)' }}>
+            <div className="modal-header" style={{ borderBottom: '1px solid #e2e8f0', padding: '16px 20px' }}>
+              <span style={{ fontSize: '16px', fontWeight: 600, color: '#0f172a' }}>{editingSoftware ? '✏️ แก้ไขข้อมูลซอฟต์แวร์' : '➕ เพิ่มซอฟต์แวร์ใหม่'}</span>
+              <button onClick={() => setIsSoftwareFormOpen(false)} style={{ background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer', color: '#64748b' }}>✕</button>
+            </div>
+
+            <form onSubmit={handleSoftwareFormSubmit}>
+              <div style={{ padding: '20px', maxHeight: '60vh', overflowY: 'auto' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                  <div style={{ gridColumn: 'span 2' }}>
+                    <label style={{ color: '#0f172a', fontWeight: 500, fontSize: '12px', display: 'block', marginBottom: '4px' }}>ชื่อซอฟต์แวร์ (Software Name) *</label>
+                    <input type="text" value={softwareFormData['Software name']} onChange={e => setSoftwareFormData({ ...softwareFormData, 'Software name': e.target.value })} style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '12px' }} required />
+                  </div>
+                  <div>
+                    <label style={{ color: '#0f172a', fontWeight: 500, fontSize: '12px', display: 'block', marginBottom: '4px' }}>เวอร์ชัน (Version)</label>
+                    <input type="text" value={softwareFormData['Version']} onChange={e => setSoftwareFormData({ ...softwareFormData, 'Version': e.target.value })} style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '12px' }} />
+                  </div>
+                  <div>
+                    <label style={{ color: '#0f172a', fontWeight: 500, fontSize: '12px', display: 'block', marginBottom: '4px' }}>ติดตั้งบน (Installed On)</label>
+                    <input type="text" value={softwareFormData['Installed on']} onChange={e => setSoftwareFormData({ ...softwareFormData, 'Installed on': e.target.value })} placeholder="Server, Cloud, PC" style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '12px' }} />
+                  </div>
+                  <div>
+                    <label style={{ color: '#0f172a', fontWeight: 500, fontSize: '12px', display: 'block', marginBottom: '4px' }}>ผู้จัดจำหน่าย (Vendor)</label>
+                    <input type="text" value={softwareFormData['Vendor']} onChange={e => setSoftwareFormData({ ...softwareFormData, 'Vendor': e.target.value })} style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '12px' }} />
+                  </div>
+                  <div>
+                    <label style={{ color: '#0f172a', fontWeight: 500, fontSize: '12px', display: 'block', marginBottom: '4px' }}>จำนวน License</label>
+                    <input type="number" value={softwareFormData['No. of License']} onChange={e => setSoftwareFormData({ ...softwareFormData, 'No. of License': e.target.value })} style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '12px' }} />
+                  </div>
+                  <div>
+                    <label style={{ color: '#0f172a', fontWeight: 500, fontSize: '12px', display: 'block', marginBottom: '4px' }}>วันที่สั่งซื้อ (Purchase Date)</label>
+                    <input type="date" value={softwareFormData['Purchase date']} onChange={e => setSoftwareFormData({ ...softwareFormData, 'Purchase date': e.target.value })} style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '12px' }} />
+                  </div>
+                  <div>
+                    <label style={{ color: '#0f172a', fontWeight: 500, fontSize: '12px', display: 'block', marginBottom: '4px' }}>วันหมดอายุ / Lifetime</label>
+                    <input type="text" value={softwareFormData['Expire Date']} onChange={e => setSoftwareFormData({ ...softwareFormData, 'Expire Date': e.target.value })} placeholder="2026-12-31 หรือ Lifetime" style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '12px' }} />
+                  </div>
+                  <div>
+                    <label style={{ color: '#0f172a', fontWeight: 500, fontSize: '12px', display: 'block', marginBottom: '4px' }}>รหัสทะเบียน / Asset NO</label>
+                    <input type="text" value={softwareFormData['NO']} onChange={e => setSoftwareFormData({ ...softwareFormData, 'NO': e.target.value })} style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '12px' }} />
+                  </div>
+                  <div>
+                    <label style={{ color: '#0f172a', fontWeight: 500, fontSize: '12px', display: 'block', marginBottom: '4px' }}>เลขที่สัญญา (Contract No)</label>
+                    <input type="text" value={softwareFormData['Contract Number']} onChange={e => setSoftwareFormData({ ...softwareFormData, 'Contract Number': e.target.value })} style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '12px' }} />
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', borderTop: '1px solid #e2e8f0', padding: '12px 20px', backgroundColor: '#f8fafc' }}>
+                <button type="button" onClick={() => setIsSoftwareFormOpen(false)} style={{ height: '36px', padding: '0 16px', backgroundColor: '#ffffff', color: '#0f172a', border: '1px solid #e2e8f0', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 500 }}>ยกเลิก</button>
+                <button type="submit" disabled={swSubmitting} style={{ height: '36px', padding: '0 16px', backgroundColor: '#0f172a', color: '#ffffff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 500 }}>{swSubmitting ? 'กำลังบันทึก...' : 'บันทึกข้อมูล'}</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* 📋 Modal รายละเอียด Hardware */}
       {selectedAsset && (
         <div className="modal-overlay" onClick={() => setSelectedAsset(null)}>
           <div className="modal-card" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px', borderRadius: '12px', boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1)' }}>
             <div className="modal-header" style={{ borderBottom: '1px solid #e2e8f0', padding: '16px 20px' }}>
-              <span style={{ fontSize: '16px', fontWeight: 600, color: '#0f172a' }}>📋 รายละเอียดทรัพย์สิน</span>
+              <span style={{ fontSize: '16px', fontWeight: 600, color: '#0f172a' }}>📋 รายละเอียดฮาร์ดแวร์</span>
               <button onClick={() => setSelectedAsset(null)} style={{ background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer', color: '#64748b' }}>✕</button>
             </div>
 
@@ -1889,9 +2220,6 @@ function App() {
               <div style={{ display: 'flex', gap: '6px' }}>
                 {userRole === 'admin' && (
                   <>
-                    {getRealAssetHolder(selectedAsset).holderType === 'PERSON' && (
-                      <button onClick={() => handleOpenReturnModal(selectedAsset)} style={{ height: '32px', backgroundColor: '#f8fafc', color: '#0f172a', border: '1px solid #e2e8f0', fontWeight: 500, fontSize: '12px', padding: '0 12px', borderRadius: '6px', cursor: 'pointer' }}>🔄 คืนเข้าส่วนกลาง</button>
-                    )}
                     <button onClick={() => handleOpenEditModal(selectedAsset)} style={{ height: '32px', padding: '0 12px', fontSize: '12px', fontWeight: 500, backgroundColor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '6px', cursor: 'pointer' }}>✏️ แก้ไข</button>
                     <button onClick={() => handleDeleteAsset(selectedAsset)} style={{ height: '32px', padding: '0 12px', fontSize: '12px', fontWeight: 500, backgroundColor: '#fff1f2', border: 'none', color: '#e11d48', borderRadius: '6px', cursor: 'pointer' }}>🗑️ ลบ</button>
                   </>
@@ -1902,6 +2230,42 @@ function App() {
           </div>
         </div>
       )}
+
+      {/* 📋 Modal รายละเอียด Software */}
+      {selectedSoftware && (
+        <div className="modal-overlay" onClick={() => setSelectedSoftware(null)}>
+          <div className="modal-card" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px', borderRadius: '12px', boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1)' }}>
+            <div className="modal-header" style={{ borderBottom: '1px solid #e2e8f0', padding: '16px 20px' }}>
+              <span style={{ fontSize: '16px', fontWeight: 600, color: '#0f172a' }}>📋 รายละเอียดลิขสิทธิ์ซอฟต์แวร์</span>
+              <button onClick={() => setSelectedSoftware(null)} style={{ background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer', color: '#64748b' }}>✕</button>
+            </div>
+
+            <div style={{ padding: '20px', maxHeight: '60vh', overflowY: 'auto' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                {Object.entries(selectedSoftware).map(([key, value], idx) => (
+                  <div key={idx} style={{ gridColumn: String(value).length > 30 ? 'span 2' : 'span 1' }}>
+                    <span style={{ color: '#64748b', fontWeight: 400, fontSize: '11px', display: 'block', marginBottom: '2px' }}>{key}</span>
+                    <span style={{ color: '#0f172a', fontWeight: 500, fontSize: '13px' }}>{value !== null && value !== '' ? String(value) : '-'}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #e2e8f0', padding: '12px 20px', backgroundColor: '#f8fafc' }}>
+              <div style={{ display: 'flex', gap: '6px' }}>
+                {userRole === 'admin' && (
+                  <>
+                    <button onClick={() => handleOpenEditSoftwareModal(selectedSoftware)} style={{ height: '32px', padding: '0 12px', fontSize: '12px', fontWeight: 500, backgroundColor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '6px', cursor: 'pointer' }}>✏️ แก้ไข</button>
+                    <button onClick={() => handleDeleteSoftware(selectedSoftware)} style={{ height: '32px', padding: '0 12px', fontSize: '12px', fontWeight: 500, backgroundColor: '#fff1f2', border: 'none', color: '#e11d48', borderRadius: '6px', cursor: 'pointer' }}>🗑️ ลบ</button>
+                  </>
+                )}
+              </div>
+              <button onClick={() => setSelectedSoftware(null)} style={{ height: '36px', padding: '0 16px', backgroundColor: '#ffffff', color: '#0f172a', border: '1px solid #e2e8f0', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 500 }}>ปิดหน้าต่าง</button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   )
 }
