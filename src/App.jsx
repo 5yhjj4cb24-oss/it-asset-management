@@ -30,6 +30,15 @@ function DragonflyLogo({ size = 32, color = '#8c71ca' }) {
   )
 }
 
+// ฟังก์ชันดึงตัวอักษรย่อจากอีเมล (เช่น beqtless@... -> BE)
+function getUserInitials(email) {
+  if (!email) return 'IT'
+  const namePart = email.split('@')[0]
+  const cleanName = namePart.replace(/[^a-zA-Z0-9]/g, '')
+  if (cleanName.length >= 2) return cleanName.substring(0, 2).toUpperCase()
+  return cleanName.toUpperCase() || 'IT'
+}
+
 // ตรวจจับชื่อบุคคล
 function isPersonName(text) {
   if (!text || typeof text !== 'string') return false
@@ -201,6 +210,9 @@ function App() {
   const [loginPassword, setLoginPassword] = useState('')
   const [authLoading, setAuthLoading] = useState(false)
 
+  // Profile Popover Menu State
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false)
+
   // Forgot Password States
   const [isForgotPassword, setIsForgotPassword] = useState(false)
   const [resetEmail, setResetEmail] = useState('')
@@ -211,6 +223,12 @@ function App() {
 
   // Settings & User Management States
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
+  const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false)
+  const [changePasswordInput, setChangePasswordInput] = useState('')
+  const [confirmPasswordInput, setConfirmPasswordInput] = useState('')
+  const [changingPassword, setChangingPassword] = useState(false)
+
+  const [isAddUserOpen, setIsAddUserOpen] = useState(false)
   const [profilesList, setProfilesList] = useState([])
   const [loadingProfiles, setLoadingProfiles] = useState(false)
   const [newUserEmail, setNewUserEmail] = useState('')
@@ -270,22 +288,20 @@ function App() {
 
   const [currentDateTime, setCurrentDateTime] = useState('')
 
-  // นาฬิกาและวันที่แสดงผล
+  // นาฬิกาและวันที่แสดงผลแบบกระชับ
   useEffect(() => {
     const updateCalendar = () => {
       const now = new Date()
       const dateStr = now.toLocaleDateString('th-TH', {
-        weekday: 'short',
         day: 'numeric',
         month: 'short',
         year: 'numeric'
       })
       const timeStr = now.toLocaleTimeString('th-TH', {
         hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit'
+        minute: '2-digit'
       })
-      setCurrentDateTime(`📅 ${dateStr} | 🕒 ${timeStr} น.`)
+      setCurrentDateTime(`${dateStr} • ${timeStr} น.`)
     }
 
     updateCalendar()
@@ -419,6 +435,35 @@ function App() {
     }
   }
 
+  // เปลี่ยนรหัสผ่านในหน้าตั้งค่า
+  async function handleChangePasswordSubmit(e) {
+    e.preventDefault()
+    if (changePasswordInput !== confirmPasswordInput) {
+      alert('รหัสผ่านทั้งสองช่องไม่ตรงกัน')
+      return
+    }
+    if (changePasswordInput.length < 6) {
+      alert('รหัสผ่านต้องมีความยาวอย่างน้อย 6 ตัวอักษร')
+      return
+    }
+
+    setChangingPassword(true)
+    try {
+      const { error } = await supabase.auth.updateUser({ password: changePasswordInput })
+      if (error) throw error
+
+      alert('เปลี่ยนรหัสผ่านเรียบร้อยแล้ว')
+      setChangePasswordInput('')
+      setConfirmPasswordInput('')
+      setIsChangePasswordOpen(false)
+    } catch (err) {
+      console.error('Change password error:', err)
+      alert('เกิดข้อผิดพลาดในการเปลี่ยนรหัสผ่าน: ' + err.message)
+    } finally {
+      setChangingPassword(false)
+    }
+  }
+
   async function handleLogout() {
     await supabase.auth.signOut()
   }
@@ -471,6 +516,7 @@ function App() {
       alert(`เพิ่มผู้ใช้งาน "${formattedUserEmail}" สิทธิ์ Viewer เรียบร้อยแล้ว`)
       setNewUserEmail('')
       setNewUserPassword('')
+      setIsAddUserOpen(false)
       loadProfilesList()
     } catch (err) {
       console.error('Error adding user:', err)
@@ -898,7 +944,6 @@ function App() {
     }
   }
 
-  // ฟังก์ชันสำหรับ Leasing
   function handleOpenAddLeasingModal() {
     if (userRole !== 'admin') {
       alert('คุณไม่มีสิทธิ์เพิ่มอุปกรณ์เช่า (Admin Only)')
@@ -1114,7 +1159,7 @@ function App() {
     document.body.removeChild(link)
   }
 
-  // คำนวณสรุปผลสถิติสำหรับ Dashboard
+  // สถิติ Dashboard
   const hwAgeOldCount = allRawAssets.filter(item => getAssetAgeInfo(item).ageNum >= 4).length
   const hwAgeMidCount = allRawAssets.filter(item => getAssetAgeInfo(item).ageNum >= 2 && getAssetAgeInfo(item).ageNum < 4).length
   const hwAgeNewCount = allRawAssets.filter(item => getAssetAgeInfo(item).ageNum >= 0 && getAssetAgeInfo(item).ageNum < 2).length
@@ -1205,12 +1250,10 @@ function App() {
     )
   }
 
-  // หน้าจอ Login / ลืมรหัสผ่าน
+  // หน้าจอ Login
   if (!session) {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', fontFamily: 'Sarabun, Inter, sans-serif', backgroundColor: '#ffffff' }}>
-        
-        {/* Banner ด้านซ้าย */}
         <div style={{
           flex: '0 0 30%',
           minWidth: '320px',
@@ -1264,7 +1307,6 @@ function App() {
           </div>
         </div>
 
-        {/* ฟอร์ม Login ด้านขวา */}
         <div style={{
           flex: '1',
           display: 'flex',
@@ -1275,7 +1317,6 @@ function App() {
           boxSizing: 'border-box'
         }}>
           <div style={{ width: '100%', maxWidth: '380px', backgroundColor: '#ffffff', padding: '36px 32px', borderRadius: '12px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)' }}>
-            
             {isForgotPassword ? (
               <div>
                 <div style={{ marginBottom: '24px' }}>
@@ -1410,7 +1451,6 @@ function App() {
                 </form>
               </div>
             )}
-
           </div>
         </div>
       </div>
@@ -1430,7 +1470,7 @@ function App() {
     <div style={{ backgroundColor: '#f8fafc', minHeight: '100vh', fontFamily: 'Sarabun, Inter, sans-serif', color: '#0f172a' }}>
       
       {/* Navbar ด้านบน */}
-      <header style={{ backgroundColor: '#ffffff', borderBottom: '1px solid #e2e8f0', padding: '0 24px', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', boxShadow: '0 1px 3px rgba(0,0,0,0.02)' }}>
+      <header style={{ backgroundColor: '#ffffff', borderBottom: '1px solid #e2e8f0', padding: '10px 24px', minHeight: '60px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', boxShadow: '0 1px 3px rgba(0,0,0,0.02)', boxSizing: 'border-box' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <DragonflyLogo size={30} color="#8c71ca" />
@@ -1506,58 +1546,156 @@ function App() {
           </div>
         </div>
         
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div style={{ backgroundColor: '#f8fafc', color: '#0f172a', padding: '4px 12px', borderRadius: '20px', display: 'flex', alignItems: 'center', gap: '8px', height: '32px', boxSizing: 'border-box' }}>
-            <span style={{ width: '8px', height: '8px', backgroundColor: '#10b981', borderRadius: '50%' }}></span>
-            <span style={{ fontWeight: 500, color: '#0f172a', fontSize: '12px' }}>
-              {currentDateTime || 'กำลังโหลดเวลา...'}
-            </span>
+        {/* ส่วนขวา: Profile Avatar + Popover เมนูสไตล์ Microsoft 365 */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', position: 'relative' }}>
+          
+          {/* แถบ Calendar มินิมอล */}
+          <div style={{ fontSize: '11px', color: '#64748b', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '5px' }}>
+            <span style={{ width: '6px', height: '6px', backgroundColor: '#10b981', borderRadius: '50%', display: 'inline-block' }}></span>
+            <span>📅 {currentDateTime}</span>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', borderLeft: '1px solid #e2e8f0', paddingLeft: '12px' }}>
-            <span style={{ fontSize: '12px', color: '#0f172a', fontWeight: 500 }}>
-              {session.user.email}
-            </span>
-            <span style={{ 
-              fontSize: '11px', 
-              padding: '3px 8px', 
-              borderRadius: '4px', 
-              backgroundColor: userRole === 'admin' ? '#f3e8ff' : '#f1f5f9',
-              color: userRole === 'admin' ? '#6b21a8' : '#475569',
-              fontWeight: 600 
-            }}>
-              {userRole === 'admin' ? 'ADMIN' : 'VIEWER'}
-            </span>
+          {/* ปุ่ม Avatar วงกลมบน Header */}
+          <button
+            onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+            style={{
+              width: '36px',
+              height: '36px',
+              borderRadius: '50%',
+              backgroundColor: '#ffffff',
+              border: '1px solid #cbd5e1',
+              color: '#334155',
+              fontWeight: 600,
+              fontSize: '13px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              outline: 'none'
+            }}
+          >
+            {getUserInitials(session?.user?.email)}
+          </button>
 
-            {userRole === 'admin' && (
-              <button
-                onClick={() => {
-                  setIsSettingsOpen(true)
-                  loadProfilesList()
-                }}
-                style={{
-                  backgroundColor: '#f8fafc',
-                  color: '#0f172a',
-                  border: 'none',
-                  height: '32px',
-                  padding: '0 12px',
-                  borderRadius: '6px',
-                  cursor: 'pointer',
-                  fontSize: '12px',
-                  fontWeight: 500
-                }}
-              >
-                ตั้งค่าระบบ
-              </button>
-            )}
+          {/* Popover Menu เมื่อกดที่ Avatar */}
+          {isProfileMenuOpen && (
+            <>
+              {/* พื้นหลังสำหรับคลิกปิด */}
+              <div 
+                style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 99 }} 
+                onClick={() => setIsProfileMenuOpen(false)} 
+              />
 
-            <button 
-              onClick={handleLogout}
-              style={{ backgroundColor: '#f8fafc', color: '#0f172a', border: 'none', height: '32px', padding: '0 12px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 500 }}
-            >
-              ออกจากระบบ
-            </button>
-          </div>
+              <div style={{
+                position: 'absolute',
+                top: '46px',
+                right: 0,
+                width: '320px',
+                backgroundColor: '#ffffff',
+                borderRadius: '12px',
+                boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.12), 0 8px 10px -6px rgba(0, 0, 0, 0.08)',
+                border: '1px solid #e2e8f0',
+                zIndex: 100,
+                overflow: 'hidden'
+              }}>
+                {/* แถบบน: ชื่อระบบ / ปุ่ม Sign out */}
+                <div style={{ padding: '12px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #f1f5f9', backgroundColor: '#f8fafc' }}>
+                  <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 600 }}>
+                    IT Asset Management
+                  </span>
+                  <button 
+                    onClick={handleLogout}
+                    style={{ background: 'none', border: 'none', color: '#2563eb', fontSize: '12px', fontWeight: 600, cursor: 'pointer', padding: 0 }}
+                  >
+                    Sign out
+                  </button>
+                </div>
+
+                {/* ส่วนตรงกลาง: Avatar ใหญ่ + ข้อมูลบัญชี */}
+                <div style={{ padding: '20px 16px', display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
+                  <div style={{
+                    width: '64px',
+                    height: '64px',
+                    borderRadius: '50%',
+                    border: '1px solid #cbd5e1',
+                    backgroundColor: '#ffffff',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '22px',
+                    fontWeight: 500,
+                    color: '#334155',
+                    flexShrink: 0
+                  }}>
+                    {getUserInitials(session?.user?.email)}
+                  </div>
+
+                  <div style={{ flex: 1, overflow: 'hidden' }}>
+                    <div style={{ fontSize: '15px', fontWeight: 700, color: '#0f172a', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {session?.user?.email?.split('@')[0]}
+                    </div>
+                    <div style={{ fontSize: '12px', color: '#64748b', wordBreak: 'break-all', marginTop: '2px' }}>
+                      {session?.user?.email}
+                    </div>
+
+                    <div style={{ marginTop: '6px' }}>
+                      <span style={{ 
+                        fontSize: '10px', 
+                        padding: '2px 8px', 
+                        borderRadius: '4px', 
+                        backgroundColor: userRole === 'admin' ? '#f3e8ff' : '#f1f5f9',
+                        color: userRole === 'admin' ? '#6b21a8' : '#475569',
+                        fontWeight: 700 
+                      }}>
+                        {userRole === 'admin' ? 'ADMIN' : 'VIEWER'}
+                      </span>
+                    </div>
+
+                    {/* เมนูการทำงาน */}
+                    <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      <button
+                        onClick={() => {
+                          setIsProfileMenuOpen(false)
+                          setIsSettingsOpen(true)
+                          setIsChangePasswordOpen(true)
+                        }}
+                        style={{ background: 'none', border: 'none', color: '#2563eb', fontSize: '12px', textAlign: 'left', padding: 0, cursor: 'pointer', textDecoration: 'underline' }}
+                      >
+                        เปลี่ยนรหัสผ่าน (Change password)
+                      </button>
+
+                      {userRole === 'admin' && (
+                        <button
+                          onClick={() => {
+                            setIsProfileMenuOpen(false)
+                            setIsSettingsOpen(true)
+                            setIsAddUserOpen(true)
+                          }}
+                          style={{ background: 'none', border: 'none', color: '#2563eb', fontSize: '12px', textAlign: 'left', padding: 0, cursor: 'pointer', textDecoration: 'underline' }}
+                        >
+                          ตั้งค่า / เพิ่มผู้ใช้ (Settings)
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* แถบล่าง: สลับเข้าสู่ระบบบัญชีอื่น */}
+                <div style={{ padding: '12px 16px', borderTop: '1px solid #f1f5f9', backgroundColor: '#f8fafc', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <div style={{ width: '28px', height: '28px', borderRadius: '50%', border: '1px solid #cbd5e1', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px', backgroundColor: '#ffffff' }}>
+                    👤
+                  </div>
+                  <button
+                    onClick={handleLogout}
+                    style={{ background: 'none', border: 'none', color: '#0f172a', fontSize: '12px', fontWeight: 500, cursor: 'pointer', padding: 0 }}
+                  >
+                    Sign in with a different account
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
+
         </div>
       </header>
 
@@ -1583,7 +1721,6 @@ function App() {
         {/* VIEW 0: ANALYTICS DASHBOARD */}
         {mainTab === 'dashboard' && (
           <div>
-            {/* การ์ด KPI */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', marginBottom: '20px' }}>
               <div style={{ backgroundColor: '#ffffff', borderRadius: '8px', padding: '16px', boxShadow: '0 1px 3px rgba(0,0,0,0.02)', border: '1px solid #e2e8f0' }}>
                 <span style={{ color: '#64748b', fontWeight: 500, fontSize: '12px' }}>จำนวนอุปกรณ์ฮาร์ดแวร์ทั้งหมด</span>
@@ -1632,10 +1769,7 @@ function App() {
               </div>
             </div>
 
-            {/* ส่วนวิเคราะห์หลัก */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '20px' }}>
-              
-              {/* วิเคราะห์วงจรชีวิตฮาร์ดแวร์ */}
               <div style={{ backgroundColor: '#ffffff', borderRadius: '8px', padding: '20px', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.02)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
                   <span style={{ fontSize: '15px', fontWeight: 600, color: '#0f172a' }}>วิเคราะห์วงจรชีวิตฮาร์ดแวร์ (Hardware Lifecycle)</span>
@@ -1687,7 +1821,6 @@ function App() {
                 </div>
               </div>
 
-              {/* สถานะและสุขภาพลิขสิทธิ์ซอฟต์แวร์ */}
               <div style={{ backgroundColor: '#ffffff', borderRadius: '8px', padding: '20px', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.02)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
                   <span style={{ fontSize: '15px', fontWeight: 600, color: '#0f172a' }}>สถานะและสุขภาพลิขสิทธิ์ซอฟต์แวร์ (License Health)</span>
@@ -1716,10 +1849,8 @@ function App() {
                   </div>
                 </div>
               </div>
-
             </div>
 
-            {/* ส่วนสรุปแผนกและ Vendor */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
               <div style={{ backgroundColor: '#ffffff', borderRadius: '8px', padding: '20px', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.02)' }}>
                 <span style={{ fontSize: '15px', fontWeight: 600, color: '#0f172a', display: 'block', marginBottom: '14px' }}>
@@ -1830,7 +1961,6 @@ function App() {
               </div>
             </div>
 
-            {/* แผงควบคุมฮาร์ดแวร์ */}
             <div style={{ backgroundColor: '#ffffff', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.02)', overflow: 'hidden', border: '1px solid #e2e8f0' }}>
               
               <div style={{ padding: '12px 16px 0', borderBottom: '1px solid #e2e8f0', display: 'flex', gap: '6px', backgroundColor: '#f8fafc' }}>
@@ -1889,7 +2019,6 @@ function App() {
                 </button>
               </div>
 
-              {/* แถบเครื่องมือและตัวกรอง */}
               <div style={{ padding: '16px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px', borderBottom: '1px solid #e2e8f0' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                   <span style={{ color: '#0f172a', fontWeight: 600, fontSize: '15px' }}>
@@ -2036,7 +2165,6 @@ function App() {
                 </div>
               </div>
 
-              {/* การแสดงผลข้อมูล ฮาร์ดแวร์ */}
               {viewMode === 'person' && personDisplayFormat === 'cards' ? (
                 <div style={{ padding: '16px 20px' }}>
                   {loadingHardware ? (
@@ -2093,7 +2221,6 @@ function App() {
                   )}
                 </div>
               ) : (
-                /* ตารางฮาร์ดแวร์ */
                 <div style={{ overflowX: 'auto', width: '100%' }}>
                   {loadingHardware ? (
                     <div style={{ padding: '30px', textAlign: 'center', color: '#64748b' }}>กำลังดึงข้อมูล...</div>
@@ -2165,7 +2292,6 @@ function App() {
                 </div>
               )}
 
-              {/* การแบ่งหน้า (Pagination) */}
               {(viewMode !== 'person' || personDisplayFormat === 'table') && (
                 <div style={{ padding: '12px 20px', borderTop: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#ffffff' }}>
                   <span style={{ fontSize: '12px', color: '#64748b', fontWeight: 500 }}>
@@ -2231,7 +2357,6 @@ function App() {
               </div>
             </div>
 
-            {/* แผงควบคุมซอฟต์แวร์ */}
             <div style={{ backgroundColor: '#ffffff', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.02)', overflow: 'hidden', border: '1px solid #e2e8f0' }}>
               
               <div style={{ padding: '16px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px', borderBottom: '1px solid #e2e8f0' }}>
@@ -2338,7 +2463,6 @@ function App() {
                 </div>
               </div>
 
-              {/* ตารางซอฟต์แวร์ */}
               <div style={{ overflowX: 'auto', width: '100%' }}>
                 {loadingSoftware ? (
                   <div style={{ padding: '30px', textAlign: 'center', color: '#64748b' }}>กำลังดึงข้อมูลซอฟต์แวร์...</div>
@@ -2494,7 +2618,6 @@ function App() {
                 </div>
               </div>
 
-              {/* ตารางอุปกรณ์เช่า */}
               <div style={{ overflowX: 'auto', width: '100%' }}>
                 {loadingLeasing ? (
                   <div style={{ padding: '30px', textAlign: 'center', color: '#64748b' }}>กำลังดึงข้อมูลอุปกรณ์เช่า...</div>
@@ -2580,73 +2703,151 @@ function App() {
 
       </main>
 
-      {/* Modal ตั้งค่า & จัดการผู้ใช้งาน */}
-      {isSettingsOpen && userRole === 'admin' && (
+      {/* Modal ตั้งค่าระบบ */}
+      {isSettingsOpen && (
         <div className="modal-overlay" onClick={() => setIsSettingsOpen(false)}>
-          <div className="modal-card" style={{ maxWidth: '700px', borderRadius: '12px', boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1)' }} onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header" style={{ borderBottom: '1px solid #e2e8f0', padding: '16px 20px' }}>
-              <span style={{ fontSize: '16px', fontWeight: 600, color: '#0f172a' }}>การตั้งค่าระบบและจัดการผู้ใช้งาน</span>
+          <div className="modal-card" style={{ maxWidth: '600px', borderRadius: '12px', boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1)' }} onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header" style={{ borderBottom: '1px solid #e2e8f0', padding: '16px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: '16px', fontWeight: 600, color: '#0f172a' }}>ตั้งค่า</span>
               <button onClick={() => setIsSettingsOpen(false)} style={{ background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer', color: '#64748b' }}>✕</button>
             </div>
 
-            <div style={{ padding: '20px', maxHeight: '70vh', overflowY: 'auto' }}>
-              <div style={{ backgroundColor: '#f8fafc', padding: '16px', borderRadius: '8px', marginBottom: '20px' }}>
-                <div style={{ fontSize: '13px', fontWeight: 600, color: '#0f172a', marginBottom: '10px' }}>
-                  เพิ่มผู้ใช้งานใหม่ (สิทธิ์ Viewer)
-                </div>
+            <div style={{ padding: '20px', maxHeight: '70vh', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              
+              {/* 1. เมนูปรับเปลี่ยนรหัสผ่าน (Dropdown / Accordion) */}
+              <div style={{ backgroundColor: '#ffffff', borderRadius: '8px', border: '1px solid #e2e8f0', overflow: 'hidden' }}>
+                <button
+                  type="button"
+                  onClick={() => setIsChangePasswordOpen(!isChangePasswordOpen)}
+                  style={{
+                    width: '100%',
+                    padding: '12px 16px',
+                    backgroundColor: '#f8fafc',
+                    border: 'none',
+                    display: 'flex',
+                    justify: 'space-between',
+                    alignItems: 'center',
+                    cursor: 'pointer',
+                    fontWeight: 600,
+                    fontSize: '13px',
+                    color: '#0f172a'
+                  }}
+                >
+                  <span>🔑 เปลี่ยนรหัสผ่านประจำบัญชี (Change Password)</span>
+                  <span style={{ color: '#64748b', fontSize: '11px' }}>{isChangePasswordOpen ? '▲ ซ่อน' : '▼ เปิด'}</span>
+                </button>
 
-                <form onSubmit={handleAddViewerUser} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto', gap: '10px', alignItems: 'flex-end' }}>
-                  <div>
-                    <label style={{ fontSize: '12px', color: '#64748b', display: 'block', marginBottom: '4px' }}>Username หรือ อีเมล *</label>
-                    <input type="text" placeholder="user หรือ user@company.com" value={newUserEmail} onChange={e => setNewUserEmail(e.target.value)} required style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '12px', boxSizing: 'border-box' }} />
-                  </div>
-                  <div>
-                    <label style={{ fontSize: '12px', color: '#64748b', display: 'block', marginBottom: '4px' }}>รหัสผ่าน (อย่างน้อย 6 ตัว) *</label>
-                    <input type="password" placeholder="••••••••" value={newUserPassword} onChange={e => setNewUserPassword(e.target.value)} required style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '12px', boxSizing: 'border-box' }} />
-                  </div>
-                  <button type="submit" disabled={addingUser} style={{ backgroundColor: '#0f172a', color: '#ffffff', border: 'none', padding: '0 16px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 500, height: '36px' }}>{addingUser ? 'กำลังบันทึก...' : 'บันทึก'}</button>
-                </form>
-              </div>
+                {isChangePasswordOpen && (
+                  <form onSubmit={handleChangePasswordSubmit} style={{ padding: '16px', borderTop: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: '12px', backgroundColor: '#ffffff' }}>
+                    <div>
+                      <label style={{ fontSize: '12px', color: '#64748b', display: 'block', marginBottom: '4px' }}>รหัสผ่านใหม่ (อย่างน้อย 6 ตัวอักษร) *</label>
+                      <input
+                        type="password"
+                        placeholder="••••••••"
+                        value={changePasswordInput}
+                        onChange={e => setChangePasswordInput(e.target.value)}
+                        required
+                        style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '12px', boxSizing: 'border-box', outline: 'none' }}
+                      />
+                    </div>
 
-              <div>
-                <div style={{ fontSize: '13px', fontWeight: 600, color: '#0f172a', marginBottom: '10px' }}>
-                  รายชื่อผู้ใช้งานระบบ ({profilesList.length} ราย)
-                </div>
+                    <div>
+                      <label style={{ fontSize: '12px', color: '#64748b', display: 'block', marginBottom: '4px' }}>ยืนยันรหัสผ่านใหม่ *</label>
+                      <input
+                        type="password"
+                        placeholder="••••••••"
+                        value={confirmPasswordInput}
+                        onChange={e => setConfirmPasswordInput(e.target.value)}
+                        required
+                        style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '12px', boxSizing: 'border-box', outline: 'none' }}
+                      />
+                    </div>
 
-                {loadingProfiles ? (
-                  <div style={{ textAlign: 'center', padding: '16px', color: '#64748b', fontSize: '12px' }}>กำลังโหลดข้อมูลผู้ใช้...</div>
-                ) : (
-                  <table style={{ width: '100%', borderCollapse: 'collapse', borderRadius: '8px', overflow: 'hidden' }}>
-                    <thead>
-                      <tr style={{ backgroundColor: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
-                        <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: '12px', color: '#64748b', fontWeight: 600 }}>อีเมลผู้ใช้งาน (Email)</th>
-                        <th style={{ padding: '10px 12px', textAlign: 'center', fontSize: '12px', color: '#64748b', fontWeight: 600, width: '120px' }}>สิทธิ์ (Role)</th>
-                        <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: '12px', color: '#64748b', fontWeight: 600 }}>User ID</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {profilesList.map((prof, idx) => {
-                        const isProfAdmin = (prof.role || '').toLowerCase() === 'admin'
-                        return (
-                          <tr key={idx} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                            <td style={{ padding: '10px 12px', fontSize: '12px', color: '#0f172a', fontWeight: 500 }}>{prof.email || '-'}</td>
-                            <td style={{ padding: '10px 12px', textAlign: 'center' }}>
-                              <span style={{ fontSize: '11px', padding: '2px 8px', borderRadius: '4px', backgroundColor: isProfAdmin ? '#f3e8ff' : '#f1f5f9', color: isProfAdmin ? '#6b21a8' : '#475569', fontWeight: 600 }}>
-                                {isProfAdmin ? 'ADMIN' : 'VIEWER'}
-                              </span>
-                            </td>
-                            <td style={{ padding: '10px 12px', fontSize: '11px', color: '#64748b', fontFamily: 'monospace' }}>{prof.id}</td>
-                          </tr>
-                        )
-                      })}
-                    </tbody>
-                  </table>
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '4px' }}>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsChangePasswordOpen(false)
+                          setChangePasswordInput('')
+                          setConfirmPasswordInput('')
+                        }}
+                        style={{ height: '32px', padding: '0 12px', backgroundColor: '#f1f5f9', color: '#475569', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 500 }}
+                      >
+                        ยกเลิก
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={changingPassword}
+                        style={{ height: '32px', padding: '0 14px', backgroundColor: '#0f172a', color: '#ffffff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 500 }}
+                      >
+                        {changingPassword ? 'กำลังบันทึก...' : 'อัปเดตรหัสผ่าน'}
+                      </button>
+                    </div>
+                  </form>
                 )}
               </div>
+
+              {/* 2. เมนูเพิ่มผู้ใช้งานใหม่ (Dropdown / Accordion) */}
+              {userRole === 'admin' && (
+                <div style={{ backgroundColor: '#ffffff', borderRadius: '8px', border: '1px solid #e2e8f0', overflow: 'hidden' }}>
+                  <button
+                    type="button"
+                    onClick={() => setIsAddUserOpen(!isAddUserOpen)}
+                    style={{
+                      width: '100%',
+                      padding: '12px 16px',
+                      backgroundColor: '#f8fafc',
+                      border: 'none',
+                      display: 'flex',
+                      justify: 'space-between',
+                      alignItems: 'center',
+                      cursor: 'pointer',
+                      fontWeight: 600,
+                      fontSize: '13px',
+                      color: '#0f172a'
+                    }}
+                  >
+                    <span>➕ เพิ่มผู้ใช้งานใหม่ (สิทธิ์ Viewer)</span>
+                    <span style={{ color: '#64748b', fontSize: '11px' }}>{isAddUserOpen ? '▲ ซ่อน' : '▼ เปิด'}</span>
+                  </button>
+
+                  {isAddUserOpen && (
+                    <form onSubmit={handleAddViewerUser} style={{ padding: '16px', borderTop: '1px solid #e2e8f0', display: 'grid', gridTemplateColumns: '1fr 1fr auto', gap: '10px', alignItems: 'flex-end', backgroundColor: '#ffffff' }}>
+                      <div>
+                        <label style={{ fontSize: '12px', color: '#64748b', display: 'block', marginBottom: '4px' }}>Username หรือ อีเมล *</label>
+                        <input type="text" placeholder="user หรือ user@company.com" value={newUserEmail} onChange={e => setNewUserEmail(e.target.value)} required style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '12px', boxSizing: 'border-box', outline: 'none' }} />
+                      </div>
+                      <div>
+                        <label style={{ fontSize: '12px', color: '#64748b', display: 'block', marginBottom: '4px' }}>รหัสผ่าน (อย่างน้อย 6 ตัว) *</label>
+                        <input type="password" placeholder="••••••••" value={newUserPassword} onChange={e => setNewUserPassword(e.target.value)} required style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '12px', boxSizing: 'border-box', outline: 'none' }} />
+                      </div>
+                      <button type="submit" disabled={addingUser} style={{ backgroundColor: '#0f172a', color: '#ffffff', border: 'none', padding: '0 16px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 500, height: '36px' }}>{addingUser ? 'กำลังบันทึก...' : 'บันทึก'}</button>
+                    </form>
+                  )}
+                </div>
+              )}
+
             </div>
 
-            <div style={{ padding: '12px 20px', borderTop: '1px solid #e2e8f0', display: 'flex', justifyContent: 'flex-end', backgroundColor: '#f8fafc' }}>
-              <button onClick={() => setIsSettingsOpen(false)} style={{ height: '36px', padding: '0 16px', backgroundColor: '#ffffff', color: '#0f172a', border: '1px solid #e2e8f0', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 500 }}>ปิด</button>
+            <div style={{ padding: '12px 20px', borderTop: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#f8fafc' }}>
+              <button 
+                onClick={handleLogout} 
+                style={{ 
+                  height: '34px', 
+                  padding: '0 16px', 
+                  backgroundColor: '#fff1f2', 
+                  color: '#e11d48', 
+                  border: 'none', 
+                  borderRadius: '6px', 
+                  cursor: 'pointer', 
+                  fontSize: '12px', 
+                  fontWeight: 600 
+                }}
+              >
+                🚪 ออกจากระบบ
+              </button>
+
+              <button onClick={() => setIsSettingsOpen(false)} style={{ height: '34px', padding: '0 16px', backgroundColor: '#ffffff', color: '#0f172a', border: '1px solid #cbd5e1', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 500 }}>ปิด</button>
             </div>
           </div>
         </div>
