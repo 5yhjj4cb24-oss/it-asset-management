@@ -121,6 +121,14 @@ function App() {
   const [loginPassword, setLoginPassword] = useState('')
   const [authLoading, setAuthLoading] = useState(false)
 
+  // 🔑 Forgot Password States
+  const [isForgotPassword, setIsForgotPassword] = useState(false)
+  const [resetEmail, setResetEmail] = useState('')
+  const [resetSent, setResetSent] = useState(false)
+  const [isResettingPassword, setIsResettingPassword] = useState(false)
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmNewPassword, setConfirmNewPassword] = useState('')
+
   // ⚙️ Settings & User Management States
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const [profilesList, setProfilesList] = useState([])
@@ -184,15 +192,21 @@ function App() {
     return () => clearInterval(timer)
   }, [])
 
-  // 🔐 ระบบ Auth เช็ก Session & Role อัตโนมัติ
+  // 🔐 ระบบ Auth เช็ก Session & Role + ตรวจสอบลิงก์ตั้งรหัสผ่านใหม่
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session)
       if (session) fetchUserRole(session.user.id)
     })
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session)
+      
+      // ดักจับ Event เมื่อเปิดเว็บมาจากลิงก์ในอีเมลรีเซ็ตรหัสผ่าน
+      if (event === 'PASSWORD_RECOVERY') {
+        setIsResettingPassword(true)
+      }
+
       if (session) fetchUserRole(session.user.id)
       else setUserRole('viewer')
     })
@@ -201,16 +215,16 @@ function App() {
   }, [])
 
   useEffect(() => {
-    if (session) {
+    if (session && !isResettingPassword) {
       loadAllData()
     }
-  }, [session])
+  }, [session, isResettingPassword])
 
   useEffect(() => {
-    if (session) {
+    if (session && !isResettingPassword) {
       applyFiltersAndPagination()
     }
-  }, [searchTerm, selectedDept, selectedCategory, viewMode, currentPage, allRawAssets, session])
+  }, [searchTerm, selectedDept, selectedCategory, viewMode, currentPage, allRawAssets, session, isResettingPassword])
 
   async function fetchUserRole(userId) {
     try {
@@ -243,6 +257,64 @@ function App() {
       alert('เข้าสู่ระบบไม่สำเร็จ: ' + error.message)
     }
     setAuthLoading(false)
+  }
+
+  // 🔑 ส่งอีเมลขอลิงก์รีเซ็ตรหัสผ่าน
+  async function handleSendResetEmail(e) {
+    e.preventDefault()
+    if (!resetEmail.trim()) {
+      alert('กรุณากรอกอีเมล')
+      return
+    }
+
+    setAuthLoading(true)
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(resetEmail.trim(), {
+        redirectTo: window.location.origin
+      })
+
+      if (error) throw error
+
+      setResetSent(true)
+    } catch (err) {
+      console.error('Reset password error:', err)
+      alert('ไม่สามารถส่งลิงก์รีเซ็ตได้: ' + err.message)
+    } finally {
+      setAuthLoading(false)
+    }
+  }
+
+  // 🔑 บันทิกรหัสผ่านใหม่
+  async function handleUpdateNewPassword(e) {
+    e.preventDefault()
+    if (newPassword !== confirmNewPassword) {
+      alert('รหัสผ่านทั้งสองช่องไม่ตรงกัน')
+      return
+    }
+
+    if (newPassword.length < 6) {
+      alert('รหัสผ่านต้องมีความยาวอย่างน้อย 6 ตัวอักษร')
+      return
+    }
+
+    setAuthLoading(true)
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword
+      })
+
+      if (error) throw error
+
+      alert('ตั้งค่ารหัสผ่านใหม่เรียบร้อยแล้ว!')
+      setIsResettingPassword(false)
+      setNewPassword('')
+      setConfirmNewPassword('')
+    } catch (err) {
+      console.error('Update password error:', err)
+      alert('เกิดข้อผิดพลาดในการตั้งรหัสผ่านใหม่: ' + err.message)
+    } finally {
+      setAuthLoading(false)
+    }
   }
 
   async function handleLogout() {
@@ -620,13 +692,77 @@ function App() {
   }
 
   // ----------------------------------------------------
-  // 🔑 หน้าจอ Login 30 / 70 ธีมขาวเหลืองมีลวดลายสุภาพ
+  // 🔑 หน้าจอตั้งรหัสผ่านใหม่ (เมื่อคลิกลิงก์จากอีเมล)
+  // ----------------------------------------------------
+  if (isResettingPassword) {
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#f8fafc', fontFamily: 'Sarabun, Inter, sans-serif' }}>
+        <div style={{ width: '100%', maxWidth: '400px', backgroundColor: '#ffffff', padding: '36px 32px', borderRadius: '12px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)', border: '1px solid #e2e8f0' }}>
+          <div style={{ marginBottom: '24px' }}>
+            <div style={{ backgroundColor: '#fef3c7', color: '#92400e', borderRadius: '6px', fontWeight: 600, padding: '4px 8px', fontSize: '12px', display: 'inline-block', marginBottom: '10px' }}>
+              🔑 Reset Password
+            </div>
+            <h2 style={{ fontSize: '20px', fontWeight: 600, color: '#0f172a', margin: 0 }}>กำหนดรหัสผ่านใหม่</h2>
+            <p style={{ fontSize: '13px', color: '#64748b', marginTop: '4px' }}>ระบุรหัสผ่านใหม่ที่คุณต้องการใช้งาน</p>
+          </div>
+
+          <form onSubmit={handleUpdateNewPassword} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div>
+              <label style={{ fontSize: '12px', fontWeight: 500, color: '#0f172a', display: 'block', marginBottom: '6px' }}>รหัสผ่านใหม่ ( New Password )</label>
+              <input 
+                type="password" 
+                value={newPassword} 
+                onChange={e => setNewPassword(e.target.value)} 
+                placeholder="อย่างน้อย 6 ตัวอักษร" 
+                required 
+                style={{ width: '100%', height: '36px', padding: '0 12px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '13px', boxSizing: 'border-box', color: '#0f172a', outline: 'none' }} 
+              />
+            </div>
+
+            <div>
+              <label style={{ fontSize: '12px', fontWeight: 500, color: '#0f172a', display: 'block', marginBottom: '6px' }}>ยืนยันรหัสผ่านใหม่ ( Confirm Password )</label>
+              <input 
+                type="password" 
+                value={confirmNewPassword} 
+                onChange={e => setConfirmNewPassword(e.target.value)} 
+                placeholder="กรอกรหัสผ่านใหม่อีกครั้ง" 
+                required 
+                style={{ width: '100%', height: '36px', padding: '0 12px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '13px', boxSizing: 'border-box', color: '#0f172a', outline: 'none' }} 
+              />
+            </div>
+
+            <button 
+              type="submit" 
+              disabled={authLoading} 
+              style={{ 
+                width: '100%', 
+                height: '36px',
+                backgroundColor: '#0f172a', 
+                color: '#ffffff', 
+                border: 'none', 
+                borderRadius: '6px', 
+                cursor: 'pointer', 
+                fontSize: '13px', 
+                fontWeight: 500, 
+                marginTop: '8px'
+              }}
+            >
+              {authLoading ? 'กำลังบันทึก...' : 'บันทึกรหัสผ่านใหม่'}
+            </button>
+          </form>
+        </div>
+      </div>
+    )
+  }
+
+  // ----------------------------------------------------
+  // 🔑 หน้าจอ Login / ลืมรหัสผ่าน (30 / 70 Enterprise Layout)
   // ----------------------------------------------------
   if (!session) {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', fontFamily: 'Sarabun, Inter, sans-serif', backgroundColor: '#ffffff' }}>
         
-        {/* ฝั่งซ้าย: Enterprise Banner (30%) โทนขาวเหลืองสุภาพ + ลวดลาย Dot Pattern */}
+        {/* ฝั่งซ้าย: Enterprise Banner (30%) */}
         <div style={{
           flex: '0 0 30%',
           minWidth: '320px',
@@ -652,7 +788,7 @@ function App() {
             </h1>
             
             <p style={{ color: '#475569', fontSize: '13px', lineHeight: 1.6, fontWeight: 400 }}>
-              ศูนย์กลางควบคุม ตรวจสอบ และติดตามสถานะอุปกรณ์ไอทีทุกประเภท พร้อมระบบ Smart Detect จำแนกผู้ถือครองอัตโนมัติ
+              ศูนย์กลางควบคุม ตรวจสอบ และติดตามสถานะอุปกรณ์ไอทีทุกประเภท พร้อมระบบ Smart Detect
             </p>
           </div>
 
@@ -687,7 +823,7 @@ function App() {
           </div>
         </div>
 
-        {/* ฝั่งขวา: Login Form (70%) */}
+        {/* ฝั่งขวา: Login / Forgot Password Form (70%) */}
         <div style={{
           flex: '1',
           display: 'flex',
@@ -698,60 +834,146 @@ function App() {
           boxSizing: 'border-box'
         }}>
           <div style={{ width: '100%', maxWidth: '380px', backgroundColor: '#ffffff', padding: '36px 32px', borderRadius: '12px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)' }}>
-            <div style={{ marginBottom: '24px' }}>
-              <div style={{ backgroundColor: '#f1f5f9', color: '#0f172a', borderRadius: '6px', fontWeight: 500, padding: '3px 8px', fontSize: '12px', display: 'inline-block', marginBottom: '10px' }}>
-                IT Portal
-              </div>
-              <h2 style={{ fontSize: '20px', fontWeight: 600, color: '#0f172a', margin: 0 }}>เข้าสู่ระบบบริหารทรัพย์สิน</h2>
-              <p style={{ fontSize: '13px', color: '#64748b', marginTop: '4px' }}>ระบุอีเมลและรหัสผ่านเพื่อเข้าใช้งานระบบ</p>
-            </div>
-
-            <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            
+            {/* 🔄 MODE 1: หน้าขอลิงก์ลืมรหัสผ่าน */}
+            {isForgotPassword ? (
               <div>
-                <label style={{ fontSize: '12px', fontWeight: 500, color: '#0f172a', display: 'block', marginBottom: '6px' }}>อีเมล (Email)</label>
-                <input 
-                  type="email" 
-                  value={loginEmail} 
-                  onChange={e => setLoginEmail(e.target.value)} 
-                  placeholder="name@company.com" 
-                  required 
-                  style={{ width: '100%', height: '36px', padding: '0 12px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '13px', boxSizing: 'border-box', color: '#0f172a', outline: 'none' }} 
-                />
-              </div>
+                <div style={{ marginBottom: '24px' }}>
+                  <div style={{ backgroundColor: '#fef3c7', color: '#92400e', borderRadius: '6px', fontWeight: 600, padding: '3px 8px', fontSize: '12px', display: 'inline-block', marginBottom: '10px' }}>
+                    Password Recovery
+                  </div>
+                  <h2 style={{ fontSize: '20px', fontWeight: 600, color: '#0f172a', margin: 0 }}>ลืมรหัสผ่าน?</h2>
+                  <p style={{ fontSize: '13px', color: '#64748b', marginTop: '4px' }}>กรอกอีเมลของคุณเพื่อรับลิงก์สำหรับรีเซ็ตรหัสผ่าน</p>
+                </div>
 
+                {resetSent ? (
+                  <div style={{ backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0', padding: '16px', borderRadius: '8px', marginBottom: '16px' }}>
+                    <div style={{ color: '#166534', fontWeight: 600, fontSize: '13px', marginBottom: '4px' }}>✉️ ส่งอีเมลเรียบร้อยแล้ว!</div>
+                    <p style={{ color: '#15803d', fontSize: '12px', margin: 0, lineHeight: 1.5 }}>
+                      ระบบได้ส่งลิงก์รีเซ็ตรหัสผ่านไปยัง <strong>{resetEmail}</strong> แล้ว กรุณาเช็กกล่องข้อความในอีเมลของคุณ
+                    </p>
+                  </div>
+                ) : (
+                  <form onSubmit={handleSendResetEmail} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    <div>
+                      <label style={{ fontSize: '12px', fontWeight: 500, color: '#0f172a', display: 'block', marginBottom: '6px' }}>อีเมล (Email)</label>
+                      <input 
+                        type="email" 
+                        value={resetEmail} 
+                        onChange={e => setResetEmail(e.target.value)} 
+                        placeholder="name@company.com" 
+                        required 
+                        style={{ width: '100%', height: '36px', padding: '0 12px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '13px', boxSizing: 'border-box', color: '#0f172a', outline: 'none' }} 
+                      />
+                    </div>
+
+                    <button 
+                      type="submit" 
+                      disabled={authLoading} 
+                      style={{ 
+                        width: '100%', 
+                        height: '36px',
+                        backgroundColor: '#0f172a', 
+                        color: '#ffffff', 
+                        border: 'none', 
+                        borderRadius: '6px', 
+                        cursor: 'pointer', 
+                        fontSize: '13px', 
+                        fontWeight: 500, 
+                        marginTop: '4px',
+                        boxShadow: '0 2px 4px rgba(15, 23, 42, 0.15)'
+                      }}
+                    >
+                      {authLoading ? 'กำลังส่งอีเมล...' : 'ส่งลิงก์รีเซ็ตรหัสผ่าน'}
+                    </button>
+                  </form>
+                )}
+
+                <div style={{ marginTop: '20px', textAlign: 'center' }}>
+                  <button 
+                    type="button" 
+                    onClick={() => {
+                      setIsForgotPassword(false)
+                      setResetSent(false)
+                    }} 
+                    style={{ background: 'none', border: 'none', color: '#64748b', fontSize: '12px', cursor: 'pointer', fontWeight: 500 }}
+                  >
+                    ◀ กลับไปหน้าเข้าสู่ระบบ
+                  </button>
+                </div>
+              </div>
+            ) : (
+              /* 🔐 MODE 2: หน้าเข้าสู่ระบบปกติ */
               <div>
-                <label style={{ fontSize: '12px', fontWeight: 500, color: '#0f172a', display: 'block', marginBottom: '6px' }}>รหัสผ่าน (Password)</label>
-                <input 
-                  type="password" 
-                  value={loginPassword} 
-                  onChange={e => setLoginPassword(e.target.value)} 
-                  placeholder="••••••••" 
-                  required 
-                  style={{ width: '100%', height: '36px', padding: '0 12px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '13px', boxSizing: 'border-box', color: '#0f172a', outline: 'none' }} 
-                />
-              </div>
+                <div style={{ marginBottom: '24px' }}>
+                  <div style={{ backgroundColor: '#f1f5f9', color: '#0f172a', borderRadius: '6px', fontWeight: 500, padding: '3px 8px', fontSize: '12px', display: 'inline-block', marginBottom: '10px' }}>
+                  IT Teeraporn Hospital
+                  </div>
+                  <h2 style={{ fontSize: '20px', fontWeight: 600, color: '#0f172a', margin: 0 }}>เข้าสู่ระบบบริหารทรัพย์สิน</h2>
+                  <p style={{ fontSize: '13px', color: '#64748b', marginTop: '4px' }}>ระบุอีเมลและรหัสผ่านเพื่อเข้าใช้งานระบบ</p>
+                </div>
 
-              <button 
-                type="submit" 
-                disabled={authLoading} 
-                style={{ 
-                  width: '100%', 
-                  height: '36px',
-                  backgroundColor: '#0f172a', 
-                  color: '#ffffff', 
-                  border: 'none', 
-                  borderRadius: '6px', 
-                  cursor: 'pointer', 
-                  fontSize: '13px', 
-                  fontWeight: 500, 
-                  marginTop: '8px',
-                  boxShadow: '0 2px 4px rgba(15, 23, 42, 0.15)',
-                  transition: 'background-color 0.2s'
-                }}
-              >
-                {authLoading ? 'กำลังเข้าสู่ระบบ...' : 'เข้าสู่ระบบ'}
-              </button>
-            </form>
+                <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  <div>
+                    <label style={{ fontSize: '12px', fontWeight: 500, color: '#0f172a', display: 'block', marginBottom: '6px' }}>อีเมล (Email)</label>
+                    <input 
+                      type="email" 
+                      value={loginEmail} 
+                      onChange={e => setLoginEmail(e.target.value)} 
+                      placeholder="name@company.com" 
+                      required 
+                      style={{ width: '100%', height: '36px', padding: '0 12px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '13px', boxSizing: 'border-box', color: '#0f172a', outline: 'none' }} 
+                    />
+                  </div>
+
+                  <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                      <label style={{ fontSize: '12px', fontWeight: 500, color: '#0f172a' }}>รหัสผ่าน (Password)</label>
+                      <button 
+                        type="button" 
+                        onClick={() => {
+                          setResetEmail(loginEmail)
+                          setIsForgotPassword(true)
+                        }} 
+                        style={{ background: 'none', border: 'none', color: '#2563eb', fontSize: '12px', cursor: 'pointer', fontWeight: 500 }}
+                      >
+                        ลืมรหัสผ่าน?
+                      </button>
+                    </div>
+                    <input 
+                      type="password" 
+                      value={loginPassword} 
+                      onChange={e => setLoginPassword(e.target.value)} 
+                      placeholder="••••••••" 
+                      required 
+                      style={{ width: '100%', height: '36px', padding: '0 12px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '13px', boxSizing: 'border-box', color: '#0f172a', outline: 'none' }} 
+                    />
+                  </div>
+
+                  <button 
+                    type="submit" 
+                    disabled={authLoading} 
+                    style={{ 
+                      width: '100%', 
+                      height: '36px',
+                      backgroundColor: '#0f172a', 
+                      color: '#ffffff', 
+                      border: 'none', 
+                      borderRadius: '6px', 
+                      cursor: 'pointer', 
+                      fontSize: '13px', 
+                      fontWeight: 500, 
+                      marginTop: '8px',
+                      boxShadow: '0 2px 4px rgba(15, 23, 42, 0.15)',
+                      transition: 'background-color 0.2s'
+                    }}
+                  >
+                    {authLoading ? 'กำลังเข้าสู่ระบบ...' : 'เข้าสู่ระบบ'}
+                  </button>
+                </form>
+              </div>
+            )}
+
           </div>
         </div>
       </div>
@@ -1273,7 +1495,7 @@ function App() {
                             </span>
                           </td>
                           
-                          {/* ปุ่มจัดการ: มี Slot Placeholder ดักแนวตั้ง ไม่ล้น ไม่เหลื่อม */}
+                          {/* ปุ่มจัดการ */}
                           <td style={{ padding: '12px 16px', verticalAlign: 'middle', textAlign: 'center', whiteSpace: 'nowrap' }} onClick={(e) => e.stopPropagation()}>
                             {userRole === 'admin' ? (
                               <div style={{ display: 'inline-flex', gap: '6px', alignItems: 'center', justifyContent: 'center' }}>
@@ -1301,7 +1523,6 @@ function App() {
                                     🔄 คืน
                                   </button>
                                 ) : (
-                                  /* ล็อกช่องว่าง 52px สำหรับแถวที่ไม่มีปุ่มคืน ทำให้ปุ่ม แก้ไข/ลบ ตรงกันเป๊ะทุกแถว */
                                   <div style={{ width: '52px', height: '30px' }} />
                                 )}
 
@@ -1376,7 +1597,7 @@ function App() {
                 <button
                   disabled={currentPage >= totalPages || loading}
                   onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                  style={{ height: '32px', padding: '0 14px', borderRadius: '6px', border: 'none', backgroundColor: currentPage >= totalPages ? '#f1f5f9' : '#f8fafc', color: currentPage >= totalPages ? '#cbd5e1' : '#0f172a', cursor: currentPage >= totalPages ? 'not-allowed' : 'pointer', fontSize: '12px', fontWeight: 500 }}
+                  style={{ height: '32px', padding: '0 14px', borderRadius: '6px', border: 'none', backgroundColor: currentPage >= totalPages ? '#f1f5f9' : '#f8fafc', color: currentPage >= totalPages ? '#cbd5e1' : '#0f172a', cursor: currentPage >= totalPages ? '#cbd5e1' : '#0f172a', fontSize: '12px', fontWeight: 500 }}
                 >
                   ถัดไป ▶
                 </button>
@@ -1638,7 +1859,7 @@ function App() {
         <div className="modal-overlay" onClick={() => setSelectedAsset(null)}>
           <div className="modal-card" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px', borderRadius: '12px', boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1)' }}>
             <div className="modal-header" style={{ borderBottom: '1px solid #e2e8f0', padding: '16px 20px' }}>
-              <span style={{ fontSize: '16px', fontWeight: 600, color: '#0f172a' }}>📋 รายละเอียดทรัพย์สิน</span>
+              <span style={{ fontSize: '16px', fontWeight: 600, color: '#0f172a' }}>📋 รายรายละเอียดทรัพย์สิน</span>
               <button onClick={() => setSelectedAsset(null)} style={{ background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer', color: '#64748b' }}>✕</button>
             </div>
 
