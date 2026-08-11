@@ -6,8 +6,7 @@ import './App.css'
 const PAGE_SIZE = 20
 const DEFAULT_DOMAIN = '@gmail.com'
 
-// Component โลโก้แมลงปอ (Dragonfly SVG)
-function DragonflyLogo({ size = 32, color = '#8c71ca' }) {
+function DragonflyLogo({ size = 32, color = '#6b21a8' }) {
   return (
     <svg 
       width={size} 
@@ -203,6 +202,7 @@ function App() {
   const [loginPassword, setLoginPassword] = useState('')
   const [authLoading, setAuthLoading] = useState(false)
 
+  const [isNavMenuOpen, setIsNavMenuOpen] = useState(false)
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false)
 
   const [isForgotPassword, setIsForgotPassword] = useState(false)
@@ -1140,11 +1140,10 @@ function App() {
     .sort((a, b) => b[1] - a[1])
     .slice(0, 5)
 
-  // Reset Password View
   if (isResettingPassword) {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#f8fafc', fontFamily: 'Sarabun, Inter, sans-serif' }}>
-        <div style={{ width: '100%', maxWidth: '400px', backgroundColor: '#ffffff', padding: '36px 32px', borderRadius: '12px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)', border: '1px solid #e2e8f0' }}>
+        <div style={{ width: '100%', maxWidth: '400px', backgroundColor: '#ffffff', padding: '36px 32px', borderRadius: '12px', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)', border: '1px solid #e2e8f0' }}>
           <div style={{ marginBottom: '24px' }}>
             <div style={{ backgroundColor: '#f3e8ff', color: '#6b21a8', borderRadius: '6px', fontWeight: 600, padding: '4px 8px', fontSize: '12px', display: 'inline-block', marginBottom: '10px' }}>
               🔑 รีเซ็ตรหัสผ่าน (Reset Password)
@@ -1162,7 +1161,7 @@ function App() {
                 onChange={e => setNewPassword(e.target.value)} 
                 placeholder="ความยาวอย่างน้อย 6 ตัวอักษร" 
                 required 
-                style={{ width: '100%', height: '36px', padding: '0 12px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '13px', fontWeight: 400, boxSizing: 'border-box', color: '#0f172a', outline: 'none' }} 
+                style={{ width: '100%', height: '36px', padding: '0 12px', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '13px', fontWeight: 400, boxSizing: 'border-box', color: '#0f172a', outline: 'none' }} 
               />
             </div>
 
@@ -1174,7 +1173,7 @@ function App() {
                 onChange={e => setConfirmNewPassword(e.target.value)} 
                 placeholder="กรอกรหัสผ่านใหม่อีกครั้ง" 
                 required 
-                style={{ width: '100%', height: '36px', padding: '0 12px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '13px', fontWeight: 400, boxSizing: 'border-box', color: '#0f172a', outline: 'none' }} 
+                style={{ width: '100%', height: '36px', padding: '0 12px', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '13px', fontWeight: 400, boxSizing: 'border-box', color: '#0f172a', outline: 'none' }} 
               />
             </div>
 
@@ -1184,7 +1183,7 @@ function App() {
               style={{ 
                 width: '100%', 
                 height: '36px',
-                backgroundColor: '#0f172a', 
+                backgroundColor: '#4f46e5', 
                 color: '#ffffff', 
                 border: 'none', 
                 borderRadius: '6px', 
@@ -1202,15 +1201,14 @@ function App() {
     )
   }
 
-  // Login View
   if (!session) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', fontFamily: 'Sarabun, Inter, sans-serif', backgroundColor: '#ffffff' }}>
+      <div style={{ minHeight: '100vh', display: 'flex', fontFamily: 'Sarabun, Inter, sans-serif', backgroundColor: '#f8fafc' }}>
         <div style={{
-          flex: '0 0 30%',
+          flex: '0 0 32%',
           minWidth: '320px',
-          backgroundColor: '#faf5ff',
-          backgroundImage: 'radial-gradient(#e9d5ff 1.2px, transparent 1.2px), linear-gradient(135deg, #ffffff 0%, #f3e8ff 100%)',
+          backgroundColor: '#ffffff',
+          backgroundImage: 'radial-gradient(#e2e8f0 1.2px, transparent 1.2px), linear-gradient(135deg, #ffffff 0%, #f3e8ff 100%)',
           backgroundSize: '20px 20px, 100% 100%',
           color: '#0f172a',
           padding: '40px 32px',
@@ -1219,11 +1217,11 @@ function App() {
           justifyContent: 'space-between',
           position: 'relative',
           boxSizing: 'border-box',
-          borderRight: '1px solid #e9d5ff'
+          borderRight: '1px solid #e2e8f0'
         }}>
           <div>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', backgroundColor: '#ffffff', color: '#6b21a8', padding: '6px 14px', borderRadius: '20px', fontSize: '12px', fontWeight: 600, boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-              <DragonflyLogo size={22} color="#8c71ca" />
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', backgroundColor: '#ffffff', color: '#6b21a8', padding: '6px 14px', borderRadius: '20px', fontSize: '12px', fontWeight: 600, border: '1px solid #e9d5ff', boxShadow: '0 1px 3px rgba(0,0,0,0.03)' }}>
+              <DragonflyLogo size={22} color="#6b21a8" />
               IT Asset Management System
             </div>
             
@@ -1237,7 +1235,7 @@ function App() {
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', margin: '24px 0' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', backgroundColor: 'rgba(255, 255, 255, 0.85)', padding: '10px 12px', borderRadius: '8px', backdropFilter: 'blur(4px)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', backgroundColor: '#ffffff', border: '1px solid #e2e8f0', padding: '10px 12px', borderRadius: '8px', boxShadow: '0 1px 2px rgba(0,0,0,0.02)' }}>
               <div style={{ backgroundColor: '#f3e8ff', padding: '6px 8px', borderRadius: '6px', fontSize: '14px' }}>📊</div>
               <div>
                 <div style={{ fontSize: '13px', fontWeight: 600, color: '#0f172a' }}>System Dashboard</div>
@@ -1245,7 +1243,7 @@ function App() {
               </div>
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', backgroundColor: 'rgba(255, 255, 255, 0.85)', padding: '10px 12px', borderRadius: '8px', backdropFilter: 'blur(4px)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', backgroundColor: '#ffffff', border: '1px solid #e2e8f0', padding: '10px 12px', borderRadius: '8px', boxShadow: '0 1px 2px rgba(0,0,0,0.02)' }}>
               <div style={{ backgroundColor: '#f3e8ff', padding: '6px 8px', borderRadius: '6px', fontSize: '14px' }}>🔑</div>
               <div>
                 <div style={{ fontSize: '13px', fontWeight: 600, color: '#0f172a' }}>Role-Based Access Control</div>
@@ -1268,7 +1266,7 @@ function App() {
           backgroundColor: '#f8fafc',
           boxSizing: 'border-box'
         }}>
-          <div style={{ width: '100%', maxWidth: '380px', backgroundColor: '#ffffff', padding: '36px 32px', borderRadius: '12px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)' }}>
+          <div style={{ width: '100%', maxWidth: '380px', backgroundColor: '#ffffff', padding: '36px 32px', borderRadius: '12px', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.04)', border: '1px solid #e2e8f0' }}>
             {isForgotPassword ? (
               <div>
                 <div style={{ marginBottom: '24px' }}>
@@ -1296,7 +1294,7 @@ function App() {
                         onChange={e => setResetEmail(e.target.value)} 
                         placeholder="admin หรือ name@company.com" 
                         required 
-                        style={{ width: '100%', height: '36px', padding: '0 12px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '13px', fontWeight: 400, boxSizing: 'border-box', color: '#0f172a', outline: 'none' }} 
+                        style={{ width: '100%', height: '36px', padding: '0 12px', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '13px', fontWeight: 400, boxSizing: 'border-box', color: '#0f172a', outline: 'none' }} 
                       />
                     </div>
 
@@ -1306,7 +1304,7 @@ function App() {
                       style={{ 
                         width: '100%', 
                         height: '36px',
-                        backgroundColor: '#0f172a', 
+                        backgroundColor: '#4f46e5', 
                         color: '#ffffff', 
                         border: 'none', 
                         borderRadius: '6px', 
@@ -1338,7 +1336,7 @@ function App() {
               <div>
                 <div style={{ marginBottom: '24px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-                    <DragonflyLogo size={32} color="#8c71ca" />
+                    <DragonflyLogo size={32} color="#6b21a8" />
                     <span style={{ fontSize: '12px', fontWeight: 600, color: '#6b21a8', backgroundColor: '#f3e8ff', padding: '2px 8px', borderRadius: '6px' }}>IT Portal</span>
                   </div>
                   <h2 style={{ fontSize: '18px', fontWeight: 600, color: '#0f172a', margin: 0 }}>เข้าสู่ระบบบริหารทรัพย์สิน</h2>
@@ -1354,7 +1352,7 @@ function App() {
                       onChange={e => setLoginEmail(e.target.value)} 
                       placeholder="admin หรือ name@company.com" 
                       required 
-                      style={{ width: '100%', height: '36px', padding: '0 12px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '13px', fontWeight: 400, boxSizing: 'border-box', color: '#0f172a', outline: 'none' }} 
+                      style={{ width: '100%', height: '36px', padding: '0 12px', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '13px', fontWeight: 400, boxSizing: 'border-box', color: '#0f172a', outline: 'none' }} 
                     />
                   </div>
 
@@ -1378,7 +1376,7 @@ function App() {
                       onChange={e => setLoginPassword(e.target.value)} 
                       placeholder="••••••••" 
                       required 
-                      style={{ width: '100%', height: '36px', padding: '0 12px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '13px', fontWeight: 400, boxSizing: 'border-box', color: '#0f172a', outline: 'none' }} 
+                      style={{ width: '100%', height: '36px', padding: '0 12px', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '13px', fontWeight: 400, boxSizing: 'border-box', color: '#0f172a', outline: 'none' }} 
                     />
                   </div>
 
@@ -1388,7 +1386,7 @@ function App() {
                     style={{ 
                       width: '100%', 
                       height: '36px',
-                      backgroundColor: '#0f172a', 
+                      backgroundColor: '#4f46e5', 
                       color: '#ffffff', 
                       border: 'none', 
                       borderRadius: '6px', 
@@ -1418,88 +1416,62 @@ function App() {
   const vendorsList = [...new Set(softwareList.map(item => item['Vendor'] || item.vendor).filter(Boolean))].sort()
   const installedOnList = [...new Set(softwareList.map(item => item['Installed on'] || item.installed_on).filter(Boolean))].sort()
 
+  const navMenuItems = [
+  { id: 'dashboard', label: 'Dashboard', icon: '📊', count: null },
+  { id: 'hardware', label: 'Hardware Assets', icon: '📦', count: allRawAssets.length },
+  { id: 'software', label: 'Software Licenses', icon: '💻', count: softwareList.length },
+  { id: 'leasing', label: 'Leased Assets', icon: '📋', count: leasingList.length },
+]
+
+  const activeMenu = navMenuItems.find(m => m.id === mainTab)
+
   return (
     <div style={{ backgroundColor: '#f8fafc', minHeight: '100vh', fontFamily: 'Sarabun, Inter, sans-serif', color: '#0f172a' }}>
       
-      {/* Header Bar */}
-      <header style={{ backgroundColor: '#ffffff', borderBottom: '1px solid #e2e8f0', padding: '10px 24px', minHeight: '60px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', boxShadow: '0 1px 3px rgba(0,0,0,0.02)', boxSizing: 'border-box' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+      {/* Light Clean Header Bar */}
+      <header style={{ backgroundColor: '#ffffff', color: '#0f172a', padding: '10px 24px', minHeight: '56px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.02)', boxSizing: 'border-box', position: 'sticky', top: 0, zIndex: 1000 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+          
+          {/* Hamburger Menu Button (☰) */}
+          <button
+            onClick={() => setIsNavMenuOpen(!isNavMenuOpen)}
+            title="เปิด/ปิด เมนูหลัก"
+            style={{
+              background: 'none',
+              border: '1px solid #e2e8f0',
+              color: '#475569',
+              fontSize: '18px',
+              cursor: 'pointer',
+              padding: '4px 10px',
+              borderRadius: '6px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              outline: 'none',
+              backgroundColor: isNavMenuOpen ? '#f1f5f9' : '#ffffff',
+              transition: 'background-color 0.2s'
+            }}
+          >
+            ☰
+          </button>
+
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <DragonflyLogo size={30} color="#8c71ca" />
+            <DragonflyLogo size={26} color="#6b21a8" />
             <span style={{ color: '#0f172a', fontWeight: 600, fontSize: '15px', letterSpacing: '-0.2px' }}>IT Asset Management</span>
           </div>
 
-          <div style={{ display: 'flex', backgroundColor: '#f1f5f9', padding: '3px', borderRadius: '8px', marginLeft: '12px' }}>
-            <button
-              onClick={() => setMainTab('dashboard')}
-              style={{
-                border: 'none',
-                padding: '6px 14px',
-                borderRadius: '6px',
-                fontSize: '13px',
-                fontWeight: mainTab === 'dashboard' ? 600 : 400,
-                backgroundColor: mainTab === 'dashboard' ? '#ffffff' : 'transparent',
-                color: mainTab === 'dashboard' ? '#0f172a' : '#64748b',
-                cursor: 'pointer',
-                boxShadow: mainTab === 'dashboard' ? '0 1px 2px rgba(0,0,0,0.05)' : 'none'
-              }}
-            >
-              แดชบอร์ดสรุปภาพรวม
-            </button>
-            <button
-              onClick={() => setMainTab('hardware')}
-              style={{
-                border: 'none',
-                padding: '6px 14px',
-                borderRadius: '6px',
-                fontSize: '13px',
-                fontWeight: mainTab === 'hardware' ? 600 : 400,
-                backgroundColor: mainTab === 'hardware' ? '#ffffff' : 'transparent',
-                color: mainTab === 'hardware' ? '#0f172a' : '#64748b',
-                cursor: 'pointer',
-                boxShadow: mainTab === 'hardware' ? '0 1px 2px rgba(0,0,0,0.05)' : 'none'
-              }}
-            >
-              จัดการฮาร์ดแวร์ ({allRawAssets.length})
-            </button>
-            <button
-              onClick={() => setMainTab('software')}
-              style={{
-                border: 'none',
-                padding: '6px 14px',
-                borderRadius: '6px',
-                fontSize: '13px',
-                fontWeight: mainTab === 'software' ? 600 : 400,
-                backgroundColor: mainTab === 'software' ? '#ffffff' : 'transparent',
-                color: mainTab === 'software' ? '#0f172a' : '#64748b',
-                cursor: 'pointer',
-                boxShadow: mainTab === 'software' ? '0 1px 2px rgba(0,0,0,0.05)' : 'none'
-              }}
-            >
-              ลิขสิทธิ์ซอฟต์แวร์ ({softwareList.length})
-            </button>
-            <button
-              onClick={() => setMainTab('leasing')}
-              style={{
-                border: 'none',
-                padding: '6px 14px',
-                borderRadius: '6px',
-                fontSize: '13px',
-                fontWeight: mainTab === 'leasing' ? 600 : 400,
-                backgroundColor: mainTab === 'leasing' ? '#ffffff' : 'transparent',
-                color: mainTab === 'leasing' ? '#0f172a' : '#64748b',
-                cursor: 'pointer',
-                boxShadow: mainTab === 'leasing' ? '0 1px 2px rgba(0,0,0,0.05)' : 'none'
-              }}
-            >
-              อุปกรณ์เช่า ({leasingList.length})
-            </button>
-          </div>
+          <div style={{ borderLeft: '1px solid #e2e8f0', height: '20px', margin: '0 6px' }} />
+
+          {/* Current Page Title */}
+          <span style={{ color: '#64748b', fontSize: '13px', fontWeight: 400, display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <span>{activeMenu?.icon}</span>
+            <span>{activeMenu?.label}</span>
+          </span>
         </div>
         
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', position: 'relative' }}>
           
-          {/* Settings Icon Button (⚙️) - วางแทนที่ Calendar เดิม */}
+          {/* Settings Button */}
           <button
             onClick={() => {
               setIsSettingsOpen(true)
@@ -1507,13 +1479,13 @@ function App() {
             }}
             title="ตั้งค่าระบบ / ส่งออกข้อมูล CSV"
             style={{
-              width: '36px',
-              height: '36px',
+              width: '34px',
+              height: '34px',
               borderRadius: '50%',
               backgroundColor: '#f1f5f9',
-              border: 'none',
-              color: '#0f172a',
-              fontSize: '16px',
+              border: '1px solid #e2e8f0',
+              color: '#475569',
+              fontSize: '15px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -1528,14 +1500,14 @@ function App() {
           <button
             onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
             style={{
-              width: '36px',
-              height: '36px',
+              width: '34px',
+              height: '34px',
               borderRadius: '50%',
-              backgroundColor: '#ffffff',
-              border: '1px solid #cbd5e1',
-              color: '#334155',
+              backgroundColor: '#f3e8ff',
+              border: '1px solid #d8b4fe',
+              color: '#6b21a8',
               fontWeight: 600,
-              fontSize: '13px',
+              fontSize: '12px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -1560,10 +1532,11 @@ function App() {
                 width: '320px',
                 backgroundColor: '#ffffff',
                 borderRadius: '12px',
-                boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.12), 0 8px 10px -6px rgba(0, 0, 0, 0.08)',
+                boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05)',
                 border: '1px solid #e2e8f0',
                 zIndex: 100,
-                overflow: 'hidden'
+                overflow: 'hidden',
+                color: '#0f172a'
               }}>
                 <div style={{ padding: '12px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #f1f5f9', backgroundColor: '#f8fafc' }}>
                   <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 600 }}>
@@ -1662,24 +1635,114 @@ function App() {
         </div>
       </header>
 
+      {/* Navigation Sidebar Drawer (Light Theme) */}
+      {isNavMenuOpen && (
+        <>
+          <div
+            onClick={() => setIsNavMenuOpen(false)}
+            style={{
+              position: 'fixed',
+              top: '56px',
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: 'rgba(100, 116, 139, 0.25)',
+              backdropFilter: 'blur(2px)',
+              zIndex: 998
+            }}
+          />
+
+          <div
+            style={{
+              position: 'fixed',
+              top: '56px',
+              left: 0,
+              width: '270px',
+              bottom: 0,
+              backgroundColor: '#ffffff',
+              color: '#0f172a',
+              boxShadow: '4px 0 20px rgba(0,0,0,0.06)',
+              borderRight: '1px solid #e2e8f0',
+              zIndex: 999,
+              display: 'flex',
+              flexDirection: 'column',
+              paddingTop: '12px'
+            }}
+          >
+            <div style={{ padding: '8px 20px 12px', fontSize: '11px', color: '#64748b', fontWeight: 600, letterSpacing: '0.5px' }}>
+              MAIN NAVIGATION
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              {navMenuItems.map((item) => {
+                const isActive = mainTab === item.id
+
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => {
+                      setMainTab(item.id)
+                      setIsNavMenuOpen(false)
+                    }}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      padding: '12px 20px',
+                      border: 'none',
+                      backgroundColor: isActive ? '#f3e8ff' : 'transparent',
+                      borderLeft: isActive ? '4px solid #6b21a8' : '4px solid transparent',
+                      color: isActive ? '#6b21a8' : '#475569',
+                      fontSize: '13.5px',
+                      fontWeight: isActive ? 600 : 400,
+                      cursor: 'pointer',
+                      textAlign: 'left',
+                      transition: 'all 0.15s ease'
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <span style={{ fontSize: '16px' }}>{item.icon}</span>
+                      <span>{item.label}</span>
+                    </div>
+
+                    {item.count !== null && (
+                      <span style={{
+                        fontSize: '11px',
+                        padding: '2px 8px',
+                        borderRadius: '10px',
+                        backgroundColor: isActive ? '#e9d5ff' : '#f1f5f9',
+                        color: isActive ? '#6b21a8' : '#64748b',
+                        fontWeight: 500
+                      }}>
+                        {item.count}
+                      </span>
+                    )}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        </>
+      )}
+
       {/* Main Content Area */}
       <main style={{ padding: '20px 24px', maxWidth: '1600px', margin: '0 auto' }}>
         
         {/* Page Header */}
-        <div style={{ marginBottom: '16px' }}>
-          <h1 style={{ color: '#0f172a', fontWeight: 600, fontSize: '18px', margin: 0 }}>
-            {mainTab === 'dashboard' && 'แดชบอร์ดสรุปภาพรวม'}
-            {mainTab === 'hardware' && 'ภาพรวมและระบบจัดการฮาร์ดแวร์'}
-            {mainTab === 'software' && 'การจัดการลิขสิทธิ์ซอฟต์แวร์'}
-            {mainTab === 'leasing' && 'ระบบบริหารและติดตามอุปกรณ์เช่า (Leasing)'}
-          </h1>
-          <p style={{ color: '#64748b', fontSize: '13px', fontWeight: 400, margin: '2px 0 0' }}>
-            {mainTab === 'dashboard' && 'รายงานสรุปภาพรวม วิเคราะห์วงจรชีวิตฮาร์ดแวร์ สัญญา และสถานะลิขสิทธิ์ซอฟต์แวร์'}
-            {mainTab === 'hardware' && 'ระบบบริหารจัดการ ตรวจสอบ ตลอดจนการติดตามและเปลี่ยนสิทธิ์ผู้ถือครองอุปกรณ์ฮาร์ดแวร์'}
-            {mainTab === 'software' && 'ศูนย์ควบคุมการใช้งาน สัญญาจัดซื้อ และการติดตามวันหมดอายุลิขสิทธิ์ซอฟต์แวร์'}
-            {mainTab === 'leasing' && 'ศูนย์กลางควบคุมอุปกรณ์เช่า ระยะเวลาสัญญา ตลอดจนการติดตามผู้รับผิดชอบและผู้ถือครอง'}
-          </p>
-        </div>
+<div style={{ marginBottom: '16px' }}>
+  <h1 style={{ color: '#0f172a', fontWeight: 600, fontSize: '18px', margin: 0 }}>
+    {mainTab === 'dashboard' && 'Dashboard Overview'}
+    {mainTab === 'hardware' && 'Hardware Assets Management'}
+    {mainTab === 'software' && 'Software License Management'}
+    {mainTab === 'leasing' && 'Leased Assets Management'}
+  </h1>
+  <p style={{ color: '#64748b', fontSize: '13px', fontWeight: 400, margin: '2px 0 0' }}>
+    {mainTab === 'dashboard' && 'Executive summary, asset lifecycle analytics, and license status'}
+    {mainTab === 'hardware' && 'Centralized control for hardware devices, assignments, and returns'}
+    {mainTab === 'software' && 'Software license inventory, vendor management, and expiration tracking'}
+    {mainTab === 'leasing' && 'Tracking leased equipment contracts, assignees, and deployment locations'}
+  </p>
+</div>
 
         {/* VIEW 0: ANALYTICS DASHBOARD */}
         {mainTab === 'dashboard' && (
@@ -1832,7 +1895,7 @@ function App() {
                           <span style={{ fontWeight: 500, color: '#475569' }}>{count} รายการ</span>
                         </div>
                         <div style={{ width: '100%', height: '8px', backgroundColor: '#f1f5f9', borderRadius: '4px', overflow: 'hidden' }}>
-                          <div style={{ width: `${pct}%`, height: '100%', backgroundColor: '#0f172a' }}></div>
+                          <div style={{ width: `${pct}%`, height: '100%', backgroundColor: '#4f46e5' }}></div>
                         </div>
                       </div>
                     )
@@ -1872,7 +1935,7 @@ function App() {
         {mainTab === 'hardware' && (
           <div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', marginBottom: '16px' }}>
-              <div style={{ backgroundColor: '#ffffff', borderRadius: '8px', padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 1px 3px rgba(0,0,0,0.02)', border: '1px solid #f1f5f9' }}>
+              <div style={{ backgroundColor: '#ffffff', borderRadius: '8px', padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 1px 3px rgba(0,0,0,0.02)', border: '1px solid #e2e8f0' }}>
                 <div>
                   <span style={{ color: '#64748b', fontWeight: 400, fontSize: '12px', display: 'block' }}>จำนวนทรัพย์สินฮาร์ดแวร์</span>
                   <div style={{ marginTop: '4px', display: 'flex', alignItems: 'baseline', gap: '4px' }}>
@@ -1883,7 +1946,7 @@ function App() {
                 <div style={{ backgroundColor: '#f8fafc', color: '#0f172a', borderRadius: '8px', padding: '10px', fontSize: '18px' }}>📦</div>
               </div>
 
-              <div style={{ backgroundColor: '#ffffff', borderRadius: '8px', padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 1px 3px rgba(0,0,0,0.02)', border: '1px solid #f1f5f9' }}>
+              <div style={{ backgroundColor: '#ffffff', borderRadius: '8px', padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 1px 3px rgba(0,0,0,0.02)', border: '1px solid #e2e8f0' }}>
                 <div>
                   <span style={{ color: '#64748b', fontWeight: 400, fontSize: '12px', display: 'block' }}>ประเภทสิทธิ์การถือครอง</span>
                   <div style={{ marginTop: '4px' }}>
@@ -1899,7 +1962,7 @@ function App() {
                 </div>
               </div>
 
-              <div style={{ backgroundColor: '#ffffff', borderRadius: '8px', padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 1px 3px rgba(0,0,0,0.02)', border: '1px solid #f1f5f9' }}>
+              <div style={{ backgroundColor: '#ffffff', borderRadius: '8px', padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 1px 3px rgba(0,0,0,0.02)', border: '1px solid #e2e8f0' }}>
                 <div>
                   <span style={{ color: '#64748b', fontWeight: 400, fontSize: '12px', display: 'block' }}>จำนวนหมวดหมู่อุปกรณ์</span>
                   <div style={{ marginTop: '4px', display: 'flex', alignItems: 'baseline', gap: '4px' }}>
@@ -1910,7 +1973,7 @@ function App() {
                 <div style={{ backgroundColor: '#f8fafc', color: '#0f172a', borderRadius: '8px', padding: '10px', fontSize: '18px' }}>🏷️</div>
               </div>
 
-              <div style={{ backgroundColor: '#ffffff', borderRadius: '8px', padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 1px 3px rgba(0,0,0,0.02)', border: '1px solid #f1f5f9' }}>
+              <div style={{ backgroundColor: '#ffffff', borderRadius: '8px', padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 1px 3px rgba(0,0,0,0.02)', border: '1px solid #e2e8f0' }}>
                 <div>
                   <span style={{ color: '#64748b', fontWeight: 400, fontSize: '12px', display: 'block' }}>ผลการกรองข้อมูล</span>
                   <div style={{ marginTop: '4px', display: 'flex', alignItems: 'baseline', gap: '4px' }}>
@@ -1934,9 +1997,9 @@ function App() {
                     padding: '0 16px',
                     borderRadius: '6px 6px 0 0',
                     border: 'none',
-                    borderBottom: viewMode === 'all' ? '2px solid #0f172a' : '2px solid transparent',
+                    borderBottom: viewMode === 'all' ? '2px solid #4f46e5' : '2px solid transparent',
                     backgroundColor: viewMode === 'all' ? '#ffffff' : 'transparent',
-                    color: viewMode === 'all' ? '#0f172a' : '#64748b',
+                    color: viewMode === 'all' ? '#4f46e5' : '#64748b',
                     fontWeight: viewMode === 'all' ? 600 : 400,
                     cursor: 'pointer',
                     fontSize: '13px'
@@ -1952,9 +2015,9 @@ function App() {
                     padding: '0 16px',
                     borderRadius: '6px 6px 0 0',
                     border: 'none',
-                    borderBottom: viewMode === 'person' ? '2px solid #0f172a' : '2px solid transparent',
+                    borderBottom: viewMode === 'person' ? '2px solid #4f46e5' : '2px solid transparent',
                     backgroundColor: viewMode === 'person' ? '#ffffff' : 'transparent',
-                    color: viewMode === 'person' ? '#0f172a' : '#64748b',
+                    color: viewMode === 'person' ? '#4f46e5' : '#64748b',
                     fontWeight: viewMode === 'person' ? 600 : 400,
                     cursor: 'pointer',
                     fontSize: '13px'
@@ -1970,9 +2033,9 @@ function App() {
                     padding: '0 16px',
                     borderRadius: '6px 6px 0 0',
                     border: 'none',
-                    borderBottom: viewMode === 'dept' ? '2px solid #0f172a' : '2px solid transparent',
+                    borderBottom: viewMode === 'dept' ? '2px solid #4f46e5' : '2px solid transparent',
                     backgroundColor: viewMode === 'dept' ? '#ffffff' : 'transparent',
-                    color: viewMode === 'dept' ? '#0f172a' : '#64748b',
+                    color: viewMode === 'dept' ? '#4f46e5' : '#64748b',
                     fontWeight: viewMode === 'dept' ? 600 : 400,
                     cursor: 'pointer',
                     fontSize: '13px'
@@ -2031,7 +2094,7 @@ function App() {
                     <button 
                       onClick={handleOpenAddModal}
                       style={{
-                        backgroundColor: '#0f172a',
+                        backgroundColor: '#4f46e5',
                         color: '#ffffff',
                         border: 'none',
                         borderRadius: '6px',
@@ -2050,11 +2113,11 @@ function App() {
                     style={{
                       height: '36px',
                       padding: '0 12px',
-                      border: '1px solid #e2e8f0',
+                      border: '1px solid #cbd5e1',
                       borderRadius: '6px',
                       fontSize: '13px',
                       outline: 'none',
-                      backgroundColor: '#f8fafc',
+                      backgroundColor: '#ffffff',
                       color: '#0f172a',
                       fontWeight: 400
                     }}
@@ -2073,11 +2136,11 @@ function App() {
                     style={{ 
                       height: '36px',
                       padding: '0 12px', 
-                      border: '1px solid #e2e8f0', 
+                      border: '1px solid #cbd5e1', 
                       borderRadius: '6px', 
                       fontSize: '13px', 
                       outline: 'none', 
-                      backgroundColor: '#f8fafc', 
+                      backgroundColor: '#ffffff', 
                       color: '#0f172a', 
                       fontWeight: 400
                     }}
@@ -2099,13 +2162,13 @@ function App() {
                     style={{ 
                       height: '36px',
                       width: '220px',
-                      border: '1px solid #e2e8f0', 
+                      border: '1px solid #cbd5e1', 
                       borderRadius: '6px', 
                       padding: '0 12px', 
                       fontSize: '13px',
                       fontWeight: 400,
                       color: '#0f172a',
-                      backgroundColor: '#f8fafc',
+                      backgroundColor: '#ffffff',
                       outline: 'none'
                     }}
                   />
@@ -2139,14 +2202,14 @@ function App() {
                                 <div 
                                   key={aIdx} 
                                   onClick={() => setSelectedAsset(asset)}
-                                  style={{ cursor: 'pointer', backgroundColor: '#f8fafc', borderRadius: '6px', padding: '10px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                                  style={{ cursor: 'pointer', backgroundColor: '#f8fafc', border: '1px solid #f1f5f9', borderRadius: '6px', padding: '10px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
                                 >
                                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px', overflow: 'hidden' }}>
                                     <span style={{ fontSize: '16px' }}>{icon}</span>
                                     <div style={{ overflow: 'hidden' }}>
                                       <div style={{ color: '#0f172a', fontWeight: 400, fontSize: '13px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{asset.asset_name || 'อุปกรณ์ไอที'}</div>
                                       <div style={{ display: 'flex', gap: '6px', alignItems: 'center', marginTop: '2px' }}>
-                                        <span style={{ fontSize: '11px', padding: '1px 6px', backgroundColor: '#ffffff', color: '#0f172a', borderRadius: '4px', fontWeight: 500, fontFamily: 'monospace' }}>{asset.asset_no || '-'}</span>
+                                        <span style={{ fontSize: '11px', padding: '1px 6px', backgroundColor: '#ffffff', color: '#0f172a', borderRadius: '4px', fontWeight: 500, fontFamily: 'monospace', border: '1px solid #e2e8f0' }}>{asset.asset_no || '-'}</span>
                                         <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 400 }}>{ageInfo.label}</span>
                                       </div>
                                     </div>
@@ -2193,7 +2256,7 @@ function App() {
                           return (
                             <tr key={index} onClick={() => setSelectedAsset(item)} style={{ backgroundColor: isResigned ? '#fff1f2' : 'transparent', borderBottom: '1px solid #f1f5f9', cursor: 'pointer' }}>
                               <td style={{ padding: '12px 16px', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
-                                <span style={{ fontFamily: 'monospace', fontWeight: 500, fontSize: '12px', color: '#0f172a', backgroundColor: '#f1f5f9', padding: '3px 6px', borderRadius: '4px', display: 'inline-block' }}>
+                                <span style={{ fontFamily: 'monospace', fontWeight: 500, fontSize: '12px', color: '#0f172a', backgroundColor: '#f1f5f9', border: '1px solid #e2e8f0', padding: '3px 6px', borderRadius: '4px', display: 'inline-block' }}>
                                   {item.asset_no || '-'}
                                 </span>
                               </td>
@@ -2219,11 +2282,11 @@ function App() {
                                 {userRole === 'admin' ? (
                                   <div style={{ display: 'inline-flex', gap: '6px', alignItems: 'center', justifyContent: 'center' }}>
                                     {holderType === 'PERSON' ? (
-                                      <button onClick={() => handleOpenReturnModal(item)} title="คืนทรัพย์สินเข้าส่วนกลาง" style={{ backgroundColor: '#f1f5f9', color: '#0f172a', border: 'none', fontWeight: 400, fontSize: '11px', padding: '0 10px', height: '30px', borderRadius: '6px', cursor: 'pointer' }}>คืนทรัพย์สิน</button>
+                                      <button onClick={() => handleOpenReturnModal(item)} title="คืนทรัพย์สินเข้าส่วนกลาง" style={{ backgroundColor: '#f1f5f9', color: '#0f172a', border: '1px solid #e2e8f0', fontWeight: 400, fontSize: '11px', padding: '0 10px', height: '30px', borderRadius: '6px', cursor: 'pointer' }}>คืนทรัพย์สิน</button>
                                     ) : (
                                       <div style={{ width: '68px', height: '30px' }} />
                                     )}
-                                    <button onClick={() => handleOpenEditModal(item)} title="แก้ไข" style={{ backgroundColor: '#f8fafc', border: '1px solid #e2e8f0', padding: '0 8px', height: '30px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 400 }}>แก้ไข</button>
+                                    <button onClick={() => handleOpenEditModal(item)} title="แก้ไข" style={{ backgroundColor: '#ffffff', border: '1px solid #e2e8f0', padding: '0 8px', height: '30px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 400 }}>แก้ไข</button>
                                     <button onClick={() => handleDeleteAsset(item)} title="ลบ" style={{ backgroundColor: '#fff1f2', border: 'none', padding: '0 8px', height: '30px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 400, color: '#e11d48' }}>ลบ</button>
                                   </div>
                                 ) : (
@@ -2245,8 +2308,8 @@ function App() {
                     หน้า {currentPage} จาก {totalPages} (รวม {totalFilteredCount.toLocaleString()} รายการ)
                   </span>
                   <div style={{ display: 'flex', gap: '6px' }}>
-                    <button disabled={currentPage === 1 || loadingHardware} onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))} style={{ height: '32px', padding: '0 14px', borderRadius: '6px', border: 'none', backgroundColor: currentPage === 1 ? '#f1f5f9' : '#f8fafc', color: currentPage === 1 ? '#cbd5e1' : '#0f172a', cursor: currentPage === 1 ? 'not-allowed' : 'pointer', fontSize: '12px', fontWeight: 400 }}>◀ ก่อนหน้า</button>
-                    <button disabled={currentPage >= totalPages || loadingHardware} onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))} style={{ height: '32px', padding: '0 14px', borderRadius: '6px', border: 'none', backgroundColor: currentPage >= totalPages ? '#f1f5f9' : '#f8fafc', color: currentPage >= totalPages ? '#cbd5e1' : '#0f172a', cursor: currentPage >= totalPages ? 'not-allowed' : 'pointer', fontSize: '12px', fontWeight: 400 }}>ถัดไป ▶</button>
+                    <button disabled={currentPage === 1 || loadingHardware} onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))} style={{ height: '32px', padding: '0 14px', borderRadius: '6px', border: '1px solid #e2e8f0', backgroundColor: currentPage === 1 ? '#f1f5f9' : '#ffffff', color: currentPage === 1 ? '#cbd5e1' : '#0f172a', cursor: currentPage === 1 ? 'not-allowed' : 'pointer', fontSize: '12px', fontWeight: 400 }}>◀ ก่อนหน้า</button>
+                    <button disabled={currentPage >= totalPages || loadingHardware} onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))} style={{ height: '32px', padding: '0 14px', borderRadius: '6px', border: '1px solid #e2e8f0', backgroundColor: currentPage >= totalPages ? '#f1f5f9' : '#ffffff', color: currentPage >= totalPages ? '#cbd5e1' : '#0f172a', cursor: currentPage >= totalPages ? 'not-allowed' : 'pointer', fontSize: '12px', fontWeight: 400 }}>ถัดไป ▶</button>
                   </div>
                 </div>
               )}
@@ -2259,7 +2322,7 @@ function App() {
         {mainTab === 'software' && (
           <div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', marginBottom: '16px' }}>
-              <div style={{ backgroundColor: '#ffffff', borderRadius: '8px', padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 1px 3px rgba(0,0,0,0.02)', border: '1px solid #f1f5f9' }}>
+              <div style={{ backgroundColor: '#ffffff', borderRadius: '8px', padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 1px 3px rgba(0,0,0,0.02)', border: '1px solid #e2e8f0' }}>
                 <div>
                   <span style={{ color: '#64748b', fontWeight: 400, fontSize: '12px', display: 'block' }}>จำนวนรายการซอฟต์แวร์</span>
                   <div style={{ marginTop: '4px', display: 'flex', alignItems: 'baseline', gap: '4px' }}>
@@ -2270,7 +2333,7 @@ function App() {
                 <div style={{ backgroundColor: '#f8fafc', color: '#0f172a', borderRadius: '8px', padding: '10px', fontSize: '18px' }}>💻</div>
               </div>
 
-              <div style={{ backgroundColor: '#ffffff', borderRadius: '8px', padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 1px 3px rgba(0,0,0,0.02)', border: '1px solid #f1f5f9' }}>
+              <div style={{ backgroundColor: '#ffffff', borderRadius: '8px', padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 1px 3px rgba(0,0,0,0.02)', border: '1px solid #e2e8f0' }}>
                 <div>
                   <span style={{ color: '#64748b', fontWeight: 400, fontSize: '12px', display: 'block' }}>จำนวนสิทธิ์การใช้งานรวม (Licenses)</span>
                   <div style={{ marginTop: '4px', display: 'flex', alignItems: 'baseline', gap: '4px' }}>
@@ -2281,7 +2344,7 @@ function App() {
                 <div style={{ backgroundColor: '#f8fafc', color: '#0f172a', borderRadius: '8px', padding: '10px', fontSize: '18px' }}>🔑</div>
               </div>
 
-              <div style={{ backgroundColor: '#ffffff', borderRadius: '8px', padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 1px 3px rgba(0,0,0,0.02)', border: '1px solid #f1f5f9' }}>
+              <div style={{ backgroundColor: '#ffffff', borderRadius: '8px', padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 1px 3px rgba(0,0,0,0.02)', border: '1px solid #e2e8f0' }}>
                 <div>
                   <span style={{ color: '#64748b', fontWeight: 400, fontSize: '12px', display: 'block' }}>ลิขสิทธิ์ประเภทตลอดชีพ</span>
                   <div style={{ marginTop: '4px', display: 'flex', alignItems: 'baseline', gap: '4px' }}>
@@ -2292,7 +2355,7 @@ function App() {
                 <div style={{ backgroundColor: '#f0fdf4', color: '#166534', borderRadius: '8px', padding: '10px', fontSize: '18px' }}>♾️</div>
               </div>
 
-              <div style={{ backgroundColor: '#ffffff', borderRadius: '8px', padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 1px 3px rgba(0,0,0,0.02)', border: '1px solid #f1f5f9' }}>
+              <div style={{ backgroundColor: '#ffffff', borderRadius: '8px', padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 1px 3px rgba(0,0,0,0.02)', border: '1px solid #e2e8f0' }}>
                 <div>
                   <span style={{ color: '#64748b', fontWeight: 400, fontSize: '12px', display: 'block' }}>สัญญาประเภทสมัครสมาชิก / รายปี</span>
                   <div style={{ marginTop: '4px', display: 'flex', alignItems: 'baseline', gap: '4px' }}>
@@ -2316,7 +2379,7 @@ function App() {
                     <button 
                       onClick={handleOpenAddSoftwareModal}
                       style={{
-                        backgroundColor: '#0f172a',
+                        backgroundColor: '#4f46e5',
                         color: '#ffffff',
                         border: 'none',
                         borderRadius: '6px',
@@ -2335,11 +2398,11 @@ function App() {
                     style={{
                       height: '36px',
                       padding: '0 12px',
-                      border: '1px solid #e2e8f0',
+                      border: '1px solid #cbd5e1',
                       borderRadius: '6px',
                       fontSize: '13px',
                       outline: 'none',
-                      backgroundColor: '#f8fafc',
+                      backgroundColor: '#ffffff',
                       color: '#0f172a',
                       fontWeight: 400
                     }}
@@ -2356,11 +2419,11 @@ function App() {
                     style={{ 
                       height: '36px',
                       padding: '0 12px', 
-                      border: '1px solid #e2e8f0', 
+                      border: '1px solid #cbd5e1', 
                       borderRadius: '6px', 
                       fontSize: '13px', 
                       outline: 'none', 
-                      backgroundColor: '#f8fafc', 
+                      backgroundColor: '#ffffff', 
                       color: '#0f172a', 
                       fontWeight: 400
                     }}
@@ -2381,13 +2444,13 @@ function App() {
                     style={{ 
                       height: '36px',
                       width: '220px',
-                      border: '1px solid #e2e8f0', 
+                      border: '1px solid #cbd5e1', 
                       borderRadius: '6px', 
                       padding: '0 12px', 
                       fontSize: '13px',
                       fontWeight: 400,
                       color: '#0f172a',
-                      backgroundColor: '#f8fafc',
+                      backgroundColor: '#ffffff',
                       outline: 'none'
                     }}
                   />
@@ -2427,7 +2490,7 @@ function App() {
                         return (
                           <tr key={index} onClick={() => setSelectedSoftware(item)} style={{ borderBottom: '1px solid #f1f5f9', cursor: 'pointer' }}>
                             <td style={{ padding: '12px 16px', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
-                              <span style={{ fontFamily: 'monospace', fontWeight: 500, fontSize: '12px', color: '#0f172a', backgroundColor: '#f1f5f9', padding: '3px 6px', borderRadius: '4px', display: 'inline-block' }}>
+                              <span style={{ fontFamily: 'monospace', fontWeight: 500, fontSize: '12px', color: '#0f172a', backgroundColor: '#f1f5f9', border: '1px solid #e2e8f0', padding: '3px 6px', borderRadius: '4px', display: 'inline-block' }}>
                                 {assetNo}
                               </span>
                             </td>
@@ -2463,7 +2526,7 @@ function App() {
                             <td style={{ padding: '12px 20px 12px 12px', verticalAlign: 'middle', textAlign: 'center', whiteSpace: 'nowrap' }} onClick={(e) => e.stopPropagation()}>
                               {userRole === 'admin' ? (
                                 <div style={{ display: 'inline-flex', gap: '6px', alignItems: 'center', justifyContent: 'center' }}>
-                                  <button onClick={() => handleOpenEditSoftwareModal(item)} title="แก้ไข" style={{ backgroundColor: '#f8fafc', border: '1px solid #e2e8f0', padding: '0 8px', height: '30px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 400 }}>แก้ไข</button>
+                                  <button onClick={() => handleOpenEditSoftwareModal(item)} title="แก้ไข" style={{ backgroundColor: '#ffffff', border: '1px solid #e2e8f0', padding: '0 8px', height: '30px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 400 }}>แก้ไข</button>
                                   <button onClick={() => handleDeleteSoftware(item)} title="ลบ" style={{ backgroundColor: '#fff1f2', border: 'none', padding: '0 8px', height: '30px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 400, color: '#e11d48' }}>ลบ</button>
                                 </div>
                               ) : (
@@ -2497,7 +2560,7 @@ function App() {
                     <button 
                       onClick={handleOpenAddLeasingModal}
                       style={{
-                        backgroundColor: '#0f172a',
+                        backgroundColor: '#4f46e5',
                         color: '#ffffff',
                         border: 'none',
                         borderRadius: '6px',
@@ -2520,13 +2583,13 @@ function App() {
                     style={{ 
                       height: '36px',
                       width: '240px',
-                      border: '1px solid #e2e8f0', 
+                      border: '1px solid #cbd5e1', 
                       borderRadius: '6px', 
                       padding: '0 12px', 
                       fontSize: '13px',
                       fontWeight: 400,
                       color: '#0f172a',
-                      backgroundColor: '#f8fafc',
+                      backgroundColor: '#ffffff',
                       outline: 'none'
                     }}
                   />
@@ -2565,7 +2628,7 @@ function App() {
                         return (
                           <tr key={index} onClick={() => setSelectedLeasing(item)} style={{ borderBottom: '1px solid #f1f5f9', cursor: 'pointer' }}>
                             <td style={{ padding: '12px 16px', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
-                              <span style={{ fontFamily: 'monospace', fontWeight: 500, fontSize: '12px', color: '#0f172a', backgroundColor: '#f1f5f9', padding: '3px 6px', borderRadius: '4px', display: 'inline-block' }}>
+                              <span style={{ fontFamily: 'monospace', fontWeight: 500, fontSize: '12px', color: '#0f172a', backgroundColor: '#f1f5f9', border: '1px solid #e2e8f0', padding: '3px 6px', borderRadius: '4px', display: 'inline-block' }}>
                                 {assetNo}
                               </span>
                             </td>
@@ -2597,7 +2660,7 @@ function App() {
                             <td style={{ padding: '12px 20px 12px 12px', verticalAlign: 'middle', textAlign: 'center', whiteSpace: 'nowrap' }} onClick={(e) => e.stopPropagation()}>
                               {userRole === 'admin' ? (
                                 <div style={{ display: 'inline-flex', gap: '6px', alignItems: 'center', justifyContent: 'center' }}>
-                                  <button onClick={() => handleOpenEditLeasingModal(item)} title="แก้ไข" style={{ backgroundColor: '#f8fafc', border: '1px solid #e2e8f0', padding: '0 8px', height: '30px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 400 }}>แก้ไข</button>
+                                  <button onClick={() => handleOpenEditLeasingModal(item)} title="แก้ไข" style={{ backgroundColor: '#ffffff', border: '1px solid #e2e8f0', padding: '0 8px', height: '30px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 400 }}>แก้ไข</button>
                                   <button onClick={() => handleDeleteLeasing(item)} title="ลบ" style={{ backgroundColor: '#fff1f2', border: 'none', padding: '0 8px', height: '30px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 400, color: '#e11d48' }}>ลบ</button>
                                 </div>
                               ) : (
@@ -2618,7 +2681,7 @@ function App() {
 
       </main>
 
-      {/* Settings Modal (รวมปุ่ม Export CSV ทั้งหมดไว้ที่นี่) */}
+      {/* Settings Modal */}
       {isSettingsOpen && (
         <div className="modal-overlay" onClick={() => setIsSettingsOpen(false)}>
           <div className="modal-card" style={{ maxWidth: '600px', borderRadius: '12px', boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1)' }} onClick={(e) => e.stopPropagation()}>
@@ -2637,21 +2700,21 @@ function App() {
                 <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px', backgroundColor: '#ffffff' }}>
                   <button
                     onClick={() => { exportHardwareToCSV(); setIsSettingsOpen(false); }}
-                    style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', height: '36px', padding: '0 12px', backgroundColor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', color: '#0f172a', fontWeight: 400 }}
+                    style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', height: '36px', padding: '0 12px', backgroundColor: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', color: '#0f172a', fontWeight: 400 }}
                   >
                     <span>📦 ส่งออกข้อมูลฮาร์ดแวร์ (Hardware CSV)</span>
                     <span style={{ fontSize: '11px', color: '#64748b' }}>{allRawAssets.length} รายการ</span>
                   </button>
                   <button
                     onClick={() => { exportSoftwareToCSV(); setIsSettingsOpen(false); }}
-                    style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', height: '36px', padding: '0 12px', backgroundColor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', color: '#0f172a', fontWeight: 400 }}
+                    style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', height: '36px', padding: '0 12px', backgroundColor: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', color: '#0f172a', fontWeight: 400 }}
                   >
                     <span>💻 ส่งออกข้อมูลซอฟต์แวร์ (Software CSV)</span>
                     <span style={{ fontSize: '11px', color: '#64748b' }}>{softwareList.length} รายการ</span>
                   </button>
                   <button
                     onClick={() => { exportLeasingToCSV(); setIsSettingsOpen(false); }}
-                    style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', height: '36px', padding: '0 12px', backgroundColor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', color: '#0f172a', fontWeight: 400 }}
+                    style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', height: '36px', padding: '0 12px', backgroundColor: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', color: '#0f172a', fontWeight: 400 }}
                   >
                     <span>📋 ส่งออกข้อมูลอุปกรณ์เช่า (Leasing CSV)</span>
                     <span style={{ fontSize: '11px', color: '#64748b' }}>{leasingList.length} รายการ</span>
@@ -2692,7 +2755,7 @@ function App() {
                         value={changePasswordInput}
                         onChange={e => setChangePasswordInput(e.target.value)}
                         required
-                        style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '12px', fontWeight: 400, boxSizing: 'border-box', outline: 'none' }}
+                        style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '12px', fontWeight: 400, boxSizing: 'border-box', outline: 'none' }}
                       />
                     </div>
 
@@ -2704,7 +2767,7 @@ function App() {
                         value={confirmPasswordInput}
                         onChange={e => setConfirmPasswordInput(e.target.value)}
                         required
-                        style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '12px', fontWeight: 400, boxSizing: 'border-box', outline: 'none' }}
+                        style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '12px', fontWeight: 400, boxSizing: 'border-box', outline: 'none' }}
                       />
                     </div>
 
@@ -2716,14 +2779,14 @@ function App() {
                           setChangePasswordInput('')
                           setConfirmPasswordInput('')
                         }}
-                        style={{ height: '32px', padding: '0 12px', backgroundColor: '#f1f5f9', color: '#475569', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 400 }}
+                        style={{ height: '32px', padding: '0 12px', backgroundColor: '#ffffff', color: '#475569', border: '1px solid #e2e8f0', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 400 }}
                       >
                         ยกเลิก
                       </button>
                       <button
                         type="submit"
                         disabled={changingPassword}
-                        style={{ height: '32px', padding: '0 14px', backgroundColor: '#0f172a', color: '#ffffff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 500 }}
+                        style={{ height: '32px', padding: '0 14px', backgroundColor: '#4f46e5', color: '#ffffff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 500 }}
                       >
                         {changingPassword ? 'กำลังบันทึก...' : 'อัปเดตรหัสผ่าน'}
                       </button>
@@ -2760,13 +2823,13 @@ function App() {
                     <form onSubmit={handleAddViewerUser} style={{ padding: '16px', borderTop: '1px solid #e2e8f0', display: 'grid', gridTemplateColumns: '1fr 1fr auto', gap: '10px', alignItems: 'flex-end', backgroundColor: '#ffffff' }}>
                       <div>
                         <label style={{ fontSize: '12px', color: '#64748b', fontWeight: 400, display: 'block', marginBottom: '4px' }}>Username หรือ อีเมล *</label>
-                        <input type="text" placeholder="user หรือ user@company.com" value={newUserEmail} onChange={e => setNewUserEmail(e.target.value)} required style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '12px', fontWeight: 400, boxSizing: 'border-box', outline: 'none' }} />
+                        <input type="text" placeholder="user หรือ user@company.com" value={newUserEmail} onChange={e => setNewUserEmail(e.target.value)} required style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '12px', fontWeight: 400, boxSizing: 'border-box', outline: 'none' }} />
                       </div>
                       <div>
                         <label style={{ fontSize: '12px', color: '#64748b', fontWeight: 400, display: 'block', marginBottom: '4px' }}>รหัสผ่าน (อย่างน้อย 6 ตัว) *</label>
-                        <input type="password" placeholder="••••••••" value={newUserPassword} onChange={e => setNewUserPassword(e.target.value)} required style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '12px', fontWeight: 400, boxSizing: 'border-box', outline: 'none' }} />
+                        <input type="password" placeholder="••••••••" value={newUserPassword} onChange={e => setNewUserPassword(e.target.value)} required style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '12px', fontWeight: 400, boxSizing: 'border-box', outline: 'none' }} />
                       </div>
-                      <button type="submit" disabled={addingUser} style={{ backgroundColor: '#0f172a', color: '#ffffff', border: 'none', padding: '0 16px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 500, height: '36px' }}>{addingUser ? 'กำลังบันทึก...' : 'บันทึก'}</button>
+                      <button type="submit" disabled={addingUser} style={{ backgroundColor: '#4f46e5', color: '#ffffff', border: 'none', padding: '0 16px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 500, height: '36px' }}>{addingUser ? 'กำลังบันทึก...' : 'บันทึก'}</button>
                     </form>
                   )}
                 </div>
@@ -2782,7 +2845,7 @@ function App() {
                   padding: '0 16px', 
                   backgroundColor: '#fff1f2', 
                   color: '#e11d48', 
-                  border: 'none', 
+                  border: '1px solid #fecaca', 
                   borderRadius: '6px', 
                   cursor: 'pointer', 
                   fontSize: '12px', 
@@ -2809,7 +2872,7 @@ function App() {
 
             <form onSubmit={executeReturnToStock}>
               <div style={{ padding: '20px' }}>
-                <div style={{ backgroundColor: '#f8fafc', padding: '12px 16px', borderRadius: '8px', marginBottom: '16px' }}>
+                <div style={{ backgroundColor: '#f8fafc', border: '1px solid #e2e8f0', padding: '12px 16px', borderRadius: '8px', marginBottom: '16px' }}>
                   <div style={{ fontSize: '13px', fontWeight: 600, color: '#0f172a' }}>{returningAsset.asset_name || 'อุปกรณ์ไอที'} ({returningAsset.asset_no || 'ไม่ระบุ Asset No'})</div>
                   <div style={{ fontSize: '12px', color: '#64748b', fontWeight: 400, marginTop: '2px' }}>ผู้ถือครองเดิม: <span>{getRealAssetHolder(returningAsset).realHolder}</span></div>
                 </div>
@@ -2817,7 +2880,7 @@ function App() {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                   <div>
                     <label style={{ color: '#0f172a', fontWeight: 500, fontSize: '12px', display: 'block', marginBottom: '4px' }}>แผนกที่รับเข้าจัดเก็บ *</label>
-                    <select value={returnFormData.dept} onChange={(e) => setReturnFormData(prev => ({ ...prev, dept: e.target.value }))} style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '13px', fontWeight: 400 }} required>
+                    <select value={returnFormData.dept} onChange={(e) => setReturnFormData(prev => ({ ...prev, dept: e.target.value }))} style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '13px', fontWeight: 400 }} required>
                       <option value="แผนกสารสนเทศ">แผนกสารสนเทศ (IT)</option>
                       <option value="ส่วนกลาง">ส่วนกลางบริษัท</option>
                       {deptList.map((d, i) => <option key={i} value={d}>{d}</option>)}
@@ -2825,22 +2888,22 @@ function App() {
                   </div>
                   <div>
                     <label style={{ color: '#0f172a', fontWeight: 500, fontSize: '12px', display: 'block', marginBottom: '4px' }}>ผู้ถือครองใหม่</label>
-                    <input type="text" value={returnFormData.owner} onChange={(e) => setReturnFormData(prev => ({ ...prev, owner: e.target.value }))} style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '13px', fontWeight: 400 }} />
+                    <input type="text" value={returnFormData.owner} onChange={(e) => setReturnFormData(prev => ({ ...prev, owner: e.target.value }))} style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '13px', fontWeight: 400 }} />
                   </div>
                   <div>
                     <label style={{ color: '#0f172a', fontWeight: 500, fontSize: '12px', display: 'block', marginBottom: '4px' }}>สถานที่จัดเก็บ/ตำแหน่งตั้ง</label>
-                    <input type="text" value={returnFormData.location} onChange={(e) => setReturnFormData(prev => ({ ...prev, location: e.target.value }))} style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '13px', fontWeight: 400 }} />
+                    <input type="text" value={returnFormData.location} onChange={(e) => setReturnFormData(prev => ({ ...prev, location: e.target.value }))} style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '13px', fontWeight: 400 }} />
                   </div>
                   <div>
                     <label style={{ color: '#0f172a', fontWeight: 500, fontSize: '12px', display: 'block', marginBottom: '4px' }}>หมายเหตุเพิ่มเติม</label>
-                    <textarea value={returnFormData.remark} onChange={(e) => setReturnFormData(prev => ({ ...prev, remark: e.target.value }))} rows="2" style={{ width: '100%', padding: '8px 10px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '13px', fontWeight: 400, resize: 'vertical' }}></textarea>
+                    <textarea value={returnFormData.remark} onChange={(e) => setReturnFormData(prev => ({ ...prev, remark: e.target.value }))} rows="2" style={{ width: '100%', padding: '8px 10px', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '13px', fontWeight: 400, resize: 'vertical' }}></textarea>
                   </div>
                 </div>
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', borderTop: '1px solid #e2e8f0', padding: '12px 20px', backgroundColor: '#f8fafc' }}>
                 <button type="button" onClick={() => setReturningAsset(null)} style={{ height: '36px', padding: '0 16px', backgroundColor: '#ffffff', color: '#0f172a', border: '1px solid #e2e8f0', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 400 }}>ยกเลิก</button>
-                <button type="submit" disabled={loadingHardware} style={{ height: '36px', padding: '0 16px', backgroundColor: '#0f172a', color: '#ffffff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 500 }}>{loadingHardware ? 'กำลังดำเนินการ...' : 'บันทึกการคืนทรัพย์สิน'}</button>
+                <button type="submit" disabled={loadingHardware} style={{ height: '36px', padding: '0 16px', backgroundColor: '#4f46e5', color: '#ffffff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 500 }}>{loadingHardware ? 'กำลังดำเนินการ...' : 'บันทึกการคืนทรัพย์สิน'}</button>
               </div>
             </form>
           </div>
@@ -2861,38 +2924,38 @@ function App() {
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                   <div>
                     <label style={{ color: '#0f172a', fontWeight: 500, fontSize: '12px', display: 'block', marginBottom: '4px' }}>เลขทรัพย์สิน (Asset No)</label>
-                    <input type="text" value={formData.asset_no} onChange={e => setFormData({ ...formData, asset_no: e.target.value })} style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '12px', fontWeight: 400 }} />
+                    <input type="text" value={formData.asset_no} onChange={e => setFormData({ ...formData, asset_no: e.target.value })} style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '12px', fontWeight: 400 }} />
                   </div>
                   <div>
                     <label style={{ color: '#0f172a', fontWeight: 500, fontSize: '12px', display: 'block', marginBottom: '4px' }}>หมวดหมู่ (Type) *</label>
-                    <input type="text" value={formData.type} onChange={e => setFormData({ ...formData, type: e.target.value })} style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '12px', fontWeight: 400 }} required />
+                    <input type="text" value={formData.type} onChange={e => setFormData({ ...formData, type: e.target.value })} style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '12px', fontWeight: 400 }} required />
                   </div>
                   <div style={{ gridColumn: 'span 2' }}>
                     <label style={{ color: '#0f172a', fontWeight: 500, fontSize: '12px', display: 'block', marginBottom: '4px' }}>ชื่ออุปกรณ์ (Asset Name) *</label>
-                    <input type="text" value={formData.asset_name} onChange={e => setFormData({ ...formData, asset_name: e.target.value })} style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '12px', fontWeight: 400 }} required />
+                    <input type="text" value={formData.asset_name} onChange={e => setFormData({ ...formData, asset_name: e.target.value })} style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '12px', fontWeight: 400 }} required />
                   </div>
                   <div>
                     <label style={{ color: '#0f172a', fontWeight: 500, fontSize: '12px', display: 'block', marginBottom: '4px' }}>ยี่ห้อ (Brand)</label>
-                    <input type="text" value={formData.brand} onChange={e => setFormData({ ...formData, brand: e.target.value })} style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '12px', fontWeight: 400 }} />
+                    <input type="text" value={formData.brand} onChange={e => setFormData({ ...formData, brand: e.target.value })} style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '12px', fontWeight: 400 }} />
                   </div>
                   <div>
                     <label style={{ color: '#0f172a', fontWeight: 500, fontSize: '12px', display: 'block', marginBottom: '4px' }}>แผนกสังกัด (Department)</label>
-                    <input type="text" value={formData.dept} onChange={e => setFormData({ ...formData, dept: e.target.value })} style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '12px', fontWeight: 400 }} />
+                    <input type="text" value={formData.dept} onChange={e => setFormData({ ...formData, dept: e.target.value })} style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '12px', fontWeight: 400 }} />
                   </div>
                   <div>
                     <label style={{ color: '#0f172a', fontWeight: 500, fontSize: '12px', display: 'block', marginBottom: '4px' }}>ผู้ถือครองหลัก</label>
-                    <input type="text" value={formData.owner} onChange={e => setFormData({ ...formData, owner: e.target.value })} style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '12px', fontWeight: 400 }} />
+                    <input type="text" value={formData.owner} onChange={e => setFormData({ ...formData, owner: e.target.value })} style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '12px', fontWeight: 400 }} />
                   </div>
                   <div>
                     <label style={{ color: '#0f172a', fontWeight: 500, fontSize: '12px', display: 'block', marginBottom: '4px' }}>สถานที่ตั้ง / ตำแหน่ง</label>
-                    <input type="text" value={formData.location} onChange={e => setFormData({ ...formData, location: e.target.value })} style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '12px', fontWeight: 400 }} />
+                    <input type="text" value={formData.location} onChange={e => setFormData({ ...formData, location: e.target.value })} style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '12px', fontWeight: 400 }} />
                   </div>
                 </div>
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', borderTop: '1px solid #e2e8f0', padding: '12px 20px', backgroundColor: '#f8fafc' }}>
                 <button type="button" onClick={() => setIsFormOpen(false)} style={{ height: '36px', padding: '0 16px', backgroundColor: '#ffffff', color: '#0f172a', border: '1px solid #e2e8f0', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 400 }}>ยกเลิก</button>
-                <button type="submit" disabled={submitting} style={{ height: '36px', padding: '0 16px', backgroundColor: '#0f172a', color: '#ffffff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 500 }}>{submitting ? 'กำลังบันทึก...' : 'บันทึกข้อมูล'}</button>
+                <button type="submit" disabled={submitting} style={{ height: '36px', padding: '0 16px', backgroundColor: '#4f46e5', color: '#ffffff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 500 }}>{submitting ? 'กำลังบันทึก...' : 'บันทึกข้อมูล'}</button>
               </div>
             </form>
           </div>
@@ -2913,46 +2976,46 @@ function App() {
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                   <div style={{ gridColumn: 'span 2' }}>
                     <label style={{ color: '#0f172a', fontWeight: 500, fontSize: '12px', display: 'block', marginBottom: '4px' }}>ชื่อซอฟต์แวร์ (Software Name) *</label>
-                    <input type="text" value={softwareFormData['Software name']} onChange={e => setSoftwareFormData({ ...softwareFormData, 'Software name': e.target.value })} style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '12px', fontWeight: 400 }} required />
+                    <input type="text" value={softwareFormData['Software name']} onChange={e => setSoftwareFormData({ ...softwareFormData, 'Software name': e.target.value })} style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '12px', fontWeight: 400 }} required />
                   </div>
                   <div>
                     <label style={{ color: '#0f172a', fontWeight: 500, fontSize: '12px', display: 'block', marginBottom: '4px' }}>เวอร์ชัน (Version)</label>
-                    <input type="text" value={softwareFormData['Version']} onChange={e => setSoftwareFormData({ ...softwareFormData, 'Version': e.target.value })} style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '12px', fontWeight: 400 }} />
+                    <input type="text" value={softwareFormData['Version']} onChange={e => setSoftwareFormData({ ...softwareFormData, 'Version': e.target.value })} style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '12px', fontWeight: 400 }} />
                   </div>
                   <div>
                     <label style={{ color: '#0f172a', fontWeight: 500, fontSize: '12px', display: 'block', marginBottom: '4px' }}>ตำแหน่งติดตั้ง (Installed On)</label>
-                    <input type="text" value={softwareFormData['Installed on']} onChange={e => setSoftwareFormData({ ...softwareFormData, 'Installed on': e.target.value })} placeholder="เช่น Server, Cloud, PC" style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '12px', fontWeight: 400 }} />
+                    <input type="text" value={softwareFormData['Installed on']} onChange={e => setSoftwareFormData({ ...softwareFormData, 'Installed on': e.target.value })} placeholder="เช่น Server, Cloud, PC" style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '12px', fontWeight: 400 }} />
                   </div>
                   <div>
                     <label style={{ color: '#0f172a', fontWeight: 500, fontSize: '12px', display: 'block', marginBottom: '4px' }}>ผู้จัดจำหน่าย (Vendor)</label>
-                    <input type="text" value={softwareFormData['Vendor']} onChange={e => setSoftwareFormData({ ...softwareFormData, 'Vendor': e.target.value })} style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '12px', fontWeight: 400 }} />
+                    <input type="text" value={softwareFormData['Vendor']} onChange={e => setSoftwareFormData({ ...softwareFormData, 'Vendor': e.target.value })} style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '12px', fontWeight: 400 }} />
                   </div>
                   <div>
                     <label style={{ color: '#0f172a', fontWeight: 500, fontSize: '12px', display: 'block', marginBottom: '4px' }}>จำนวนสิทธิ์ (No. of Licenses)</label>
-                    <input type="number" value={softwareFormData['No. of License']} onChange={e => setSoftwareFormData({ ...softwareFormData, 'No. of License': e.target.value })} style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '12px', fontWeight: 400 }} />
+                    <input type="number" value={softwareFormData['No. of License']} onChange={e => setSoftwareFormData({ ...softwareFormData, 'No. of License': e.target.value })} style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '12px', fontWeight: 400 }} />
                   </div>
                   <div>
                     <label style={{ color: '#0f172a', fontWeight: 500, fontSize: '12px', display: 'block', marginBottom: '4px' }}>วันที่จัดซื้อ (Purchase Date)</label>
-                    <input type="date" value={softwareFormData['Purchase date']} onChange={e => setSoftwareFormData({ ...softwareFormData, 'Purchase date': e.target.value })} style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '12px', fontWeight: 400 }} />
+                    <input type="date" value={softwareFormData['Purchase date']} onChange={e => setSoftwareFormData({ ...softwareFormData, 'Purchase date': e.target.value })} style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '12px', fontWeight: 400 }} />
                   </div>
                   <div>
                     <label style={{ color: '#0f172a', fontWeight: 500, fontSize: '12px', display: 'block', marginBottom: '4px' }}>วันหมดอายุ / สถานะสัญญา</label>
-                    <input type="text" value={softwareFormData['Expire Date']} onChange={e => setSoftwareFormData({ ...softwareFormData, 'Expire Date': e.target.value })} placeholder="เช่น 2026-12-31 หรือ Lifetime" style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '12px', fontWeight: 400 }} />
+                    <input type="text" value={softwareFormData['Expire Date']} onChange={e => setSoftwareFormData({ ...softwareFormData, 'Expire Date': e.target.value })} placeholder="เช่น 2026-12-31 หรือ Lifetime" style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '12px', fontWeight: 400 }} />
                   </div>
                   <div>
                     <label style={{ color: '#0f172a', fontWeight: 500, fontSize: '12px', display: 'block', marginBottom: '4px' }}>รหัสทะเบียน / Asset NO</label>
-                    <input type="text" value={softwareFormData['NO']} onChange={e => setSoftwareFormData({ ...softwareFormData, 'NO': e.target.value })} style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '12px', fontWeight: 400 }} />
+                    <input type="text" value={softwareFormData['NO']} onChange={e => setSoftwareFormData({ ...softwareFormData, 'NO': e.target.value })} style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '12px', fontWeight: 400 }} />
                   </div>
                   <div>
                     <label style={{ color: '#0f172a', fontWeight: 500, fontSize: '12px', display: 'block', marginBottom: '4px' }}>เลขที่สัญญา (Contract No)</label>
-                    <input type="text" value={softwareFormData['Contract Number']} onChange={e => setSoftwareFormData({ ...softwareFormData, 'Contract Number': e.target.value })} style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '12px', fontWeight: 400 }} />
+                    <input type="text" value={softwareFormData['Contract Number']} onChange={e => setSoftwareFormData({ ...softwareFormData, 'Contract Number': e.target.value })} style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '12px', fontWeight: 400 }} />
                   </div>
                 </div>
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', borderTop: '1px solid #e2e8f0', padding: '12px 20px', backgroundColor: '#f8fafc' }}>
                 <button type="button" onClick={() => setIsSoftwareFormOpen(false)} style={{ height: '36px', padding: '0 16px', backgroundColor: '#ffffff', color: '#0f172a', border: '1px solid #e2e8f0', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 400 }}>ยกเลิก</button>
-                <button type="submit" disabled={swSubmitting} style={{ height: '36px', padding: '0 16px', backgroundColor: '#0f172a', color: '#ffffff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 500 }}>{swSubmitting ? 'กำลังบันทึก...' : 'บันทึกข้อมูล'}</button>
+                <button type="submit" disabled={swSubmitting} style={{ height: '36px', padding: '0 16px', backgroundColor: '#4f46e5', color: '#ffffff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 500 }}>{swSubmitting ? 'กำลังบันทึก...' : 'บันทึกข้อมูล'}</button>
               </div>
             </form>
           </div>
@@ -2973,66 +3036,66 @@ function App() {
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                   <div>
                     <label style={{ color: '#0f172a', fontWeight: 500, fontSize: '12px', display: 'block', marginBottom: '4px' }}>เลขทรัพย์สินเช่า (Asset NO.) *</label>
-                    <input type="text" value={leasingFormData['Asset NO.']} onChange={e => setLeasingFormData({ ...leasingFormData, 'Asset NO.': e.target.value })} style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '12px', fontWeight: 400 }} required />
+                    <input type="text" value={leasingFormData['Asset NO.']} onChange={e => setLeasingFormData({ ...leasingFormData, 'Asset NO.': e.target.value })} style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '12px', fontWeight: 400 }} required />
                   </div>
                   <div>
                     <label style={{ color: '#0f172a', fontWeight: 500, fontSize: '12px', display: 'block', marginBottom: '4px' }}>ประเภทอุปกรณ์ (Type)</label>
-                    <input type="text" value={leasingFormData['Type']} onChange={e => setLeasingFormData({ ...leasingFormData, 'Type': e.target.value })} placeholder="เช่น AIO, PC, Notebook" style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '12px', fontWeight: 400 }} />
+                    <input type="text" value={leasingFormData['Type']} onChange={e => setLeasingFormData({ ...leasingFormData, 'Type': e.target.value })} placeholder="เช่น AIO, PC, Notebook" style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '12px', fontWeight: 400 }} />
                   </div>
                   <div style={{ gridColumn: 'span 2' }}>
                     <label style={{ color: '#0f172a', fontWeight: 500, fontSize: '12px', display: 'block', marginBottom: '4px' }}>ชื่ออุปกรณ์ (Asset Name)</label>
-                    <input type="text" value={leasingFormData['Asset Name']} onChange={e => setLeasingFormData({ ...leasingFormData, 'Asset Name': e.target.value })} style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '12px', fontWeight: 400 }} />
+                    <input type="text" value={leasingFormData['Asset Name']} onChange={e => setLeasingFormData({ ...leasingFormData, 'Asset Name': e.target.value })} style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '12px', fontWeight: 400 }} />
                   </div>
                   <div>
                     <label style={{ color: '#0f172a', fontWeight: 500, fontSize: '12px', display: 'block', marginBottom: '4px' }}>ยี่ห้อ (Brand)</label>
-                    <input type="text" value={leasingFormData['Brand']} onChange={e => setLeasingFormData({ ...leasingFormData, 'Brand': e.target.value })} style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '12px', fontWeight: 400 }} />
+                    <input type="text" value={leasingFormData['Brand']} onChange={e => setLeasingFormData({ ...leasingFormData, 'Brand': e.target.value })} style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '12px', fontWeight: 400 }} />
                   </div>
                   <div>
                     <label style={{ color: '#0f172a', fontWeight: 500, fontSize: '12px', display: 'block', marginBottom: '4px' }}>รุ่น (Model)</label>
-                    <input type="text" value={leasingFormData['Model']} onChange={e => setLeasingFormData({ ...leasingFormData, 'Model': e.target.value })} style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '12px', fontWeight: 400 }} />
+                    <input type="text" value={leasingFormData['Model']} onChange={e => setLeasingFormData({ ...leasingFormData, 'Model': e.target.value })} style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '12px', fontWeight: 400 }} />
                   </div>
                   <div>
                     <label style={{ color: '#0f172a', fontWeight: 500, fontSize: '12px', display: 'block', marginBottom: '4px' }}>Serial Number</label>
-                    <input type="text" value={leasingFormData['SerialNumber']} onChange={e => setLeasingFormData({ ...leasingFormData, 'SerialNumber': e.target.value })} style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '12px', fontWeight: 400 }} />
+                    <input type="text" value={leasingFormData['SerialNumber']} onChange={e => setLeasingFormData({ ...leasingFormData, 'SerialNumber': e.target.value })} style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '12px', fontWeight: 400 }} />
                   </div>
                   <div>
                     <label style={{ color: '#0f172a', fontWeight: 500, fontSize: '12px', display: 'block', marginBottom: '4px' }}>แผนก (Dept.)</label>
-                    <input type="text" value={leasingFormData['Dept.']} onChange={e => setLeasingFormData({ ...leasingFormData, 'Dept.': e.target.value })} style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '12px', fontWeight: 400 }} />
+                    <input type="text" value={leasingFormData['Dept.']} onChange={e => setLeasingFormData({ ...leasingFormData, 'Dept.': e.target.value })} style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '12px', fontWeight: 400 }} />
                   </div>
                   <div>
                     <label style={{ color: '#0f172a', fontWeight: 500, fontSize: '12px', display: 'block', marginBottom: '4px' }}>วันเริ่มเช่า (Purchase Date)</label>
-                    <input type="text" value={leasingFormData['Purchase']} onChange={e => setLeasingFormData({ ...leasingFormData, 'Purchase': e.target.value })} placeholder="เช่น 20/8/2025" style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '12px', fontWeight: 400 }} />
+                    <input type="text" value={leasingFormData['Purchase']} onChange={e => setLeasingFormData({ ...leasingFormData, 'Purchase': e.target.value })} placeholder="เช่น 20/8/2025" style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '12px', fontWeight: 400 }} />
                   </div>
                   <div>
                     <label style={{ color: '#0f172a', fontWeight: 500, fontSize: '12px', display: 'block', marginBottom: '4px' }}>วันสิ้นสุดสัญญา (End of)</label>
-                    <input type="text" value={leasingFormData['End of']} onChange={e => setLeasingFormData({ ...leasingFormData, 'End of': e.target.value })} placeholder="เช่น 20/08/2028" style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '12px', fontWeight: 400 }} />
+                    <input type="text" value={leasingFormData['End of']} onChange={e => setLeasingFormData({ ...leasingFormData, 'End of': e.target.value })} placeholder="เช่น 20/08/2028" style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '12px', fontWeight: 400 }} />
                   </div>
                   <div>
                     <label style={{ color: '#0f172a', fontWeight: 500, fontSize: '12px', display: 'block', marginBottom: '4px' }}>ผู้ถือครอง 1</label>
-                    <input type="text" value={leasingFormData['ผู้ถือครอง 1']} onChange={e => setLeasingFormData({ ...leasingFormData, 'ผู้ถือครอง 1': e.target.value })} style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '12px', fontWeight: 400 }} />
+                    <input type="text" value={leasingFormData['ผู้ถือครอง 1']} onChange={e => setLeasingFormData({ ...leasingFormData, 'ผู้ถือครอง 1': e.target.value })} style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '12px', fontWeight: 400 }} />
                   </div>
                   <div>
                     <label style={{ color: '#0f172a', fontWeight: 500, fontSize: '12px', display: 'block', marginBottom: '4px' }}>ผู้ถือครอง 2</label>
-                    <input type="text" value={leasingFormData['ผู้ถือครอง 2']} onChange={e => setLeasingFormData({ ...leasingFormData, 'ผู้ถือครอง 2': e.target.value })} style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '12px', fontWeight: 400 }} />
+                    <input type="text" value={leasingFormData['ผู้ถือครอง 2']} onChange={e => setLeasingFormData({ ...leasingFormData, 'ผู้ถือครอง 2': e.target.value })} style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '12px', fontWeight: 400 }} />
                   </div>
                   <div>
                     <label style={{ color: '#0f172a', fontWeight: 500, fontSize: '12px', display: 'block', marginBottom: '4px' }}>ผู้รับผิดชอบ</label>
-                    <input type="text" value={leasingFormData['ผู้รับผิดชอบ']} onChange={e => setLeasingFormData({ ...leasingFormData, 'ผู้รับผิดชอบ': e.target.value })} style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '12px', fontWeight: 400 }} />
+                    <input type="text" value={leasingFormData['ผู้รับผิดชอบ']} onChange={e => setLeasingFormData({ ...leasingFormData, 'ผู้รับผิดชอบ': e.target.value })} style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '12px', fontWeight: 400 }} />
                   </div>
                   <div>
                     <label style={{ color: '#0f172a', fontWeight: 500, fontSize: '12px', display: 'block', marginBottom: '4px' }}>สถานที่ตั้ง (Location)</label>
-                    <input type="text" value={leasingFormData['Location']} onChange={e => setLeasingFormData({ ...leasingFormData, 'Location': e.target.value })} style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '12px', fontWeight: 400 }} />
+                    <input type="text" value={leasingFormData['Location']} onChange={e => setLeasingFormData({ ...leasingFormData, 'Location': e.target.value })} style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '12px', fontWeight: 400 }} />
                   </div>
                   <div style={{ gridColumn: 'span 2' }}>
                     <label style={{ color: '#0f172a', fontWeight: 500, fontSize: '12px', display: 'block', marginBottom: '4px' }}>หมายเหตุ (Remark)</label>
-                    <textarea value={leasingFormData['Remark']} onChange={e => setLeasingFormData({ ...leasingFormData, 'Remark': e.target.value })} rows="2" style={{ width: '100%', padding: '8px 10px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '12px', fontWeight: 400, resize: 'vertical' }}></textarea>
+                    <textarea value={leasingFormData['Remark']} onChange={e => setLeasingFormData({ ...leasingFormData, 'Remark': e.target.value })} rows="2" style={{ width: '100%', padding: '8px 10px', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '12px', fontWeight: 400, resize: 'vertical' }}></textarea>
                   </div>
                 </div>
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', borderTop: '1px solid #e2e8f0', padding: '12px 20px', backgroundColor: '#f8fafc' }}>
                 <button type="button" onClick={() => setIsLeasingFormOpen(false)} style={{ height: '36px', padding: '0 16px', backgroundColor: '#ffffff', color: '#0f172a', border: '1px solid #e2e8f0', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 400 }}>ยกเลิก</button>
-                <button type="submit" disabled={leasingSubmitting} style={{ height: '36px', padding: '0 16px', backgroundColor: '#0f172a', color: '#ffffff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 500 }}>{leasingSubmitting ? 'กำลังบันทึก...' : 'บันทึกข้อมูล'}</button>
+                <button type="submit" disabled={leasingSubmitting} style={{ height: '36px', padding: '0 16px', backgroundColor: '#4f46e5', color: '#ffffff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 500 }}>{leasingSubmitting ? 'กำลังบันทึก...' : 'บันทึกข้อมูล'}</button>
               </div>
             </form>
           </div>
@@ -3063,7 +3126,7 @@ function App() {
               <div style={{ display: 'flex', gap: '6px' }}>
                 {userRole === 'admin' && (
                   <>
-                    <button onClick={() => handleOpenEditModal(selectedAsset)} style={{ height: '32px', padding: '0 12px', fontSize: '12px', fontWeight: 400, backgroundColor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '6px', cursor: 'pointer' }}>แก้ไข</button>
+                    <button onClick={() => handleOpenEditModal(selectedAsset)} style={{ height: '32px', padding: '0 12px', fontSize: '12px', fontWeight: 400, backgroundColor: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '6px', cursor: 'pointer' }}>แก้ไข</button>
                     <button onClick={() => handleDeleteAsset(selectedAsset)} style={{ height: '32px', padding: '0 12px', fontSize: '12px', fontWeight: 400, backgroundColor: '#fff1f2', border: 'none', color: '#e11d48', borderRadius: '6px', cursor: 'pointer' }}>ลบ</button>
                   </>
                 )}
@@ -3098,7 +3161,7 @@ function App() {
               <div style={{ display: 'flex', gap: '6px' }}>
                 {userRole === 'admin' && (
                   <>
-                    <button onClick={() => handleOpenEditSoftwareModal(selectedSoftware)} style={{ height: '32px', padding: '0 12px', fontSize: '12px', fontWeight: 400, backgroundColor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '6px', cursor: 'pointer' }}>แก้ไข</button>
+                    <button onClick={() => handleOpenEditSoftwareModal(selectedSoftware)} style={{ height: '32px', padding: '0 12px', fontSize: '12px', fontWeight: 400, backgroundColor: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '6px', cursor: 'pointer' }}>แก้ไข</button>
                     <button onClick={() => handleDeleteSoftware(selectedSoftware)} style={{ height: '32px', padding: '0 12px', fontSize: '12px', fontWeight: 400, backgroundColor: '#fff1f2', border: 'none', color: '#e11d48', borderRadius: '6px', cursor: 'pointer' }}>ลบ</button>
                   </>
                 )}
@@ -3133,7 +3196,7 @@ function App() {
               <div style={{ display: 'flex', gap: '6px' }}>
                 {userRole === 'admin' && (
                   <>
-                    <button onClick={() => handleOpenEditLeasingModal(selectedLeasing)} style={{ height: '32px', padding: '0 12px', fontSize: '12px', fontWeight: 400, backgroundColor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '6px', cursor: 'pointer' }}>แก้ไข</button>
+                    <button onClick={() => handleOpenEditLeasingModal(selectedLeasing)} style={{ height: '32px', padding: '0 12px', fontSize: '12px', fontWeight: 400, backgroundColor: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '6px', cursor: 'pointer' }}>แก้ไข</button>
                     <button onClick={() => handleDeleteLeasing(selectedLeasing)} style={{ height: '32px', padding: '0 12px', fontSize: '12px', fontWeight: 400, backgroundColor: '#fff1f2', border: 'none', color: '#e11d48', borderRadius: '6px', cursor: 'pointer' }}>ลบ</button>
                   </>
                 )}
