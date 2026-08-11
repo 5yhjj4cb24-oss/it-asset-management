@@ -1455,10 +1455,23 @@ function App() {
             ☰
           </button>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <DragonflyLogo size={26} color="#6b21a8" />
-            <span style={{ color: '#0f172a', fontWeight: 600, fontSize: '15px', letterSpacing: '-0.2px' }}>IT Asset Management</span>
-          </div>
+          {/* เปลี่ยนจาก <div> เดิม เป็นโค้ดนี้ */}
+<div 
+  onClick={() => setMainTab('dashboard')}
+  title="กลับสู่หน้า Dashboard"
+  style={{ 
+    display: 'flex', 
+    alignItems: 'center', 
+    gap: '10px', 
+    cursor: 'pointer',
+    userSelect: 'none'
+  }}
+>
+  <DragonflyLogo size={26} color="#6b21a8" />
+  <span style={{ color: '#0f172a', fontWeight: 600, fontSize: '15px', letterSpacing: '-0.2px' }}>
+    IT Asset Management
+  </span>
+</div>
 
           <div style={{ borderLeft: '1px solid #e2e8f0', height: '20px', margin: '0 6px' }} />
 
