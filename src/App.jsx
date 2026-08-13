@@ -173,7 +173,7 @@ const emptySoftwareForm = {
   'No. of License': 1,
   'Purchase date': '',
   'Expire Date': '',
-  'Contract Number': '',
+  'Part Number': '',
   'รหัสทะเบียน': ''
 }
 
@@ -825,7 +825,7 @@ function App() {
       'No. of License': item['No. of License'] || item.no_of_license || 1,
       'Purchase date': item['Purchase date'] || item.purchase_date || '',
       'Expire Date': item['Expire Date'] || item.expire_date || '',
-      'Contract Number': item['Contract Number'] || item.contract_number || '',
+      'Part Number': item['Part Number'] || item.contract_number || '',
       'รหัสทะเบียน': item['รหัสทะเบียน'] || item.registration_code || ''
     })
     setIsSoftwareFormOpen(true)
@@ -1041,7 +1041,7 @@ function App() {
       return
     }
 
-    const headers = ['NO', 'Software Name', 'Version', 'Installed On', 'Vendor', 'No. of License', 'Purchase Date', 'Expire Date', 'Contract Number', 'รหัสทะเบียน']
+    const headers = ['NO', 'Software Name', 'Version', 'Installed On', 'Vendor', 'No. of License', 'Purchase Date', 'Expire Date', 'Part Number', 'รหัสทะเบียน']
     const csvRows = [headers.join(',')]
 
     softwareList.forEach(item => {
@@ -1054,7 +1054,7 @@ function App() {
         `"${item['No. of License'] || item.no_of_license || 1}"`,
         `"${item['Purchase date'] || item.purchase_date || ''}"`,
         `"${item['Expire Date'] || item.expire_date || ''}"`,
-        `"${item['Contract Number'] || item.contract_number || ''}"`,
+        `"${item['Part Number'] || item.contract_number || ''}"`,
         `"${item['รหัสทะเบียน'] || item.registration_code || ''}"`
       ]
       csvRows.push(row.join(','))
@@ -3021,7 +3021,7 @@ function App() {
                   </div>
                   <div>
                     <label style={{ color: '#0f172a', fontWeight: 500, fontSize: '12px', display: 'block', marginBottom: '4px' }}>เลขที่สัญญา (Contract No)</label>
-                    <input type="text" value={softwareFormData['Contract Number']} onChange={e => setSoftwareFormData({ ...softwareFormData, 'Contract Number': e.target.value })} style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '12px', fontWeight: 400 }} />
+                    <input type="text" value={softwareFormData['Part Number']} onChange={e => setSoftwareFormData({ ...softwareFormData, 'Part Number': e.target.value })} style={{ width: '100%', height: '36px', padding: '0 10px', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '12px', fontWeight: 400 }} />
                   </div>
                 </div>
               </div>
