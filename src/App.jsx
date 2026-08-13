@@ -1054,7 +1054,7 @@ function App() {
         `"${item['No. of License'] || item.no_of_license || 1}"`,
         `"${item['Purchase date'] || item.purchase_date || ''}"`,
         `"${item['Expire Date'] || item.expire_date || ''}"`,
-        `"${item['Part Number'] || item.contract_number || ''}"`,
+        `"${item['Part Number'] || item.Part_number || ''}"`,
         `"${item['รหัสทะเบียน'] || item.registration_code || ''}"`
       ]
       csvRows.push(row.join(','))
