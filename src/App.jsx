@@ -1,5 +1,13 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@supabase/supabase-js'
+
+export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  auth: {
+    storage: window.sessionStorage, // เปลี่ยนมาใช้ sessionStorage เพื่อให้ปิดเบราว์เซอร์แล้วหลุดล็อกอินทันที
+    autoRefreshToken: true,
+    persistSession: true
+  }
+})
 import { supabase } from './supabaseClient'
 import './App.css'
 
