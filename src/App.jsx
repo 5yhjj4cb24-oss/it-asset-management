@@ -1,15 +1,18 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@supabase/supabase-js'
+import './App.css'
 
-export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+// ตั้งค่า Supabase Client พร้อมบังคับใช้ sessionStorage (ปิดเบราว์เซอร์แล้วหลุดล็อกอินทันที)
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
-    storage: window.sessionStorage, // เปลี่ยนมาใช้ sessionStorage เพื่อให้ปิดเบราว์เซอร์แล้วหลุดล็อกอินทันที
+    storage: window.sessionStorage,
     autoRefreshToken: true,
     persistSession: true
   }
 })
-import { supabase } from './supabaseClient'
-import './App.css'
 
 const PAGE_SIZE = 20
 const DEFAULT_DOMAIN = '@gmail.com'
@@ -141,11 +144,31 @@ function getSoftwareExpireStatus(expireStr) {
     return { statusKey: 'lifetime', label: 'ตลอดชีพ (Lifetime)', color: '#15803d', bg: '#dcfce7' }
   }
 
-  const expDate = new Date(expireStr)
-  if (!isNaN(expDate.getTime())) {
+  let expDate = null
+
+  // 1. ตรวจจับฟอร์แมต วัน/เดือน/ปี (เช่น 16/9/2025 หรือ 16-09-2025)
+  const dmyMatch = str.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/)
+  if (dmyMatch) {
+    let day = parseInt(dmyMatch[1], 10)
+    let month = parseInt(dmyMatch[2], 10) - 1
+    let year = parseInt(dmyMatch[3], 10)
+    if (year > 2500) year -= 543
+    expDate = new Date(year, month, day)
+  } else {
+    // 2. ฟอร์แมตสากล เช่น YYYY-MM-DD
+    const parsed = new Date(str)
+    if (!isNaN(parsed.getTime())) {
+      expDate = parsed
+    }
+  }
+
+  if (expDate && !isNaN(expDate.getTime())) {
     const now = new Date()
+    now.setHours(0, 0, 0, 0)
+    expDate.setHours(0, 0, 0, 0)
+
     const diffDays = Math.ceil((expDate - now) / (1000 * 60 * 60 * 24))
-    const formattedDate = expDate.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' })
+    const formattedDate = `${expDate.getDate()}/${expDate.getMonth() + 1}/${expDate.getFullYear()}`
 
     if (diffDays < 0) {
       return { statusKey: 'expired', label: `หมดอายุ (${formattedDate})`, color: '#9f1239', bg: '#ffe4e6' }
@@ -466,9 +489,6 @@ function App() {
 
     setAddingUser(true)
     try {
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || supabase.supabaseUrl
-      const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || supabase.supabaseKey
-
       const tempClient = createClient(supabaseUrl, supabaseAnonKey, { auth: { persistSession: false } })
       const { error } = await tempClient.auth.signUp({
         email: formattedUserEmail,
@@ -1425,11 +1445,11 @@ function App() {
   const installedOnList = [...new Set(softwareList.map(item => item['Installed on'] || item.installed_on).filter(Boolean))].sort()
 
   const navMenuItems = [
-  { id: 'dashboard', label: 'Dashboard', icon: '📊', count: null },
-  { id: 'hardware', label: 'Hardware Assets', icon: '📦', count: allRawAssets.length },
-  { id: 'software', label: 'Software Licenses', icon: '💻', count: softwareList.length },
-  { id: 'leasing', label: 'Leased Assets', icon: '📋', count: leasingList.length },
-]
+    { id: 'dashboard', label: 'Dashboard', icon: '📊', count: null },
+    { id: 'hardware', label: 'Hardware Assets', icon: '📦', count: allRawAssets.length },
+    { id: 'software', label: 'Software Licenses', icon: '💻', count: softwareList.length },
+    { id: 'leasing', label: 'Leased Assets', icon: '📋', count: leasingList.length },
+  ]
 
   const activeMenu = navMenuItems.find(m => m.id === mainTab)
 
@@ -1440,7 +1460,6 @@ function App() {
       <header style={{ backgroundColor: '#ffffff', color: '#0f172a', padding: '10px 24px', minHeight: '56px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.02)', boxSizing: 'border-box', position: 'sticky', top: 0, zIndex: 1000 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
           
-          {/* Hamburger Menu Button (☰) */}
           <button
             onClick={() => setIsNavMenuOpen(!isNavMenuOpen)}
             title="เปิด/ปิด เมนูหลัก"
@@ -1463,27 +1482,25 @@ function App() {
             ☰
           </button>
 
-          {/* เปลี่ยนจาก <div> เดิม เป็นโค้ดนี้ */}
-<div 
-  onClick={() => setMainTab('dashboard')}
-  title="กลับสู่หน้า Dashboard"
-  style={{ 
-    display: 'flex', 
-    alignItems: 'center', 
-    gap: '10px', 
-    cursor: 'pointer',
-    userSelect: 'none'
-  }}
->
-  <DragonflyLogo size={26} color="#6b21a8" />
-  <span style={{ color: '#0f172a', fontWeight: 600, fontSize: '15px', letterSpacing: '-0.2px' }}>
-    IT Asset Management
-  </span>
-</div>
+          <div 
+            onClick={() => setMainTab('dashboard')}
+            title="กลับสู่หน้า Dashboard"
+            style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '10px', 
+              cursor: 'pointer',
+              userSelect: 'none'
+            }}
+          >
+            <DragonflyLogo size={26} color="#6b21a8" />
+            <span style={{ color: '#0f172a', fontWeight: 600, fontSize: '15px', letterSpacing: '-0.2px' }}>
+              IT Asset Management
+            </span>
+          </div>
 
           <div style={{ borderLeft: '1px solid #e2e8f0', height: '20px', margin: '0 6px' }} />
 
-          {/* Current Page Title */}
           <span style={{ color: '#64748b', fontSize: '13px', fontWeight: 400, display: 'flex', alignItems: 'center', gap: '6px' }}>
             <span>{activeMenu?.icon}</span>
             <span>{activeMenu?.label}</span>
@@ -1492,7 +1509,6 @@ function App() {
         
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', position: 'relative' }}>
           
-          {/* Settings Button */}
           <button
             onClick={() => {
               setIsSettingsOpen(true)
@@ -1517,7 +1533,6 @@ function App() {
             ⚙️
           </button>
 
-          {/* User Profile Avatar */}
           <button
             onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
             style={{
@@ -1656,7 +1671,7 @@ function App() {
         </div>
       </header>
 
-      {/* Navigation Sidebar Drawer (Light Theme) */}
+      {/* Navigation Sidebar Drawer */}
       {isNavMenuOpen && (
         <>
           <div
@@ -1749,21 +1764,20 @@ function App() {
       {/* Main Content Area */}
       <main style={{ padding: '20px 24px', maxWidth: '1600px', margin: '0 auto' }}>
         
-        {/* Page Header */}
-<div style={{ marginBottom: '16px' }}>
-  <h1 style={{ color: '#0f172a', fontWeight: 600, fontSize: '18px', margin: 0 }}>
-    {mainTab === 'dashboard' && 'Dashboard Overview'}
-    {mainTab === 'hardware' && 'Hardware Assets Management'}
-    {mainTab === 'software' && 'Software License Management'}
-    {mainTab === 'leasing' && 'Leased Assets Management'}
-  </h1>
-  <p style={{ color: '#64748b', fontSize: '13px', fontWeight: 400, margin: '2px 0 0' }}>
-    {mainTab === 'dashboard' && 'Executive summary, asset lifecycle analytics, and license status'}
-    {mainTab === 'hardware' && 'Centralized control for hardware devices, assignments, and returns'}
-    {mainTab === 'software' && 'Software license inventory, vendor management, and expiration tracking'}
-    {mainTab === 'leasing' && 'Tracking leased equipment contracts, assignees, and deployment locations'}
-  </p>
-</div>
+        <div style={{ marginBottom: '16px' }}>
+          <h1 style={{ color: '#0f172a', fontWeight: 600, fontSize: '18px', margin: 0 }}>
+            {mainTab === 'dashboard' && 'Dashboard Overview'}
+            {mainTab === 'hardware' && 'Hardware Assets Management'}
+            {mainTab === 'software' && 'Software License Management'}
+            {mainTab === 'leasing' && 'Leased Assets Management'}
+          </h1>
+          <p style={{ color: '#64748b', fontSize: '13px', fontWeight: 400, margin: '2px 0 0' }}>
+            {mainTab === 'dashboard' && 'Executive summary, asset lifecycle analytics, and license status'}
+            {mainTab === 'hardware' && 'Centralized control for hardware devices, assignments, and returns'}
+            {mainTab === 'software' && 'Software license inventory, vendor management, and expiration tracking'}
+            {mainTab === 'leasing' && 'Tracking leased equipment contracts, assignees, and deployment locations'}
+          </p>
+        </div>
 
         {/* VIEW 0: ANALYTICS DASHBOARD */}
         {mainTab === 'dashboard' && (
@@ -2713,7 +2727,6 @@ function App() {
 
             <div style={{ padding: '20px', maxHeight: '70vh', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '16px' }}>
               
-              {/* Section: Export CSV Data */}
               <div style={{ backgroundColor: '#ffffff', borderRadius: '8px', border: '1px solid #e2e8f0', overflow: 'hidden' }}>
                 <div style={{ padding: '12px 16px', backgroundColor: '#f8fafc', fontWeight: 600, fontSize: '13px', color: '#0f172a', borderBottom: '1px solid #e2e8f0' }}>
                   📥 ส่งออกข้อมูล (Export CSV)
@@ -2743,7 +2756,6 @@ function App() {
                 </div>
               </div>
 
-              {/* Section: Change Password */}
               <div style={{ backgroundColor: '#ffffff', borderRadius: '8px', border: '1px solid #e2e8f0', overflow: 'hidden' }}>
                 <button
                   type="button"
@@ -2816,7 +2828,6 @@ function App() {
                 )}
               </div>
 
-              {/* Section: Add User (Admin Only) */}
               {userRole === 'admin' && (
                 <div style={{ backgroundColor: '#ffffff', borderRadius: '8px', border: '1px solid #e2e8f0', overflow: 'hidden' }}>
                   <button
