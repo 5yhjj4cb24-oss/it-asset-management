@@ -35,51 +35,56 @@ async function run() {
     process.exit(1);
   }
 
-  // วันนี้ (เวลา 00:00:00)
+  // วันนี้ (00:00:00)
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  // คำนวณวันล่วงหน้า 30 วัน
+  // วันล่วงหน้า 30 วัน
   const in30Days = new Date(today);
   in30Days.setDate(today.getDate() + 30);
 
-  // กรองเฉพาะเครื่องที่ต้อง Cal หรือ PM ภายใน 30 วันนี้ (หรือเลยกำหนดแล้ว)
+  // กรองอุปกรณ์ที่ due_date, next_due หรือ next_due_1 อยู่ในช่วง 30 วันนี้ (หรือเลยกำหนด)
   const dueItems = equipment.filter(item => {
-    const calDate = item.next_cal_date ? new Date(item.next_cal_date) : null;
-    const pmDate = item.next_pm_date ? new Date(item.next_pm_date) : null;
+    const d1 = item.due_date ? new Date(item.due_date) : null;
+    const d2 = item.next_due ? new Date(item.next_due) : null;
+    const d3 = item.next_due_1 ? new Date(item.next_due_1) : null;
 
-    if (calDate) calDate.setHours(0, 0, 0, 0);
-    if (pmDate) pmDate.setHours(0, 0, 0, 0);
+    if (d1) d1.setHours(0, 0, 0, 0);
+    if (d2) d2.setHours(0, 0, 0, 0);
+    if (d3) d3.setHours(0, 0, 0, 0);
 
-    const isCalDue = calDate && calDate <= in30Days;
-    const isPmDue = pmDate && pmDate <= in30Days;
+    const isD1 = d1 && d1 <= in30Days;
+    const isD2 = d2 && d2 <= in30Days;
+    const isD3 = d3 && d3 <= in30Days;
 
-    return isCalDue || isPmDue;
+    return isD1 || isD2 || isD3;
   });
 
   let message = `🔔 [IT Asset Alert] รายงานแจ้งเตือน Cal / PM ล่วงหน้า 30 วัน\n`;
   message += `📅 ประจำวันที่: ${new Date().toLocaleDateString('th-TH')}\n\n`;
 
   if (dueItems.length === 0) {
-    message += `✅ ไม่มีรายการที่ต้อง Cal/PM ในช่วง 30 วันนี้ครับ`;
+    message += `✅ ไม่มีรายการที่ถึงกำหนด Cal/PM ในช่วง 30 วันนี้ครับ`;
   } else {
-    message += `⚠️ พบรายการต้อง Cal/PM ภายใน 30 วัน (หรือเลยกำหนด) ทั้งหมด ${dueItems.length} รายการ:\n\n`;
+    message += `⚠️ พบรายการถึงกำหนด/ใกล้ถึงกำหนด ${dueItems.length} รายการ:\n\n`;
 
     dueItems.slice(0, 10).forEach((item, index) => {
       let details = [];
-      if (item.next_cal_date) {
-        const calDate = new Date(item.next_cal_date);
-        calDate.setHours(0, 0, 0, 0);
-        if (calDate <= in30Days) {
-          details.push(`Cal: ${item.next_cal_date}`);
-        }
+
+      if (item.due_date) {
+        const d1 = new Date(item.due_date);
+        d1.setHours(0, 0, 0, 0);
+        if (d1 <= in30Days) details.push(`Due: ${item.due_date}`);
       }
-      if (item.next_pm_date) {
-        const pmDate = new Date(item.next_pm_date);
-        pmDate.setHours(0, 0, 0, 0);
-        if (pmDate <= in30Days) {
-          details.push(`PM: ${item.next_pm_date}`);
-        }
+      if (item.next_due) {
+        const d2 = new Date(item.next_due);
+        d2.setHours(0, 0, 0, 0);
+        if (d2 <= in30Days) details.push(`Next Due: ${item.next_due}`);
+      }
+      if (item.next_due_1) {
+        const d3 = new Date(item.next_due_1);
+        d3.setHours(0, 0, 0, 0);
+        if (d3 <= in30Days) details.push(`Next Due 1: ${item.next_due_1}`);
       }
 
       message += `${index + 1}. ${item.name || item.code || 'ไม่ระบุชื่อ'}\n`;
