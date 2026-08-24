@@ -1,3 +1,4 @@
+import MedicalEquipment from './MedicalEquipment';
 import { useEffect, useState } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import './App.css'
@@ -227,6 +228,7 @@ const emptyLeasingForm = {
 }
 
 function App() {
+  // 1. ประกาศ State ทั้งหมดไว้บนสุดก่อน (ตามกฎ React)
   const [session, setSession] = useState(null)
   const [userRole, setUserRole] = useState('viewer')
   const [loginEmail, setLoginEmail] = useState('')
@@ -302,6 +304,13 @@ function App() {
   const [editingLeasing, setEditingLeasing] = useState(null)
   const [leasingFormData, setLeasingFormData] = useState(emptyLeasingForm)
   const [leasingSubmitting, setLeasingSubmitting] = useState(false)
+
+  // 2. ค่อยเช็ก Path เพื่อสลับไปหน้าเครื่องมือแพทย์
+  if (window.location.pathname === '/purchase') {
+    return <MedicalEquipment />;
+  }
+
+  // ... โค้ดเดิมที่เหลือ
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
