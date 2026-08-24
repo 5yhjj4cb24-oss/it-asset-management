@@ -2,8 +2,9 @@ name: Daily Cal/PM Alert
 
 on:
   schedule:
-    - cron: '0 1 * * *' # 01:00 UTC = 08:00 น. เวลาไทย (รันทุกวัน)
-  workflow_dispatch: # ปุ่มสำหรับกดสั่งรันทดสอบมือได้ทันที
+    # 02:00 UTC = 09:00 น. เวลาไทย (รันวันละ 1 ครั้ง)
+    - cron: '0 2 * * *'
+  workflow_dispatch: # ปุ่มสำหรับกดสั่งรันทดสอบด้วยตัวเอง
 
 jobs:
   notify:
@@ -18,7 +19,7 @@ jobs:
           node-version: '22'
 
       - name: Install Dependencies
-        run: npm install @supabase/supabase-js resend
+        run: npm install @supabase/supabase-js
 
       - name: Run Notification Script
         env:
@@ -26,6 +27,4 @@ jobs:
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
           LINE_CHANNEL_ACCESS_TOKEN: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }}
           LINE_USER_OR_GROUP_ID: ${{ secrets.LINE_USER_OR_GROUP_ID }}
-          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
-          ALERT_EMAIL_TO: ${{ secrets.ALERT_EMAIL_TO }}
         run: node scripts/notify.js

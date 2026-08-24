@@ -35,11 +35,15 @@ async function run() {
     process.exit(1);
   }
 
-  // เซ็ตเวลาปัจจุบันเป็น 00:00:00 เพื่อเปรียบเทียบเฉพาะวันที่
+  // วันนี้ (เวลา 00:00:00)
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  // กรองเฉพาะรายการที่ถึงกำหนดหรือเกินกำหนด (วันกำหนด <= วันนี้)
+  // คำนวณวันล่วงหน้า 30 วัน
+  const in30Days = new Date(today);
+  in30Days.setDate(today.getDate() + 30);
+
+  // กรองเฉพาะเครื่องที่ต้อง Cal หรือ PM ภายใน 30 วันนี้ (หรือเลยกำหนดแล้ว)
   const dueItems = equipment.filter(item => {
     const calDate = item.next_cal_date ? new Date(item.next_cal_date) : null;
     const pmDate = item.next_pm_date ? new Date(item.next_pm_date) : null;
@@ -47,32 +51,39 @@ async function run() {
     if (calDate) calDate.setHours(0, 0, 0, 0);
     if (pmDate) pmDate.setHours(0, 0, 0, 0);
 
-    const isCalDue = calDate && calDate <= today;
-    const isPmDue = pmDate && pmDate <= today;
+    const isCalDue = calDate && calDate <= in30Days;
+    const isPmDue = pmDate && pmDate <= in30Days;
 
     return isCalDue || isPmDue;
   });
 
-  let message = `🔔 [IT Asset Alert] รายงานถึงกำหนด Cal / PM\n`;
+  let message = `🔔 [IT Asset Alert] รายงานแจ้งเตือน Cal / PM ล่วงหน้า 30 วัน\n`;
   message += `📅 ประจำวันที่: ${new Date().toLocaleDateString('th-TH')}\n\n`;
 
   if (dueItems.length === 0) {
-    message += `✅ ไม่มีรายการที่ถึงกำหนด Cal/PM ในวันนี้ครับ`;
+    message += `✅ ไม่มีรายการที่ต้อง Cal/PM ในช่วง 30 วันนี้ครับ`;
   } else {
-    message += `⚠️ มีอุปกรณ์ถึงกำหนด/เลยกำหนด ${dueItems.length} รายการ:\n\n`;
-    
-    dueItems.slice(0, 10).forEach((item, index) => {
-      const calDate = item.next_cal_date ? new Date(item.next_cal_date) : null;
-      const pmDate = item.next_pm_date ? new Date(item.next_pm_date) : null;
-      if (calDate) calDate.setHours(0, 0, 0, 0);
-      if (pmDate) pmDate.setHours(0, 0, 0, 0);
+    message += `⚠️ พบรายการต้อง Cal/PM ภายใน 30 วัน (หรือเลยกำหนด) ทั้งหมด ${dueItems.length} รายการ:\n\n`;
 
-      let dueTypes = [];
-      if (calDate && calDate <= today) dueTypes.push(`Cal (${item.next_cal_date})`);
-      if (pmDate && pmDate <= today) dueTypes.push(`PM (${item.next_pm_date})`);
+    dueItems.slice(0, 10).forEach((item, index) => {
+      let details = [];
+      if (item.next_cal_date) {
+        const calDate = new Date(item.next_cal_date);
+        calDate.setHours(0, 0, 0, 0);
+        if (calDate <= in30Days) {
+          details.push(`Cal: ${item.next_cal_date}`);
+        }
+      }
+      if (item.next_pm_date) {
+        const pmDate = new Date(item.next_pm_date);
+        pmDate.setHours(0, 0, 0, 0);
+        if (pmDate <= in30Days) {
+          details.push(`PM: ${item.next_pm_date}`);
+        }
+      }
 
       message += `${index + 1}. ${item.name || item.code || 'ไม่ระบุชื่อ'}\n`;
-      message += `   • ถึงกำหนด: ${dueTypes.join(', ')}\n`;
+      message += `   • ${details.join(' | ')}\n`;
     });
 
     if (dueItems.length > 10) {
