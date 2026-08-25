@@ -71,7 +71,7 @@ async function run() {
     return (d1 && d1 <= in30Days) || (d2 && d2 <= in30Days) || (d3 && d3 <= in30Days);
   });
 
-  let message = `🔔 [IT Asset Alert] รายงาน Cal / PM\n`;
+  let message = `🔔 [Alert_purchase] รายงาน Cal / PM\n`;
   message += `📅 ประจำวันที่: ${new Date().toLocaleDateString('th-TH')}\n`;
   message += `⚠️ พบรายการต้องดำเนินการทั้งหมด: ${dueItems.length} รายการ\n`;
   message += `───────────────────────\n\n`;
@@ -79,7 +79,6 @@ async function run() {
   if (dueItems.length === 0) {
     message += `✅ ไม่มีรายการที่ต้อง Cal/PM ในช่วง 30 วันนี้ครับ`;
   } else {
-    // แสดงผล 8 รายการแรกเพื่อไม่ให้ข้อความยาวเกินไป
     dueItems.slice(0, 8).forEach((item, index) => {
       const d1 = parseCustomDate(item.due_date);
       const d2 = parseCustomDate(item.next_due);
