@@ -1,6 +1,7 @@
 import MedicalEquipment from './MedicalEquipment';
 import { useEffect, useState } from 'react'
 import { createClient } from '@supabase/supabase-js'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import './App.css'
 
 // ตั้งค่า Supabase Client พร้อมบังคับใช้ sessionStorage (ปิดเบราว์เซอร์แล้วหลุดล็อกอินทันที)
@@ -147,7 +148,6 @@ function getSoftwareExpireStatus(expireStr) {
 
   let expDate = null
 
-  // 1. ตรวจจับฟอร์แมต วัน/เดือน/ปี (เช่น 16/9/2025 หรือ 16-09-2025)
   const dmyMatch = str.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/)
   if (dmyMatch) {
     let day = parseInt(dmyMatch[1], 10)
@@ -156,7 +156,6 @@ function getSoftwareExpireStatus(expireStr) {
     if (year > 2500) year -= 543
     expDate = new Date(year, month, day)
   } else {
-    // 2. ฟอร์แมตสากล เช่น YYYY-MM-DD
     const parsed = new Date(str)
     if (!isNaN(parsed.getTime())) {
       expDate = parsed
@@ -227,8 +226,7 @@ const emptyLeasingForm = {
   'Remark': ''
 }
 
-function App() {
-  // 1. ประกาศ State ทั้งหมดไว้บนสุดก่อน (ตามกฎ React)
+function MainAssetApp() {
   const [session, setSession] = useState(null)
   const [userRole, setUserRole] = useState('viewer')
   const [loginEmail, setLoginEmail] = useState('')
@@ -304,13 +302,6 @@ function App() {
   const [editingLeasing, setEditingLeasing] = useState(null)
   const [leasingFormData, setLeasingFormData] = useState(emptyLeasingForm)
   const [leasingSubmitting, setLeasingSubmitting] = useState(false)
-
-  // 2. ค่อยเช็ก Path เพื่อสลับไปหน้าเครื่องมือแพทย์
-  if (window.location.pathname === '/purchase') {
-    return <MedicalEquipment />;
-  }
-
-  // ... โค้ดเดิมที่เหลือ
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -3252,4 +3243,14 @@ function App() {
   )
 }
 
-export default App
+export default function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<MainAssetApp />} />
+        <Route path="/purchase" element={<MedicalEquipment />} />
+        <Route path="*" element={<MainAssetApp />} />
+      </Routes>
+    </BrowserRouter>
+  );
+}
