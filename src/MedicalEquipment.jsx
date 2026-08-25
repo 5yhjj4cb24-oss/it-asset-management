@@ -1,25 +1,5 @@
 import { useEffect, useState } from 'react';
 import { createClient } from '@supabase/supabase-js';
-import { supabase } from './supabaseClient'; // หรือ path ที่เก็บ supabase client ของคุณ
-
-const handleUpdateEquipment = async (id, updatedData) => {
-  const { data, error } = await supabase
-    .from('medical_equipment')
-    .update({
-      due_date: updatedData.due_date,
-      next_due: updatedData.next_due,
-      next_due_1: updatedData.next_due_1,
-      // ใส่คอลัมน์อื่นๆ ที่ต้องการอัปเดตเพิ่มได้ที่นี่
-    })
-    .eq('id', id);
-
-  if (error) {
-    alert('เกิดข้อผิดพลาดในการอัปเดต: ' + error.message);
-  } else {
-    alert('อัปเดตข้อมูลและรอบ Cal/PM เรียบร้อยแล้ว!');
-    // เรียกฟังก์ชันดึงข้อมูลใหม่เพื่อรีเฟรชหน้าจอ (fetchEquipmentData)
-  }
-};
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
