@@ -39,6 +39,10 @@ export default function MedicalEquipment() {
   const [newFormData, setNewFormData] = useState(initialFormState);
   const [saving, setSaving] = useState(false);
 
+  // Custom Delete Modal State
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deleting, setDeleting] = useState(false);
+
   useEffect(() => {
     loadData();
   }, []);
@@ -84,20 +88,27 @@ export default function MedicalEquipment() {
     setSaving(false);
   };
 
-  const handleDelete = async (id, assetName) => {
-    if (!confirm(`คุณต้องการลบรายการ "${assetName}" ใช่หรือไม่?`)) return;
+  const handleDelete = (id, assetName) => {
+    setDeleteTarget({ id, name: assetName });
+  };
+
+  const handleExecuteDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
 
     const { error } = await supabase
       .from('medical_equipment')
       .delete()
-      .eq('id', id);
+      .eq('id', deleteTarget.id);
 
     if (error) {
       alert('ลบไม่สำเร็จ: ' + error.message);
     } else {
-      setItems(items.filter((item) => item.id !== id));
+      setItems(items.filter((item) => item.id !== deleteTarget.id));
       setEditingId(null);
+      setDeleteTarget(null);
     }
+    setDeleting(false);
   };
 
   const handleKeyDown = (e, id) => {
@@ -528,6 +539,64 @@ export default function MedicalEquipment() {
           </div>
         )}
       </div>
+
+      {/* Modern Custom Delete Confirmation Modal */}
+      {deleteTarget && (
+        <div style={styles.modalOverlay} onClick={() => setDeleteTarget(null)}>
+          <div
+            style={{
+              ...styles.modalContent,
+              maxWidth: '380px',
+              padding: '28px 24px',
+              textAlign: 'center',
+              borderRadius: '16px'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div
+              style={{
+                width: '56px',
+                height: '56px',
+                borderRadius: '50%',
+                backgroundColor: '#ffe4e6',
+                color: '#e11d48',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '24px',
+                margin: '0 auto 16px'
+              }}
+            >
+              🗑️
+            </div>
+            <h3 style={{ fontSize: '17px', fontWeight: '600', color: '#000000', margin: '0 0 8px' }}>
+              ยืนยันการลบรายการ
+            </h3>
+            <p style={{ fontSize: '13px', color: '#475569', margin: '0 0 24px', lineHeight: 1.5 }}>
+              คุณต้องการลบรายการเครื่องมือแพทย์ <br />
+              <strong style={{ color: '#000000' }}>"{deleteTarget.name || 'รายการนี้'}"</strong> ใช่หรือไม่?
+            </p>
+
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button
+                type="button"
+                style={{ ...styles.secondaryBtn, flex: 1, height: '38px' }}
+                onClick={() => setDeleteTarget(null)}
+              >
+                ยกเลิก
+              </button>
+              <button
+                type="button"
+                style={{ ...styles.deleteBtn, flex: 1, height: '38px' }}
+                onClick={handleExecuteDelete}
+                disabled={deleting}
+              >
+                {deleting ? 'กำลังลบ...' : 'ยืนยันลบข้อมูล'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Modal เพิ่มรายการใหม่ */}
       {isAddModalOpen && (
