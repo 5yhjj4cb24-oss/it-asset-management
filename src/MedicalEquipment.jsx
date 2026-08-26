@@ -29,6 +29,11 @@ export default function MedicalEquipment() {
   const [deptFilter, setDeptFilter] = useState('');
   const [riskFilter, setRiskFilter] = useState('');
 
+  // Dashboard Interactive Card & Date Filters State
+  const [cardFilter, setCardFilter] = useState('ALL'); // 'ALL' | 'High' | 'Medium' | 'Low' | 'NEXT_DUE_1'
+  const [monthFilter, setMonthFilter] = useState('');
+  const [yearFilter, setYearFilter] = useState('');
+
   // Hover & Edit State
   const [hoveredId, setHoveredId] = useState(null);
   const [editingId, setEditingId] = useState(null);
@@ -43,7 +48,7 @@ export default function MedicalEquipment() {
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
 
-  // Pop-up Alert State สำหรับ Next Due 1 (รองรับหลายรายการ)
+  // Pop-up Alert State สำหรับ Next Due 1
   const [dueModalItems, setDueModalItems] = useState([]);
   const [isDueModalOpen, setIsDueModalOpen] = useState(false);
   const [dueStatusInfo, setDueStatusInfo] = useState({
@@ -77,6 +82,38 @@ export default function MedicalEquipment() {
     return null;
   };
 
+  // Helper สำหรับเช็กความตรงกันของเดือนและปีในช่อง Next Due 1 (รองรับทั้ง -/3/2027, 2/4/2026, warranty 11/2026)
+  const checkDateMatch = (dateStr, month, year) => {
+    if (!dateStr || dateStr === '-') return false;
+    const matches = String(dateStr).match(/\d+/g);
+    if (!matches) return false;
+
+    let dMonth = '';
+    let dYear = '';
+
+    if (matches.length === 3 && matches[0].length === 4) {
+      dYear = matches[0];
+      dMonth = matches[1];
+    } else if (matches.length >= 2) {
+      const last = matches[matches.length - 1];
+      const secondLast = matches[matches.length - 2];
+      if (last.length === 4) {
+        dYear = last;
+        dMonth = secondLast;
+      } else if (matches[0].length === 4) {
+        dYear = matches[0];
+        dMonth = matches[1];
+      }
+    } else if (matches.length === 1 && matches[0].length === 4) {
+      dYear = matches[0];
+    }
+
+    const monthMatch = !month || (dMonth && parseInt(dMonth, 10) === parseInt(month, 10));
+    const yearMatch = !year || (dYear && dYear === year);
+
+    return monthMatch && yearMatch;
+  };
+
   // Logic ดึงทุกรายการที่เข้าเงื่อนไขเตือนมาแสดงผล
   useEffect(() => {
     if (items.length > 0) {
@@ -93,7 +130,6 @@ export default function MedicalEquipment() {
         const diffTime = targetDate.getTime() - today.getTime();
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-        // คัดกรองเฉพาะรายการที่เลยกำหนด หรือ เหลือล่วงหน้าไม่เกิน 30 วัน
         if (diffDays <= 30) {
           urgentItems.push({
             ...item,
@@ -104,7 +140,6 @@ export default function MedicalEquipment() {
 
       if (!sessionStorage.getItem('dismissed_due_alert')) {
         if (urgentItems.length > 0) {
-          // เรียงตามความด่วน (ที่เลยกำหนดมากที่สุดขึ้นก่อน)
           urgentItems.sort((a, b) => a.diffDays - b.diffDays);
           setDueModalItems(urgentItems);
 
@@ -227,6 +262,7 @@ export default function MedicalEquipment() {
     setSaving(false);
   };
 
+  // รวมตัวกรองทั้งหมด (Search, Department, Risk, Card Selected, Month/Year จาก Next Due 1)
   const filteredItems = items.filter((item) => {
     const matchesSearch =
       (item.asset_no?.toLowerCase() || '').includes(search.toLowerCase()) ||
@@ -237,12 +273,28 @@ export default function MedicalEquipment() {
     const matchesDept = deptFilter ? item.department === deptFilter : true;
     const matchesRisk = riskFilter ? item.risk_level === riskFilter : true;
 
-    return matchesSearch && matchesDept && matchesRisk;
+    // Filter จากการคลิกการ์ด Dashboard
+    let matchesCard = true;
+    if (cardFilter === 'High') matchesCard = item.risk_level === 'High';
+    else if (cardFilter === 'Medium') matchesCard = item.risk_level === 'Medium';
+    else if (cardFilter === 'Low') matchesCard = item.risk_level === 'Low' || !item.risk_level;
+    else if (cardFilter === 'NEXT_DUE_1') matchesCard = Boolean(item.next_due_1 && item.next_due_1 !== '-');
+
+    // Filter จากเดือน/ปี (เช็กเฉพาะช่อง Next Due 1 อย่างเดียว)
+    let matchesMonthYear = true;
+    if (monthFilter || yearFilter) {
+      matchesMonthYear = checkDateMatch(item.next_due_1, monthFilter, yearFilter);
+    }
+
+    return matchesSearch && matchesDept && matchesRisk && matchesCard && matchesMonthYear;
   });
 
   const highRiskCount = items.filter((i) => i.risk_level === 'High').length;
   const mediumRiskCount = items.filter((i) => i.risk_level === 'Medium').length;
   const lowRiskCount = items.filter((i) => i.risk_level === 'Low' || !i.risk_level).length;
+  const nextDue1Count = items.filter((i) => i.next_due_1 && i.next_due_1 !== '-').length;
+
+  const isAnyFilterActive = cardFilter !== 'ALL' || deptFilter || riskFilter || monthFilter || yearFilter || search;
 
   return (
     <div style={styles.container}>
@@ -257,27 +309,76 @@ export default function MedicalEquipment() {
         </button>
       </div>
 
-      {/* Analytics Cards */}
+      {/* Analytics Interactive Cards */}
       <div style={styles.statsGrid}>
-        <div style={styles.statCard}>
+        <div 
+          onClick={() => setCardFilter('ALL')}
+          style={{
+            ...styles.statCard,
+            border: cardFilter === 'ALL' ? '2px solid #2563eb' : '1px solid #bfdbfe',
+            boxShadow: cardFilter === 'ALL' ? '0 4px 12px rgba(37, 99, 235, 0.15)' : 'none',
+            cursor: 'pointer'
+          }}
+        >
           <div style={styles.statLabel}>เครื่องมือทั้งหมด</div>
           <div style={{ ...styles.statValue, color: '#000000' }}>{items.length}</div>
-          <div style={styles.statSub}>รายการในระบบ</div>
+          <div style={styles.statSub}>รายการทั้งหมดในระบบ</div>
         </div>
-        <div style={styles.statCard}>
+
+        <div 
+          onClick={() => setCardFilter('High')}
+          style={{
+            ...styles.statCard,
+            border: cardFilter === 'High' ? '2px solid #dc2626' : '1px solid #bfdbfe',
+            boxShadow: cardFilter === 'High' ? '0 4px 12px rgba(220, 38, 38, 0.15)' : 'none',
+            cursor: 'pointer'
+          }}
+        >
           <div style={styles.statLabel}>ความเสี่ยงสูง (High)</div>
           <div style={{ ...styles.statValue, color: '#dc2626' }}>{highRiskCount}</div>
           <div style={{ ...styles.statSub, color: '#ef4444' }}>ต้องเฝ้าระวัง Cal/PM</div>
         </div>
-        <div style={styles.statCard}>
+
+        <div 
+          onClick={() => setCardFilter('Medium')}
+          style={{
+            ...styles.statCard,
+            border: cardFilter === 'Medium' ? '2px solid #d97706' : '1px solid #bfdbfe',
+            boxShadow: cardFilter === 'Medium' ? '0 4px 12px rgba(217, 119, 6, 0.15)' : 'none',
+            cursor: 'pointer'
+          }}
+        >
           <div style={styles.statLabel}>ความเสี่ยงปานกลาง (Medium)</div>
           <div style={{ ...styles.statValue, color: '#d97706' }}>{mediumRiskCount}</div>
           <div style={{ ...styles.statSub, color: '#f59e0b' }}>ตรวจเช็กตามรอบ</div>
         </div>
-        <div style={styles.statCard}>
+
+        <div 
+          onClick={() => setCardFilter('Low')}
+          style={{
+            ...styles.statCard,
+            border: cardFilter === 'Low' ? '2px solid #16a34a' : '1px solid #bfdbfe',
+            boxShadow: cardFilter === 'Low' ? '0 4px 12px rgba(22, 163, 74, 0.15)' : 'none',
+            cursor: 'pointer'
+          }}
+        >
           <div style={styles.statLabel}>ความเสี่ยงต่ำ (Low)</div>
           <div style={{ ...styles.statValue, color: '#16a34a' }}>{lowRiskCount}</div>
           <div style={{ ...styles.statSub, color: '#22c55e' }}>สถานะปกติ</div>
+        </div>
+
+        <div 
+          onClick={() => setCardFilter('NEXT_DUE_1')}
+          style={{
+            ...styles.statCard,
+            border: cardFilter === 'NEXT_DUE_1' ? '2px solid #7c3aed' : '1px solid #bfdbfe',
+            boxShadow: cardFilter === 'NEXT_DUE_1' ? '0 4px 12px rgba(124, 58, 237, 0.15)' : 'none',
+            cursor: 'pointer'
+          }}
+        >
+          <div style={styles.statLabel}>ครบกำหนด Next Due 1</div>
+          <div style={{ ...styles.statValue, color: '#7c3aed' }}>{nextDue1Count}</div>
+          <div style={{ ...styles.statSub, color: '#8b5cf6' }}>มีกำหนดรอบถัดไปแล้ว</div>
         </div>
       </div>
 
@@ -291,7 +392,7 @@ export default function MedicalEquipment() {
           style={styles.searchInput}
         />
 
-        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
           <select value={deptFilter} onChange={(e) => setDeptFilter(e.target.value)} style={styles.selectInput}>
             <option value="">ทุกแผนก ({items.length})</option>
             <option value="ห้องผ่าตัด">ห้องผ่าตัด</option>
@@ -300,12 +401,65 @@ export default function MedicalEquipment() {
             <option value="OPD ชั้น 1">OPD ชั้น 1</option>
             <option value="คลัง">คลัง</option>
           </select>
+
           <select value={riskFilter} onChange={(e) => setRiskFilter(e.target.value)} style={styles.selectInput}>
             <option value="">ทุกระดับ Risk</option>
             <option value="High">High Risk</option>
             <option value="Medium">Medium Risk</option>
             <option value="Low">Low Risk</option>
           </select>
+
+          {/* ตัวเลือกกรองเดือน (Next Due 1) */}
+          <select value={monthFilter} onChange={(e) => setMonthFilter(e.target.value)} style={styles.selectInput}>
+            <option value="">-- เดือน (Next Due 1) --</option>
+            <option value="1">มกราคม (01)</option>
+            <option value="2">กุมภาพันธ์ (02)</option>
+            <option value="3">มีนาคม (03)</option>
+            <option value="4">เมษายน (04)</option>
+            <option value="5">พฤษภาคม (05)</option>
+            <option value="6">มิถุนายน (06)</option>
+            <option value="7">กรกฎาคม (07)</option>
+            <option value="8">สิงหาคม (08)</option>
+            <option value="9">กันยายน (09)</option>
+            <option value="10">ตุลาคม (10)</option>
+            <option value="11">พฤศจิกายน (11)</option>
+            <option value="12">ธันวาคม (12)</option>
+          </select>
+
+          {/* ตัวเลือกกรองปี (Next Due 1) */}
+          <select value={yearFilter} onChange={(e) => setYearFilter(e.target.value)} style={styles.selectInput}>
+            <option value="">-- ปี (Next Due 1) --</option>
+            <option value="2025">2025</option>
+            <option value="2026">2026</option>
+            <option value="2027">2027</option>
+            <option value="2028">2028</option>
+          </select>
+
+          {/* ปุ่มล้างตัวกรอง */}
+          {isAnyFilterActive && (
+            <button
+              onClick={() => {
+                setCardFilter('ALL');
+                setDeptFilter('');
+                setRiskFilter('');
+                setMonthFilter('');
+                setYearFilter('');
+                setSearch('');
+              }}
+              style={{
+                padding: '8px 12px',
+                fontSize: '13px',
+                border: '1px solid #fecdd3',
+                borderRadius: '6px',
+                backgroundColor: '#fff1f2',
+                color: '#dc2626',
+                cursor: 'pointer',
+                fontWeight: '500'
+              }}
+            >
+              ✕ ล้างการกรองทั้งหมด
+            </button>
+          )}
         </div>
       </div>
 
@@ -966,7 +1120,7 @@ const styles = {
   },
   statsGrid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
     gap: '12px',
     marginBottom: '20px'
   },
@@ -975,7 +1129,8 @@ const styles = {
     padding: '16px',
     borderRadius: '8px',
     border: '1px solid #bfdbfe',
-    boxShadow: '0 1px 2px rgba(0,0,0,0.02)'
+    boxShadow: '0 1px 2px rgba(0,0,0,0.02)',
+    transition: 'all 0.15s ease'
   },
   statLabel: {
     fontSize: '12px',
@@ -1021,7 +1176,7 @@ const styles = {
     fontSize: '13px',
     border: '1px solid #93c5fd',
     borderRadius: '6px',
-    width: '300px',
+    width: '260px',
     outline: 'none',
     backgroundColor: '#f0f9ff',
     color: '#000000',
