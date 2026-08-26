@@ -43,9 +43,98 @@ export default function MedicalEquipment() {
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
 
+  // Pop-up Alert State สำหรับ Next Due 1 (รองรับหลายรายการ)
+  const [dueModalItems, setDueModalItems] = useState([]);
+  const [isDueModalOpen, setIsDueModalOpen] = useState(false);
+  const [dueStatusInfo, setDueStatusInfo] = useState({
+    hasAlertItem: false,
+    text: '',
+    themeColor: '#16a34a'
+  });
+
   useEffect(() => {
     loadData();
   }, []);
+
+  // ฟังก์ชันแปลงข้อความวันที่แบบ DD/MM/YYYY หรือ -/MM/YYYY อย่างถูกต้อง
+  const parseDateStr = (dateStr) => {
+    if (!dateStr) return null;
+    let s = dateStr.trim();
+    if (s.startsWith('-/')) s = '01/' + s.substring(2);
+
+    const parts = s.split('/');
+    if (parts.length === 3) {
+      const day = parseInt(parts[0], 10) || 1;
+      const month = parseInt(parts[1], 10) - 1;
+      const year = parseInt(parts[2], 10);
+      const d = new Date(year, month, day);
+      if (!isNaN(d.getTime())) return d;
+    }
+
+    const d = new Date(s);
+    if (!isNaN(d.getTime())) return d;
+
+    return null;
+  };
+
+  // Logic ดึงทุกรายการที่เข้าเงื่อนไขเตือนมาแสดงผล
+  useEffect(() => {
+    if (items.length > 0) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const urgentItems = [];
+
+      items.forEach((item) => {
+        if (!item.next_due_1) return;
+        const targetDate = parseDateStr(item.next_due_1);
+        if (!targetDate) return;
+
+        const diffTime = targetDate.getTime() - today.getTime();
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+        // คัดกรองเฉพาะรายการที่เลยกำหนด หรือ เหลือล่วงหน้าไม่เกิน 30 วัน
+        if (diffDays <= 30) {
+          urgentItems.push({
+            ...item,
+            diffDays
+          });
+        }
+      });
+
+      if (!sessionStorage.getItem('dismissed_due_alert')) {
+        if (urgentItems.length > 0) {
+          // เรียงตามความด่วน (ที่เลยกำหนดมากที่สุดขึ้นก่อน)
+          urgentItems.sort((a, b) => a.diffDays - b.diffDays);
+          setDueModalItems(urgentItems);
+
+          const overdueCount = urgentItems.filter(i => i.diffDays <= 0).length;
+          const isDanger = overdueCount > 0;
+
+          setDueStatusInfo({
+            hasAlertItem: true,
+            text: isDanger 
+              ? `🚨 พบรายการเครื่องมือแพทย์ที่ต้องดำเนินการทั้งหมด ${urgentItems.length} รายการ (เลย/ถึงกำหนดแล้ว ${overdueCount} รายการ)`
+              : `⏳ พบรายการเครื่องมือแพทย์กำลังจะถึงกำหนดภายใน 30 วัน ทั้งหมด ${urgentItems.length} รายการ`,
+            themeColor: isDanger ? '#dc2626' : '#d97706'
+          });
+        } else {
+          setDueModalItems([]);
+          setDueStatusInfo({
+            hasAlertItem: false,
+            text: '✅ สถานะปกติ: ไม่มีรายการเครื่องมือแพทย์ที่ถึงกำหนด หรือใกล้ถึงกำหนดภายใน 30 วัน',
+            themeColor: '#16a34a'
+          });
+        }
+        setIsDueModalOpen(true);
+      }
+    }
+  }, [items]);
+
+  const handleCloseDueModal = () => {
+    sessionStorage.setItem('dismissed_due_alert', 'true');
+    setIsDueModalOpen(false);
+  };
 
   const loadData = async () => {
     setLoading(true);
@@ -220,7 +309,7 @@ export default function MedicalEquipment() {
         </div>
       </div>
 
-      {/* แถบเครื่องมือจัดการแก้ไข (แสดงเมื่อกำลังแก้ไขแถว) */}
+      {/* แถบเครื่องมือจัดการแก้ไข */}
       {editingId && (
         <div style={styles.editingBanner}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -246,7 +335,7 @@ export default function MedicalEquipment() {
         </div>
       )}
 
-      {/* Full 15-Column Table */}
+      {/* Full Table */}
       <div style={styles.tableCard}>
         {loading ? (
           <div style={styles.loadingBox}>กำลังดึงข้อมูลจาก Supabase...</div>
@@ -301,12 +390,9 @@ export default function MedicalEquipment() {
                         transition: 'background-color 0.15s ease'
                       }}
                     >
-                      {/* # */}
                       <td style={{ ...styles.td, textAlign: 'center', color: '#000000', fontFamily: 'monospace' }}>
                         {index + 1}
                       </td>
-
-                      {/* รหัสทรัพย์สิน */}
                       <td style={styles.td}>
                         {isEditing ? (
                           <input
@@ -320,8 +406,6 @@ export default function MedicalEquipment() {
                           <span style={styles.assetBadge}>{item.asset_no || '-'}</span>
                         )}
                       </td>
-
-                      {/* ชื่อเครื่องมือ */}
                       <td style={styles.td}>
                         {isEditing ? (
                           <input
@@ -335,8 +419,6 @@ export default function MedicalEquipment() {
                           <span style={{ color: '#000000', fontWeight: '400' }}>{item.asset_name}</span>
                         )}
                       </td>
-
-                      {/* แผนก */}
                       <td style={styles.td}>
                         {isEditing ? (
                           <input
@@ -350,8 +432,6 @@ export default function MedicalEquipment() {
                           item.department || '-'
                         )}
                       </td>
-
-                      {/* ชั้น */}
                       <td style={styles.td}>
                         {isEditing ? (
                           <input
@@ -365,8 +445,6 @@ export default function MedicalEquipment() {
                           item.floor || '-'
                         )}
                       </td>
-
-                      {/* ตำแหน่ง */}
                       <td style={styles.td}>
                         {isEditing ? (
                           <input
@@ -380,8 +458,6 @@ export default function MedicalEquipment() {
                           item.location || '-'
                         )}
                       </td>
-
-                      {/* จำนวน */}
                       <td style={{ ...styles.td, textAlign: 'center' }}>
                         {isEditing ? (
                           <input
@@ -396,8 +472,6 @@ export default function MedicalEquipment() {
                           item.quantity || '-'
                         )}
                       </td>
-
-                      {/* หน่วย */}
                       <td style={styles.td}>
                         {isEditing ? (
                           <input
@@ -411,8 +485,6 @@ export default function MedicalEquipment() {
                           item.unit || '-'
                         )}
                       </td>
-
-                      {/* Risk */}
                       <td style={{ ...styles.td, textAlign: 'center' }}>
                         {isEditing ? (
                           <select
@@ -441,8 +513,6 @@ export default function MedicalEquipment() {
                           </span>
                         )}
                       </td>
-
-                      {/* Cal/PM โดย */}
                       <td style={styles.td}>
                         {isEditing ? (
                           <input
@@ -456,8 +526,6 @@ export default function MedicalEquipment() {
                           item.cal_pm_by || '-'
                         )}
                       </td>
-
-                      {/* Vendor */}
                       <td style={styles.td}>
                         {isEditing ? (
                           <input
@@ -471,8 +539,6 @@ export default function MedicalEquipment() {
                           item.vendor || '-'
                         )}
                       </td>
-
-                      {/* Due Date */}
                       <td style={{ ...styles.td, fontFamily: 'monospace', color: '#b45309' }}>
                         {isEditing ? (
                           <input
@@ -486,8 +552,6 @@ export default function MedicalEquipment() {
                           item.due_date || '-'
                         )}
                       </td>
-
-                      {/* Next Due */}
                       <td style={{ ...styles.td, fontFamily: 'monospace' }}>
                         {isEditing ? (
                           <input
@@ -501,8 +565,6 @@ export default function MedicalEquipment() {
                           item.next_due || '-'
                         )}
                       </td>
-
-                      {/* Next Due 1 */}
                       <td style={{ ...styles.td, fontFamily: 'monospace' }}>
                         {isEditing ? (
                           <input
@@ -516,8 +578,6 @@ export default function MedicalEquipment() {
                           item.next_due_1 || '-'
                         )}
                       </td>
-
-                      {/* หมายเหตุ */}
                       <td style={{ ...styles.td, color: '#000000' }}>
                         {isEditing ? (
                           <input
@@ -540,7 +600,125 @@ export default function MedicalEquipment() {
         )}
       </div>
 
-      {/* Modern Custom Delete Confirmation Modal */}
+      {/* Pop-up Modal แจ้งเตือนแบบแสดงครบทุกรายการ */}
+      {isDueModalOpen && (
+        <div style={styles.modalOverlay} onClick={handleCloseDueModal}>
+          <div
+            style={{
+              ...styles.modalContent,
+              maxWidth: '850px',
+              padding: '32px',
+              borderRadius: '16px',
+              borderTop: `6px solid ${dueStatusInfo.themeColor}`,
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.3)'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
+              <h3
+                style={{
+                  margin: 0,
+                  fontSize: '22px',
+                  fontWeight: '700',
+                  color: dueStatusInfo.themeColor,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px'
+                }}
+              >
+                🔔 สรุปการแจ้งเตือน (Next Due 1)
+              </h3>
+              <button style={{ ...styles.closeBtn, fontSize: '24px' }} onClick={handleCloseDueModal}>
+                ✕
+              </button>
+            </div>
+
+            {/* แถบแจ้งสถานะหลัก */}
+            <div
+              style={{
+                backgroundColor: dueStatusInfo.hasAlertItem ? (dueStatusInfo.themeColor === '#dc2626' ? '#fef2f2' : '#fffbe5') : '#f0fdf4',
+                border: `2px solid ${dueStatusInfo.hasAlertItem ? (dueStatusInfo.themeColor === '#dc2626' ? '#fecdd3' : '#fef08a') : '#bbf7d0'}`,
+                color: dueStatusInfo.hasAlertItem ? (dueStatusInfo.themeColor === '#dc2626' ? '#991b1b' : '#854d0e') : '#166534',
+                padding: '14px 18px',
+                borderRadius: '10px',
+                fontWeight: '600',
+                fontSize: '15px',
+                marginBottom: '18px',
+                lineHeight: '1.5'
+              }}
+            >
+              {dueStatusInfo.text}
+            </div>
+
+            {/* แสดงตารางรายการแจ้งเตือนทั้งหมด (ถ้ามี) */}
+            {dueStatusInfo.hasAlertItem && dueModalItems.length > 0 && (
+              <div style={{ maxHeight: '45vh', overflowY: 'auto', border: '1px solid #e2e8f0', borderRadius: '10px' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
+                  <thead>
+                    <tr style={{ backgroundColor: '#f1f5f9', color: '#334155', textAlign: 'left' }}>
+                      <th style={{ padding: '10px 12px', borderBottom: '1px solid #cbd5e1' }}>รหัสทรัพย์สิน</th>
+                      <th style={{ padding: '10px 12px', borderBottom: '1px solid #cbd5e1' }}>ชื่อเครื่องมือแพทย์</th>
+                      <th style={{ padding: '10px 12px', borderBottom: '1px solid #cbd5e1' }}>แผนก</th>
+                      <th style={{ padding: '10px 12px', borderBottom: '1px solid #cbd5e1' }}>Next Due 1</th>
+                      <th style={{ padding: '10px 12px', borderBottom: '1px solid #cbd5e1', textAlign: 'center' }}>สถานะ</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {dueModalItems.map((dueItem, idx) => {
+                      const isOverdue = dueItem.diffDays <= 0;
+                      return (
+                        <tr key={dueItem.id || idx} style={{ borderBottom: '1px solid #e2e8f0', backgroundColor: idx % 2 === 0 ? '#ffffff' : '#f8fafc' }}>
+                          <td style={{ padding: '10px 12px', fontFamily: 'monospace', fontWeight: 'bold' }}>{dueItem.asset_no || '-'}</td>
+                          <td style={{ padding: '10px 12px', color: '#0f172a' }}>{dueItem.asset_name}</td>
+                          <td style={{ padding: '10px 12px', color: '#475569' }}>{dueItem.department || '-'}</td>
+                          <td style={{ padding: '10px 12px', fontFamily: 'monospace', fontWeight: 'bold', color: isOverdue ? '#dc2626' : '#d97706' }}>
+                            {dueItem.next_due_1}
+                          </td>
+                          <td style={{ padding: '10px 12px', textAlign: 'center' }}>
+                            <span
+                              style={{
+                                display: 'inline-block',
+                                padding: '3px 10px',
+                                borderRadius: '12px',
+                                fontSize: '12px',
+                                fontWeight: '600',
+                                backgroundColor: isOverdue ? '#ffe4e6' : '#fef3c7',
+                                color: isOverdue ? '#be123c' : '#b45309'
+                              }}
+                            >
+                              {isOverdue ? `เลย ${Math.abs(dueItem.diffDays)} วัน` : `อีก ${dueItem.diffDays} วัน`}
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            <div style={{ marginTop: '24px', display: 'flex', justifyContent: 'flex-end' }}>
+              <button
+                style={{
+                  backgroundColor: dueStatusInfo.themeColor,
+                  color: '#ffffff',
+                  border: 'none',
+                  borderRadius: '8px',
+                  padding: '10px 24px',
+                  fontSize: '15px',
+                  fontWeight: '600',
+                  cursor: 'pointer'
+                }}
+                onClick={handleCloseDueModal}
+              >
+                รับทราบ / ปิดหน้าต่าง
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Modal */}
       {deleteTarget && (
         <div style={styles.modalOverlay} onClick={() => setDeleteTarget(null)}>
           <div
