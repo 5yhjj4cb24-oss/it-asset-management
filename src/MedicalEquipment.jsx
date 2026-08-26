@@ -111,7 +111,6 @@ export default function MedicalEquipment() {
     return monthMatch && yearMatch;
   };
 
-  // เด้งการแจ้งเตือนขึ้นมาแสดงผลทุกครั้งเมื่อดึงข้อมูลเสร็จสิ้น
   useEffect(() => {
     if (items.length > 0) {
       const today = new Date();
@@ -749,7 +748,7 @@ export default function MedicalEquipment() {
         )}
       </div>
 
-      {/* Pop-up Modal แจ้งเตือน (เด้งขึ้นทุกครั้งที่รีเฟรช) */}
+      {/* Pop-up Modal แจ้งเตือน (รองรับการลากคุมคัดลอกข้อความ) */}
       {isDueModalOpen && (
         <div style={styles.modalOverlay} onClick={handleCloseDueModal}>
           <div
@@ -804,7 +803,8 @@ export default function MedicalEquipment() {
                 fontWeight: '400',
                 fontSize: '13.5px',
                 marginBottom: '20px',
-                lineHeight: '1.5'
+                lineHeight: '1.5',
+                userSelect: 'text'
               }}
             >
               {dueStatusInfo.text}
@@ -829,24 +829,35 @@ export default function MedicalEquipment() {
                       return (
                         <tr
                           key={dueItem.id || idx}
-                          onClick={() => handleSelectSpecificItem(dueItem.asset_no || dueItem.asset_name)}
-                          title="คลิกเพื่อตรวจสอบรายการนี้ในตารางหลัก"
+                          onClick={() => {
+                            // ถ้าผู้ใช้กำลังลากคุมข้อความเพื่อ Copy จะไม่สั่งย้ายหน้าหรือปิด Modal
+                            const selectedText = window.getSelection() ? window.getSelection().toString().trim() : '';
+                            if (!selectedText) {
+                              handleSelectSpecificItem(dueItem.asset_no || dueItem.asset_name);
+                            }
+                          }}
+                          title="คลิกเพื่อค้นหาในตารางหลัก หรือลากคุมเพื่อคัดลอกข้อความ"
                           style={{
                             borderBottom: '1px solid #f1f5f9',
                             backgroundColor: '#ffffff',
                             cursor: 'pointer',
-                            transition: 'background-color 0.12s ease'
+                            transition: 'background-color 0.12s ease',
+                            userSelect: 'text'
                           }}
                         >
-                          <td style={{ padding: '10px 14px', fontFamily: 'monospace', color: '#2563eb', fontWeight: '400' }}>
+                          <td style={{ padding: '10px 14px', fontFamily: 'monospace', color: '#2563eb', fontWeight: '400', userSelect: 'text' }}>
                             {dueItem.asset_no || '-'}
                           </td>
-                          <td style={{ padding: '10px 14px', color: '#334155', fontWeight: '400' }}>{dueItem.asset_name}</td>
-                          <td style={{ padding: '10px 14px', color: '#64748b', fontWeight: '400' }}>{dueItem.department || '-'}</td>
-                          <td style={{ padding: '10px 14px', fontFamily: 'monospace', color: isOverdue ? '#dc2626' : '#d97706', fontWeight: '400' }}>
+                          <td style={{ padding: '10px 14px', color: '#334155', fontWeight: '400', userSelect: 'text' }}>
+                            {dueItem.asset_name}
+                          </td>
+                          <td style={{ padding: '10px 14px', color: '#64748b', fontWeight: '400', userSelect: 'text' }}>
+                            {dueItem.department || '-'}
+                          </td>
+                          <td style={{ padding: '10px 14px', fontFamily: 'monospace', color: isOverdue ? '#dc2626' : '#d97706', fontWeight: '400', userSelect: 'text' }}>
                             {dueItem.next_due_1}
                           </td>
-                          <td style={{ padding: '10px 14px', textAlign: 'center' }}>
+                          <td style={{ padding: '10px 14px', textAlign: 'center', userSelect: 'text' }}>
                             <span
                               style={{
                                 display: 'inline-block',
