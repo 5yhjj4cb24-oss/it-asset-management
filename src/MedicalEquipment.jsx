@@ -174,6 +174,38 @@ export default function MedicalEquipment() {
     handleCloseDueModal();
   };
 
+  const handleExportCSV = () => {
+    if (!filteredItems.length) return alert('ไม่พบข้อมูลสำหรับส่งออก');
+
+    const headers = ['รหัสทรัพย์สิน', 'ชื่อเครื่องมือแพทย์', 'แผนก', 'ชั้น', 'ตำแหน่ง', 'จำนวน', 'หน่วย', 'Risk', 'Cal/PM โดย', 'Vendor', 'Due Date', 'Next Due', 'Next Due 1', 'หมายเหตุ'];
+
+    const rows = filteredItems.map(item => [
+      `"${item.asset_no || ''}"`,
+      `"${(item.asset_name || '').replace(/"/g, '""')}"`,
+      `"${item.department || ''}"`,
+      `"${item.floor || ''}"`,
+      `"${item.location || ''}"`,
+      item.quantity || 1,
+      `"${item.unit || ''}"`,
+      `"${item.risk_level || ''}"`,
+      `"${item.cal_pm_by || ''}"`,
+      `"${item.vendor || ''}"`,
+      `"${item.due_date || ''}"`,
+      `"${item.next_due || ''}"`,
+      `"${item.next_due_1 || ''}"`,
+      `"${(item.note || '').replace(/"/g, '""')}"`
+    ]);
+
+    const csvContent = '\uFEFF' + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `medical_equipment_${new Date().toISOString().slice(0, 10)}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
   const loadData = async () => {
     setLoading(true);
     const { data, error } = await supabase
@@ -490,265 +522,301 @@ export default function MedicalEquipment() {
         ) : filteredItems.length === 0 ? (
           <div style={styles.loadingBox}>ไม่พบข้อมูลตามเงื่อนไขการค้นหา</div>
         ) : (
-          <div style={{ overflowX: 'auto', maxHeight: '72vh' }}>
-            <table style={styles.table}>
-              <thead>
-                <tr>
-                  <th style={{ ...styles.th, width: '35px', textAlign: 'center' }}>#</th>
-                  <th style={{ ...styles.th, minWidth: '135px' }}>รหัสทรัพย์สิน</th>
-                  <th style={{ ...styles.th, minWidth: '260px' }}>รายการเครื่องมือแพทย์</th>
-                  <th style={{ ...styles.th, minWidth: '100px' }}>แผนก</th>
-                  <th style={{ ...styles.th, minWidth: '60px' }}>ชั้น</th>
-                  <th style={{ ...styles.th, minWidth: '85px' }}>ตำแหน่ง</th>
-                  <th style={{ ...styles.th, width: '50px', textAlign: 'center' }}>จำนวน</th>
-                  <th style={{ ...styles.th, width: '55px' }}>หน่วย</th>
-                  <th style={{ ...styles.th, width: '75px', textAlign: 'center' }}>Risk</th>
-                  <th style={{ ...styles.th, minWidth: '90px' }}>Cal/PM โดย</th>
-                  <th style={{ ...styles.th, minWidth: '90px' }}>Vendor</th>
-                  <th style={{ ...styles.th, minWidth: '95px' }}>Due Date</th>
-                  <th style={{ ...styles.th, minWidth: '95px' }}>Next Due</th>
-                  <th style={{ ...styles.th, minWidth: '95px' }}>Next Due 1</th>
-                  <th style={{ ...styles.th, minWidth: '130px' }}>หมายเหตุ</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredItems.map((item, index) => {
-                  const isEditing = editingId === item.id;
-                  const isHovered = hoveredId === item.id;
+          <>
+            <div style={{ overflowX: 'auto', maxHeight: '68vh' }}>
+              <table style={styles.table}>
+                <thead>
+                  <tr>
+                    <th style={{ ...styles.th, width: '35px', textAlign: 'center' }}>#</th>
+                    <th style={{ ...styles.th, minWidth: '135px' }}>รหัสทรัพย์สิน</th>
+                    <th style={{ ...styles.th, minWidth: '260px' }}>รายการเครื่องมือแพทย์</th>
+                    <th style={{ ...styles.th, minWidth: '100px' }}>แผนก</th>
+                    <th style={{ ...styles.th, minWidth: '60px' }}>ชั้น</th>
+                    <th style={{ ...styles.th, minWidth: '85px' }}>ตำแหน่ง</th>
+                    <th style={{ ...styles.th, width: '50px', textAlign: 'center' }}>จำนวน</th>
+                    <th style={{ ...styles.th, width: '55px' }}>หน่วย</th>
+                    <th style={{ ...styles.th, width: '75px', textAlign: 'center' }}>Risk</th>
+                    <th style={{ ...styles.th, minWidth: '90px' }}>Cal/PM โดย</th>
+                    <th style={{ ...styles.th, minWidth: '90px' }}>Vendor</th>
+                    <th style={{ ...styles.th, minWidth: '95px' }}>Due Date</th>
+                    <th style={{ ...styles.th, minWidth: '95px' }}>Next Due</th>
+                    <th style={{ ...styles.th, minWidth: '95px' }}>Next Due 1</th>
+                    <th style={{ ...styles.th, minWidth: '130px' }}>หมายเหตุ</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredItems.map((item, index) => {
+                    const isEditing = editingId === item.id;
+                    const isHovered = hoveredId === item.id;
 
-                  const rowBg = isEditing
-                    ? '#fffbeb'
-                    : isHovered
-                    ? '#f8fafc'
-                    : index % 2 === 0
-                    ? '#ffffff'
-                    : '#fdfdfd';
+                    const rowBg = isEditing
+                      ? '#fffbeb'
+                      : isHovered
+                      ? '#f8fafc'
+                      : index % 2 === 0
+                      ? '#ffffff'
+                      : '#fdfdfd';
 
-                  return (
-                    <tr
-                      key={item.id}
-                      onClick={() => {
-                        if (!isEditing) handleStartEdit(item);
-                      }}
-                      onMouseEnter={() => setHoveredId(item.id)}
-                      onMouseLeave={() => setHoveredId(null)}
-                      style={{
-                        backgroundColor: rowBg,
-                        cursor: isEditing ? 'default' : 'pointer',
-                        transition: 'background-color 0.15s ease'
-                      }}
-                    >
-                      <td style={{ ...styles.td, textAlign: 'center', color: '#64748b', fontFamily: 'monospace' }}>
-                        {index + 1}
-                      </td>
-                      <td style={styles.td}>
-                        {isEditing ? (
-                          <input
-                            style={styles.cellInput}
-                            value={editFormData.asset_no || ''}
-                            onChange={(e) => setEditFormData({ ...editFormData, asset_no: e.target.value })}
-                            onKeyDown={(e) => handleKeyDown(e, item.id)}
-                            onClick={(e) => e.stopPropagation()}
-                          />
-                        ) : (
-                          <span style={styles.assetBadge}>{item.asset_no || '-'}</span>
-                        )}
-                      </td>
-                      <td style={styles.td}>
-                        {isEditing ? (
-                          <input
-                            style={styles.cellInput}
-                            value={editFormData.asset_name || ''}
-                            onChange={(e) => setEditFormData({ ...editFormData, asset_name: e.target.value })}
-                            onKeyDown={(e) => handleKeyDown(e, item.id)}
-                            onClick={(e) => e.stopPropagation()}
-                          />
-                        ) : (
-                          <span style={{ color: '#0f172a', fontWeight: '400' }}>{item.asset_name}</span>
-                        )}
-                      </td>
-                      <td style={styles.td}>
-                        {isEditing ? (
-                          <input
-                            style={styles.cellInput}
-                            value={editFormData.department || ''}
-                            onChange={(e) => setEditFormData({ ...editFormData, department: e.target.value })}
-                            onKeyDown={(e) => handleKeyDown(e, item.id)}
-                            onClick={(e) => e.stopPropagation()}
-                          />
-                        ) : (
-                          item.department || '-'
-                        )}
-                      </td>
-                      <td style={styles.td}>
-                        {isEditing ? (
-                          <input
-                            style={styles.cellInput}
-                            value={editFormData.floor || ''}
-                            onChange={(e) => setEditFormData({ ...editFormData, floor: e.target.value })}
-                            onKeyDown={(e) => handleKeyDown(e, item.id)}
-                            onClick={(e) => e.stopPropagation()}
-                          />
-                        ) : (
-                          item.floor || '-'
-                        )}
-                      </td>
-                      <td style={styles.td}>
-                        {isEditing ? (
-                          <input
-                            style={styles.cellInput}
-                            value={editFormData.location || ''}
-                            onChange={(e) => setEditFormData({ ...editFormData, location: e.target.value })}
-                            onKeyDown={(e) => handleKeyDown(e, item.id)}
-                            onClick={(e) => e.stopPropagation()}
-                          />
-                        ) : (
-                          item.location || '-'
-                        )}
-                      </td>
-                      <td style={{ ...styles.td, textAlign: 'center' }}>
-                        {isEditing ? (
-                          <input
-                            type="number"
-                            style={{ ...styles.cellInput, textAlign: 'center' }}
-                            value={editFormData.quantity || 1}
-                            onChange={(e) => setEditFormData({ ...editFormData, quantity: e.target.value })}
-                            onKeyDown={(e) => handleKeyDown(e, item.id)}
-                            onClick={(e) => e.stopPropagation()}
-                          />
-                        ) : (
-                          item.quantity || '-'
-                        )}
-                      </td>
-                      <td style={styles.td}>
-                        {isEditing ? (
-                          <input
-                            style={styles.cellInput}
-                            value={editFormData.unit || ''}
-                            onChange={(e) => setEditFormData({ ...editFormData, unit: e.target.value })}
-                            onKeyDown={(e) => handleKeyDown(e, item.id)}
-                            onClick={(e) => e.stopPropagation()}
-                          />
-                        ) : (
-                          item.unit || '-'
-                        )}
-                      </td>
-                      <td style={{ ...styles.td, textAlign: 'center' }}>
-                        {isEditing ? (
-                          <select
-                            style={styles.cellInput}
-                            value={editFormData.risk_level || 'Low'}
-                            onChange={(e) => setEditFormData({ ...editFormData, risk_level: e.target.value })}
-                            onKeyDown={(e) => handleKeyDown(e, item.id)}
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            <option value="High">High</option>
-                            <option value="Medium">Medium</option>
-                            <option value="Low">Low</option>
-                          </select>
-                        ) : (
-                          <span
-                            style={{
-                              ...styles.riskBadge,
-                              ...(item.risk_level === 'High'
-                                ? styles.riskHigh
-                                : item.risk_level === 'Medium'
-                                ? styles.riskMedium
-                                : styles.riskLow)
-                            }}
-                          >
-                            {item.risk_level || 'Low'}
-                          </span>
-                        )}
-                      </td>
-                      <td style={styles.td}>
-                        {isEditing ? (
-                          <input
-                            style={styles.cellInput}
-                            value={editFormData.cal_pm_by || ''}
-                            onChange={(e) => setEditFormData({ ...editFormData, cal_pm_by: e.target.value })}
-                            onKeyDown={(e) => handleKeyDown(e, item.id)}
-                            onClick={(e) => e.stopPropagation()}
-                          />
-                        ) : (
-                          item.cal_pm_by || '-'
-                        )}
-                      </td>
-                      <td style={styles.td}>
-                        {isEditing ? (
-                          <input
-                            style={styles.cellInput}
-                            value={editFormData.vendor || ''}
-                            onChange={(e) => setEditFormData({ ...editFormData, vendor: e.target.value })}
-                            onKeyDown={(e) => handleKeyDown(e, item.id)}
-                            onClick={(e) => e.stopPropagation()}
-                          />
-                        ) : (
-                          item.vendor || '-'
-                        )}
-                      </td>
-                      <td style={{ ...styles.td, fontFamily: 'monospace', color: '#d97706' }}>
-                        {isEditing ? (
-                          <input
-                            style={styles.cellInput}
-                            value={editFormData.due_date || ''}
-                            onChange={(e) => setEditFormData({ ...editFormData, due_date: e.target.value })}
-                            onKeyDown={(e) => handleKeyDown(e, item.id)}
-                            onClick={(e) => e.stopPropagation()}
-                          />
-                        ) : (
-                          item.due_date || '-'
-                        )}
-                      </td>
-                      <td style={{ ...styles.td, fontFamily: 'monospace' }}>
-                        {isEditing ? (
-                          <input
-                            style={styles.cellInput}
-                            value={editFormData.next_due || ''}
-                            onChange={(e) => setEditFormData({ ...editFormData, next_due: e.target.value })}
-                            onKeyDown={(e) => handleKeyDown(e, item.id)}
-                            onClick={(e) => e.stopPropagation()}
-                          />
-                        ) : (
-                          item.next_due || '-'
-                        )}
-                      </td>
-                      <td style={{ ...styles.td, fontFamily: 'monospace' }}>
-                        {isEditing ? (
-                          <input
-                            style={styles.cellInput}
-                            value={editFormData.next_due_1 || ''}
-                            onChange={(e) => setEditFormData({ ...editFormData, next_due_1: e.target.value })}
-                            onKeyDown={(e) => handleKeyDown(e, item.id)}
-                            onClick={(e) => e.stopPropagation()}
-                          />
-                        ) : (
-                          item.next_due_1 || '-'
-                        )}
-                      </td>
-                      <td style={{ ...styles.td, color: '#475569' }}>
-                        {isEditing ? (
-                          <input
-                            style={styles.cellInput}
-                            value={editFormData.note || ''}
-                            onChange={(e) => setEditFormData({ ...editFormData, note: e.target.value })}
-                            onKeyDown={(e) => handleKeyDown(e, item.id)}
-                            onClick={(e) => e.stopPropagation()}
-                          />
-                        ) : (
-                          item.note || '-'
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+                    return (
+                      <tr
+                        key={item.id}
+                        onClick={() => {
+                          if (!isEditing) handleStartEdit(item);
+                        }}
+                        onMouseEnter={() => setHoveredId(item.id)}
+                        onMouseLeave={() => setHoveredId(null)}
+                        style={{
+                          backgroundColor: rowBg,
+                          cursor: isEditing ? 'default' : 'pointer',
+                          transition: 'background-color 0.15s ease'
+                        }}
+                      >
+                        <td style={{ ...styles.td, textAlign: 'center', color: '#64748b', fontFamily: 'monospace' }}>
+                          {index + 1}
+                        </td>
+                        <td style={styles.td}>
+                          {isEditing ? (
+                            <input
+                              style={styles.cellInput}
+                              value={editFormData.asset_no || ''}
+                              onChange={(e) => setEditFormData({ ...editFormData, asset_no: e.target.value })}
+                              onKeyDown={(e) => handleKeyDown(e, item.id)}
+                              onClick={(e) => e.stopPropagation()}
+                            />
+                          ) : (
+                            <span style={styles.assetBadge}>{item.asset_no || '-'}</span>
+                          )}
+                        </td>
+                        <td style={styles.td}>
+                          {isEditing ? (
+                            <input
+                              style={styles.cellInput}
+                              value={editFormData.asset_name || ''}
+                              onChange={(e) => setEditFormData({ ...editFormData, asset_name: e.target.value })}
+                              onKeyDown={(e) => handleKeyDown(e, item.id)}
+                              onClick={(e) => e.stopPropagation()}
+                            />
+                          ) : (
+                            <span style={{ color: '#0f172a', fontWeight: '400' }}>{item.asset_name}</span>
+                          )}
+                        </td>
+                        <td style={styles.td}>
+                          {isEditing ? (
+                            <input
+                              style={styles.cellInput}
+                              value={editFormData.department || ''}
+                              onChange={(e) => setEditFormData({ ...editFormData, department: e.target.value })}
+                              onKeyDown={(e) => handleKeyDown(e, item.id)}
+                              onClick={(e) => e.stopPropagation()}
+                            />
+                          ) : (
+                            item.department || '-'
+                          )}
+                        </td>
+                        <td style={styles.td}>
+                          {isEditing ? (
+                            <input
+                              style={styles.cellInput}
+                              value={editFormData.floor || ''}
+                              onChange={(e) => setEditFormData({ ...editFormData, floor: e.target.value })}
+                              onKeyDown={(e) => handleKeyDown(e, item.id)}
+                              onClick={(e) => e.stopPropagation()}
+                            />
+                          ) : (
+                            item.floor || '-'
+                          )}
+                        </td>
+                        <td style={styles.td}>
+                          {isEditing ? (
+                            <input
+                              style={styles.cellInput}
+                              value={editFormData.location || ''}
+                              onChange={(e) => setEditFormData({ ...editFormData, location: e.target.value })}
+                              onKeyDown={(e) => handleKeyDown(e, item.id)}
+                              onClick={(e) => e.stopPropagation()}
+                            />
+                          ) : (
+                            item.location || '-'
+                          )}
+                        </td>
+                        <td style={{ ...styles.td, textAlign: 'center' }}>
+                          {isEditing ? (
+                            <input
+                              type="number"
+                              style={{ ...styles.cellInput, textAlign: 'center' }}
+                              value={editFormData.quantity || 1}
+                              onChange={(e) => setEditFormData({ ...editFormData, quantity: e.target.value })}
+                              onKeyDown={(e) => handleKeyDown(e, item.id)}
+                              onClick={(e) => e.stopPropagation()}
+                            />
+                          ) : (
+                            item.quantity || '-'
+                          )}
+                        </td>
+                        <td style={styles.td}>
+                          {isEditing ? (
+                            <input
+                              style={styles.cellInput}
+                              value={editFormData.unit || ''}
+                              onChange={(e) => setEditFormData({ ...editFormData, unit: e.target.value })}
+                              onKeyDown={(e) => handleKeyDown(e, item.id)}
+                              onClick={(e) => e.stopPropagation()}
+                            />
+                          ) : (
+                            item.unit || '-'
+                          )}
+                        </td>
+                        <td style={{ ...styles.td, textAlign: 'center' }}>
+                          {isEditing ? (
+                            <select
+                              style={styles.cellInput}
+                              value={editFormData.risk_level || 'Low'}
+                              onChange={(e) => setEditFormData({ ...editFormData, risk_level: e.target.value })}
+                              onKeyDown={(e) => handleKeyDown(e, item.id)}
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <option value="High">High</option>
+                              <option value="Medium">Medium</option>
+                              <option value="Low">Low</option>
+                            </select>
+                          ) : (
+                            <span
+                              style={{
+                                ...styles.riskBadge,
+                                ...(item.risk_level === 'High'
+                                  ? styles.riskHigh
+                                  : item.risk_level === 'Medium'
+                                  ? styles.riskMedium
+                                  : styles.riskLow)
+                              }}
+                            >
+                              {item.risk_level || 'Low'}
+                            </span>
+                          )}
+                        </td>
+                        <td style={styles.td}>
+                          {isEditing ? (
+                            <input
+                              style={styles.cellInput}
+                              value={editFormData.cal_pm_by || ''}
+                              onChange={(e) => setEditFormData({ ...editFormData, cal_pm_by: e.target.value })}
+                              onKeyDown={(e) => handleKeyDown(e, item.id)}
+                              onClick={(e) => e.stopPropagation()}
+                            />
+                          ) : (
+                            item.cal_pm_by || '-'
+                          )}
+                        </td>
+                        <td style={styles.td}>
+                          {isEditing ? (
+                            <input
+                              style={styles.cellInput}
+                              value={editFormData.vendor || ''}
+                              onChange={(e) => setEditFormData({ ...editFormData, vendor: e.target.value })}
+                              onKeyDown={(e) => handleKeyDown(e, item.id)}
+                              onClick={(e) => e.stopPropagation()}
+                            />
+                          ) : (
+                            item.vendor || '-'
+                          )}
+                        </td>
+                        <td style={{ ...styles.td, fontFamily: 'monospace', color: '#d97706' }}>
+                          {isEditing ? (
+                            <input
+                              style={styles.cellInput}
+                              value={editFormData.due_date || ''}
+                              onChange={(e) => setEditFormData({ ...editFormData, due_date: e.target.value })}
+                              onKeyDown={(e) => handleKeyDown(e, item.id)}
+                              onClick={(e) => e.stopPropagation()}
+                            />
+                          ) : (
+                            item.due_date || '-'
+                          )}
+                        </td>
+                        <td style={{ ...styles.td, fontFamily: 'monospace' }}>
+                          {isEditing ? (
+                            <input
+                              style={styles.cellInput}
+                              value={editFormData.next_due || ''}
+                              onChange={(e) => setEditFormData({ ...editFormData, next_due: e.target.value })}
+                              onKeyDown={(e) => handleKeyDown(e, item.id)}
+                              onClick={(e) => e.stopPropagation()}
+                            />
+                          ) : (
+                            item.next_due || '-'
+                          )}
+                        </td>
+                        <td style={{ ...styles.td, fontFamily: 'monospace' }}>
+                          {isEditing ? (
+                            <input
+                              style={styles.cellInput}
+                              value={editFormData.next_due_1 || ''}
+                              onChange={(e) => setEditFormData({ ...editFormData, next_due_1: e.target.value })}
+                              onKeyDown={(e) => handleKeyDown(e, item.id)}
+                              onClick={(e) => e.stopPropagation()}
+                            />
+                          ) : (
+                            item.next_due_1 || '-'
+                          )}
+                        </td>
+                        <td style={{ ...styles.td, color: '#475569' }}>
+                          {isEditing ? (
+                            <input
+                              style={styles.cellInput}
+                              value={editFormData.note || ''}
+                              onChange={(e) => setEditFormData({ ...editFormData, note: e.target.value })}
+                              onKeyDown={(e) => handleKeyDown(e, item.id)}
+                              onClick={(e) => e.stopPropagation()}
+                            />
+                          ) : (
+                            item.note || '-'
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Table Footer: แสดงจำนวนรายการ + ปุ่ม Export CSV แบบมินิมอลเรียบหรูที่มุมขวา */}
+            <div
+              style={{
+                padding: '10px 16px',
+                backgroundColor: '#f8fafc',
+                borderTop: '1px solid #e2e8f0',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                fontSize: '12px',
+                color: '#64748b'
+              }}
+            >
+              <span>แสดงทั้งหมด {filteredItems.length} รายการ</span>
+              <button
+                onClick={handleExportCSV}
+                title="ส่งออกรายการที่แสดงในตารางเป็นไฟล์ CSV"
+                style={{
+                  border: 'none',
+                  background: 'none',
+                  color: '#94a3b8',
+                  fontSize: '12px',
+                  cursor: 'pointer',
+                  padding: '2px 6px',
+                  fontWeight: '400',
+                  transition: 'color 0.15s ease'
+                }}
+                onMouseEnter={(e) => (e.target.style.color = '#2563eb')}
+                onMouseLeave={(e) => (e.target.style.color = '#94a3b8')}
+              >
+                <u>Export CSV</u>
+              </button>
+            </div>
+          </>
         )}
       </div>
 
-      {/* Pop-up Modal แจ้งเตือน (ดีไซน์เดิม สะอาดตา และลากคุมข้อความได้ตามปกติ) */}
+      {/* Pop-up Modal แจ้งเตือน */}
       {isDueModalOpen && (
         <div style={styles.modalOverlay} onClick={handleCloseDueModal}>
           <div
