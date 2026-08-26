@@ -111,6 +111,7 @@ export default function MedicalEquipment() {
     return monthMatch && yearMatch;
   };
 
+  // เด้งการแจ้งเตือนขึ้นมาแสดงผลทุกครั้งเมื่อดึงข้อมูลเสร็จสิ้น
   useEffect(() => {
     if (items.length > 0) {
       const today = new Date();
@@ -134,36 +135,33 @@ export default function MedicalEquipment() {
         }
       });
 
-      if (!sessionStorage.getItem('dismissed_due_alert')) {
-        if (urgentItems.length > 0) {
-          urgentItems.sort((a, b) => a.diffDays - b.diffDays);
-          setDueModalItems(urgentItems);
+      if (urgentItems.length > 0) {
+        urgentItems.sort((a, b) => a.diffDays - b.diffDays);
+        setDueModalItems(urgentItems);
 
-          const overdueCount = urgentItems.filter(i => i.diffDays <= 0).length;
-          const isDanger = overdueCount > 0;
+        const overdueCount = urgentItems.filter(i => i.diffDays <= 0).length;
+        const isDanger = overdueCount > 0;
 
-          setDueStatusInfo({
-            hasAlertItem: true,
-            text: isDanger 
-              ? `🚨 รายงานรายการเครื่องมือแพทย์ที่ต้องดำเนินการทั้งหมด ${urgentItems.length} รายการ (เกินกำหนดเวลา ${overdueCount} รายการ)`
-              : `⏳ รายงานรายการเครื่องมือแพทย์ครบกำหนดบำรุงรักษา/สอบเทียบ (Cal/PM) ภายใน 30 วัน ทั้งหมด ${urgentItems.length} รายการ`,
-            themeColor: isDanger ? '#ef4444' : '#f59e0b'
-          });
-        } else {
-          setDueModalItems([]);
-          setDueStatusInfo({
-            hasAlertItem: false,
-            text: '✅ สถานะปกติ: ไม่พบรายการเครื่องมือแพทย์ที่ถึงกำหนดการบำรุงรักษาหรือสอบเทียบภายใน 30 วัน',
-            themeColor: '#10b981'
-          });
-        }
-        setIsDueModalOpen(true);
+        setDueStatusInfo({
+          hasAlertItem: true,
+          text: isDanger 
+            ? `🚨 รายงานรายการเครื่องมือแพทย์ที่ต้องดำเนินการทั้งหมด ${urgentItems.length} รายการ (เกินกำหนดเวลา ${overdueCount} รายการ)`
+            : `⏳ รายงานรายการเครื่องมือแพทย์ครบกำหนดบำรุงรักษา/สอบเทียบ (Cal/PM) ภายใน 30 วัน ทั้งหมด ${urgentItems.length} รายการ`,
+          themeColor: isDanger ? '#ef4444' : '#f59e0b'
+        });
+      } else {
+        setDueModalItems([]);
+        setDueStatusInfo({
+          hasAlertItem: false,
+          text: '✅ สถานะปกติ: ไม่พบรายการเครื่องมือแพทย์ที่ถึงกำหนดการบำรุงรักษาหรือสอบเทียบภายใน 30 วัน',
+          themeColor: '#10b981'
+        });
       }
+      setIsDueModalOpen(true);
     }
   }, [items]);
 
   const handleCloseDueModal = () => {
-    sessionStorage.setItem('dismissed_due_alert', 'true');
     setIsDueModalOpen(false);
   };
 
@@ -751,7 +749,7 @@ export default function MedicalEquipment() {
         )}
       </div>
 
-      {/* Pop-up Modal แจ้งเตือนรูปแบบใหม่ มืออาชีพ ตัวอักษรธรรมดา */}
+      {/* Pop-up Modal แจ้งเตือน (เด้งขึ้นทุกครั้งที่รีเฟรช) */}
       {isDueModalOpen && (
         <div style={styles.modalOverlay} onClick={handleCloseDueModal}>
           <div
