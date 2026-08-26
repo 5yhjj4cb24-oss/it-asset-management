@@ -453,13 +453,14 @@ export default function MedicalEquipment() {
             <option value="12">ธันวาคม (12)</option>
           </select>
 
-          {/* ตัวเลือกกรองปี (Next Due 1) */}
+          {/* ตัวเลือกกรองปี (Next Due 1) - สร้างตัวเลือก 2025 ถึง 2036 อัตโนมัติ */}
           <select value={yearFilter} onChange={(e) => setYearFilter(e.target.value)} style={styles.selectInput}>
             <option value="">-- ปี (Next Due 1) --</option>
-            <option value="2025">2025</option>
-            <option value="2026">2026</option>
-            <option value="2027">2027</option>
-            <option value="2028">2028</option>
+            {Array.from({ length: 12 }, (_, i) => 2025 + i).map((year) => (
+              <option key={year} value={String(year)}>
+                {year}
+              </option>
+            ))}
           </select>
 
           {/* ปุ่มล้างตัวกรอง */}
@@ -779,7 +780,7 @@ export default function MedicalEquipment() {
               </table>
             </div>
 
-            {/* Table Footer: แสดงจำนวนรายการ + ปุ่ม Export CSV แบบมินิมอลเรียบหรูที่มุมขวา */}
+            {/* Table Footer: แสดงจำนวนรายการ + ลิงก์ Export CSV มินิมอลที่มุมขวา */}
             <div
               style={{
                 padding: '10px 16px',
