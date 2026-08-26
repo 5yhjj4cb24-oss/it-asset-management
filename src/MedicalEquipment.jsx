@@ -50,7 +50,6 @@ export default function MedicalEquipment() {
   // Pop-up Alert State สำหรับ Next Due 1
   const [dueModalItems, setDueModalItems] = useState([]);
   const [isDueModalOpen, setIsDueModalOpen] = useState(false);
-  const [copiedId, setCopiedId] = useState(null);
   const [dueStatusInfo, setDueStatusInfo] = useState({
     hasAlertItem: false,
     text: '',
@@ -173,13 +172,6 @@ export default function MedicalEquipment() {
   const handleSelectSpecificItem = (assetNoOrName) => {
     setSearch(assetNoOrName);
     handleCloseDueModal();
-  };
-
-  const handleCopyText = (text, id) => {
-    if (!text) return;
-    navigator.clipboard.writeText(text);
-    setCopiedId(id);
-    setTimeout(() => setCopiedId(null), 1500);
   };
 
   const loadData = async () => {
@@ -756,7 +748,7 @@ export default function MedicalEquipment() {
         )}
       </div>
 
-      {/* Pop-up Modal แจ้งเตือน (ลากคุมข้อความได้อิสระ + มีปุ่ม Copy 📋 ในตัว) */}
+      {/* Pop-up Modal แจ้งเตือน (รองรับการลากคุมคัดลอกข้อความ) */}
       {isDueModalOpen && (
         <div style={styles.modalOverlay} onClick={handleCloseDueModal}>
           <div
@@ -764,7 +756,7 @@ export default function MedicalEquipment() {
               backgroundColor: '#ffffff',
               borderRadius: '12px',
               width: '100%',
-              maxWidth: '840px',
+              maxWidth: '820px',
               padding: '28px 32px',
               boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.01)',
               border: '1px solid #e2e8f0'
@@ -780,7 +772,7 @@ export default function MedicalEquipment() {
                     รายงานสรุปการแจ้งเตือนรอบบำรุงรักษา (Cal/PM)
                   </h3>
                   <p style={{ margin: '2px 0 0 0', fontSize: '12px', color: '#64748b' }}>
-                    สามารถลากคุมคัดลอกข้อความ หรือกดปุ่ม 📋 เพื่อคัดลอกรหัสทรัพย์สินได้ทันที
+                    การติดตามกำหนดเวลาบำรุงรักษาอุปกรณ์ทางการแพทย์ล่วงหน้า
                   </p>
                 </div>
               </div>
@@ -828,46 +820,35 @@ export default function MedicalEquipment() {
                       <th style={{ padding: '10px 14px', fontWeight: '500', fontSize: '12px', color: '#475569' }}>ชื่อเครื่องมือแพทย์</th>
                       <th style={{ padding: '10px 14px', fontWeight: '500', fontSize: '12px', color: '#475569' }}>แผนก</th>
                       <th style={{ padding: '10px 14px', fontWeight: '500', fontSize: '12px', color: '#475569' }}>วันครบกำหนด</th>
-                      <th style={{ padding: '10px 14px', fontWeight: '500', fontSize: '12px', color: '#475569', textAlign: 'center' }}>การจัดการ</th>
+                      <th style={{ padding: '10px 14px', fontWeight: '500', fontSize: '12px', color: '#475569', textAlign: 'center' }}>สถานะ</th>
                     </tr>
                   </thead>
                   <tbody>
                     {dueModalItems.map((dueItem, idx) => {
                       const isOverdue = dueItem.diffDays <= 0;
-                      const isCopied = copiedId === (dueItem.id || idx);
-
                       return (
                         <tr
                           key={dueItem.id || idx}
+                          onClick={() => {
+                            // ถ้าผู้ใช้กำลังลากคุมข้อความเพื่อ Copy จะไม่สั่งย้ายหน้าหรือปิด Modal
+                            const selectedText = window.getSelection() ? window.getSelection().toString().trim() : '';
+                            if (!selectedText) {
+                              handleSelectSpecificItem(dueItem.asset_no || dueItem.asset_name);
+                            }
+                          }}
+                          title="คลิกเพื่อค้นหาในตารางหลัก หรือลากคุมเพื่อคัดลอกข้อความ"
                           style={{
                             borderBottom: '1px solid #f1f5f9',
                             backgroundColor: '#ffffff',
+                            cursor: 'pointer',
+                            transition: 'background-color 0.12s ease',
                             userSelect: 'text'
                           }}
                         >
                           <td style={{ padding: '10px 14px', fontFamily: 'monospace', color: '#2563eb', fontWeight: '400', userSelect: 'text' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                              <span>{dueItem.asset_no || '-'}</span>
-                              {dueItem.asset_no && (
-                                <button
-                                  onClick={() => handleCopyText(dueItem.asset_no, dueItem.id || idx)}
-                                  title="กดเพื่อคัดลอกรหัสทรัพย์สิน"
-                                  style={{
-                                    border: 'none',
-                                    background: 'none',
-                                    cursor: 'pointer',
-                                    fontSize: '13px',
-                                    padding: '2px 4px',
-                                    borderRadius: '4px',
-                                    color: isCopied ? '#16a34a' : '#94a3b8'
-                                  }}
-                                >
-                                  {isCopied ? '✓' : '📋'}
-                                </button>
-                              )}
-                            </div>
+                            {dueItem.asset_no || '-'}
                           </td>
-                          <td style={{ padding: '10px 14px', color: '#334155', fontWeight: '400', userSelect: 'text', lineHeight: '1.4' }}>
+                          <td style={{ padding: '10px 14px', color: '#334155', fontWeight: '400', userSelect: 'text' }}>
                             {dueItem.asset_name}
                           </td>
                           <td style={{ padding: '10px 14px', color: '#64748b', fontWeight: '400', userSelect: 'text' }}>
@@ -877,21 +858,20 @@ export default function MedicalEquipment() {
                             {dueItem.next_due_1}
                           </td>
                           <td style={{ padding: '10px 14px', textAlign: 'center', userSelect: 'text' }}>
-                            <button
-                              onClick={() => handleSelectSpecificItem(dueItem.asset_no || dueItem.asset_name)}
+                            <span
                               style={{
-                                backgroundColor: '#eff6ff',
-                                color: '#2563eb',
-                                border: '1px solid #bfdbfe',
+                                display: 'inline-block',
+                                padding: '3px 10px',
                                 borderRadius: '6px',
-                                padding: '4px 10px',
                                 fontSize: '11.5px',
                                 fontWeight: '400',
-                                cursor: 'pointer'
+                                backgroundColor: isOverdue ? '#fef2f2' : '#fffbeb',
+                                color: isOverdue ? '#991b1b' : '#92400e',
+                                border: `1px solid ${isOverdue ? '#fecdd3' : '#fef3c7'}`
                               }}
                             >
-                              🔍 ค้นหาในตาราง
-                            </button>
+                              {isOverdue ? `เกินกำหนด ${Math.abs(dueItem.diffDays)} วัน` : `คงเหลือ ${dueItem.diffDays} วัน`}
+                            </span>
                           </td>
                         </tr>
                       );
