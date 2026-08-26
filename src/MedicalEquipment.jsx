@@ -27,10 +27,8 @@ export default function MedicalEquipment() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [deptFilter, setDeptFilter] = useState('');
-  const [riskFilter, setRiskFilter] = useState('');
 
-  // Dashboard Interactive Card & Date Filters State
-  // cardFilter: 'ALL' | 'High' | 'Medium' | 'Low' | 'NEXT_DUE_1' | 'ALERTED_DUE'
+  // Dashboard Card Filter ('ALL' | 'High' | 'Medium' | 'Low' | 'ALERTED_DUE')
   const [cardFilter, setCardFilter] = useState('ALL'); 
   const [monthFilter, setMonthFilter] = useState('');
   const [yearFilter, setYearFilter] = useState('');
@@ -55,14 +53,13 @@ export default function MedicalEquipment() {
   const [dueStatusInfo, setDueStatusInfo] = useState({
     hasAlertItem: false,
     text: '',
-    themeColor: '#16a34a'
+    themeColor: '#10b981'
   });
 
   useEffect(() => {
     loadData();
   }, []);
 
-  // แปลงข้อความวันที่แบบ DD/MM/YYYY หรือ -/MM/YYYY
   const parseDateStr = (dateStr) => {
     if (!dateStr) return null;
     let s = dateStr.trim();
@@ -83,7 +80,6 @@ export default function MedicalEquipment() {
     return null;
   };
 
-  // Helper สำหรับเช็กความตรงกันของเดือนและปีในช่อง Next Due 1
   const checkDateMatch = (dateStr, month, year) => {
     if (!dateStr || dateStr === '-') return false;
     const matches = String(dateStr).match(/\d+/g);
@@ -115,7 +111,6 @@ export default function MedicalEquipment() {
     return monthMatch && yearMatch;
   };
 
-  // Logic ดึงทุกรายการที่เข้าเงื่อนไขเตือนมาแสดงผล
   useEffect(() => {
     if (items.length > 0) {
       const today = new Date();
@@ -150,16 +145,16 @@ export default function MedicalEquipment() {
           setDueStatusInfo({
             hasAlertItem: true,
             text: isDanger 
-              ? `🚨 พบรายการเครื่องมือแพทย์ที่ต้องดำเนินการทั้งหมด ${urgentItems.length} รายการ (เลย/ถึงกำหนดแล้ว ${overdueCount} รายการ)`
-              : `⏳ พบรายการเครื่องมือแพทย์กำลังจะถึงกำหนดภายใน 30 วัน ทั้งหมด ${urgentItems.length} รายการ`,
-            themeColor: isDanger ? '#dc2626' : '#d97706'
+              ? `🚨 รายงานรายการเครื่องมือแพทย์ที่ต้องดำเนินการทั้งหมด ${urgentItems.length} รายการ (เกินกำหนดเวลา ${overdueCount} รายการ)`
+              : `⏳ รายงานรายการเครื่องมือแพทย์ครบกำหนดบำรุงรักษา/สอบเทียบ (Cal/PM) ภายใน 30 วัน ทั้งหมด ${urgentItems.length} รายการ`,
+            themeColor: isDanger ? '#ef4444' : '#f59e0b'
           });
         } else {
           setDueModalItems([]);
           setDueStatusInfo({
             hasAlertItem: false,
-            text: '✅ สถานะปกติ: ไม่มีรายการเครื่องมือแพทย์ที่ถึงกำหนด หรือใกล้ถึงกำหนดภายใน 30 วัน',
-            themeColor: '#16a34a'
+            text: '✅ สถานะปกติ: ไม่พบรายการเครื่องมือแพทย์ที่ถึงกำหนดการบำรุงรักษาหรือสอบเทียบภายใน 30 วัน',
+            themeColor: '#10b981'
           });
         }
         setIsDueModalOpen(true);
@@ -172,13 +167,11 @@ export default function MedicalEquipment() {
     setIsDueModalOpen(false);
   };
 
-  // สลับไปกรองเฉพาะรายการที่เข้าเงื่อนไขเตือนด่วน (<= 30 วัน) ในตาราง
   const handleJumpToAlertedItems = () => {
     setCardFilter('ALERTED_DUE');
     handleCloseDueModal();
   };
 
-  // ค้นหาและเจาะจงอุปกรณ์เดี่ยวจาก Modal
   const handleSelectSpecificItem = (assetNoOrName) => {
     setSearch(assetNoOrName);
     handleCloseDueModal();
@@ -275,7 +268,6 @@ export default function MedicalEquipment() {
     setSaving(false);
   };
 
-  // รวมตัวกรองทั้งหมด
   const filteredItems = items.filter((item) => {
     const matchesSearch =
       (item.asset_no?.toLowerCase() || '').includes(search.toLowerCase()) ||
@@ -284,9 +276,7 @@ export default function MedicalEquipment() {
       (item.vendor?.toLowerCase() || '').includes(search.toLowerCase());
 
     const matchesDept = deptFilter ? item.department === deptFilter : true;
-    const matchesRisk = riskFilter ? item.risk_level === riskFilter : true;
 
-    // Filter จากการคลิกการ์ด หรือการกดปุ่มจาก Modal แจ้งเตือน
     let matchesCard = true;
     if (cardFilter === 'High') {
       matchesCard = item.risk_level === 'High';
@@ -294,10 +284,7 @@ export default function MedicalEquipment() {
       matchesCard = item.risk_level === 'Medium';
     } else if (cardFilter === 'Low') {
       matchesCard = item.risk_level === 'Low' || !item.risk_level;
-    } else if (cardFilter === 'NEXT_DUE_1') {
-      matchesCard = Boolean(item.next_due_1 && item.next_due_1 !== '-');
     } else if (cardFilter === 'ALERTED_DUE') {
-      // โหมดเฉพาะ: คัดเฉพาะรายการที่เลยกำหนด หรือกำลังจะถึงกำหนดภายใน 30 วันเท่านั้น
       if (!item.next_due_1 || item.next_due_1 === '-') {
         matchesCard = false;
       } else {
@@ -314,21 +301,19 @@ export default function MedicalEquipment() {
       }
     }
 
-    // Filter จากเดือน/ปี (เช็กเฉพาะช่อง Next Due 1 อย่างเดียว)
     let matchesMonthYear = true;
     if (monthFilter || yearFilter) {
       matchesMonthYear = checkDateMatch(item.next_due_1, monthFilter, yearFilter);
     }
 
-    return matchesSearch && matchesDept && matchesRisk && matchesCard && matchesMonthYear;
+    return matchesSearch && matchesDept && matchesCard && matchesMonthYear;
   });
 
   const highRiskCount = items.filter((i) => i.risk_level === 'High').length;
   const mediumRiskCount = items.filter((i) => i.risk_level === 'Medium').length;
   const lowRiskCount = items.filter((i) => i.risk_level === 'Low' || !i.risk_level).length;
-  const nextDue1Count = items.filter((i) => i.next_due_1 && i.next_due_1 !== '-').length;
 
-  const isAnyFilterActive = cardFilter !== 'ALL' || deptFilter || riskFilter || monthFilter || yearFilter || search;
+  const isAnyFilterActive = cardFilter !== 'ALL' || deptFilter || monthFilter || yearFilter || search;
 
   return (
     <div style={styles.container}>
@@ -349,13 +334,13 @@ export default function MedicalEquipment() {
           onClick={() => setCardFilter('ALL')}
           style={{
             ...styles.statCard,
-            border: cardFilter === 'ALL' ? '2px solid #2563eb' : '1px solid #bfdbfe',
-            boxShadow: cardFilter === 'ALL' ? '0 4px 12px rgba(37, 99, 235, 0.15)' : 'none',
+            border: cardFilter === 'ALL' ? '1.5px solid #3b82f6' : '1px solid #e2e8f0',
+            boxShadow: cardFilter === 'ALL' ? '0 4px 12px rgba(59, 130, 246, 0.08)' : 'none',
             cursor: 'pointer'
           }}
         >
           <div style={styles.statLabel}>เครื่องมือทั้งหมด</div>
-          <div style={{ ...styles.statValue, color: '#000000' }}>{items.length}</div>
+          <div style={{ ...styles.statValue, color: '#0f172a' }}>{items.length}</div>
           <div style={styles.statSub}>รายการทั้งหมดในระบบ</div>
         </div>
 
@@ -363,8 +348,8 @@ export default function MedicalEquipment() {
           onClick={() => setCardFilter('High')}
           style={{
             ...styles.statCard,
-            border: cardFilter === 'High' ? '2px solid #dc2626' : '1px solid #bfdbfe',
-            boxShadow: cardFilter === 'High' ? '0 4px 12px rgba(220, 38, 38, 0.15)' : 'none',
+            border: cardFilter === 'High' ? '1.5px solid #ef4444' : '1px solid #e2e8f0',
+            boxShadow: cardFilter === 'High' ? '0 4px 12px rgba(239, 68, 68, 0.08)' : 'none',
             cursor: 'pointer'
           }}
         >
@@ -377,8 +362,8 @@ export default function MedicalEquipment() {
           onClick={() => setCardFilter('Medium')}
           style={{
             ...styles.statCard,
-            border: cardFilter === 'Medium' ? '2px solid #d97706' : '1px solid #bfdbfe',
-            boxShadow: cardFilter === 'Medium' ? '0 4px 12px rgba(217, 119, 6, 0.15)' : 'none',
+            border: cardFilter === 'Medium' ? '1.5px solid #f59e0b' : '1px solid #e2e8f0',
+            boxShadow: cardFilter === 'Medium' ? '0 4px 12px rgba(245, 158, 11, 0.08)' : 'none',
             cursor: 'pointer'
           }}
         >
@@ -391,28 +376,14 @@ export default function MedicalEquipment() {
           onClick={() => setCardFilter('Low')}
           style={{
             ...styles.statCard,
-            border: cardFilter === 'Low' ? '2px solid #16a34a' : '1px solid #bfdbfe',
-            boxShadow: cardFilter === 'Low' ? '0 4px 12px rgba(22, 163, 74, 0.15)' : 'none',
+            border: cardFilter === 'Low' ? '1.5px solid #10b981' : '1px solid #e2e8f0',
+            boxShadow: cardFilter === 'Low' ? '0 4px 12px rgba(16, 185, 129, 0.08)' : 'none',
             cursor: 'pointer'
           }}
         >
           <div style={styles.statLabel}>ความเสี่ยงต่ำ (Low)</div>
-          <div style={{ ...styles.statValue, color: '#16a34a' }}>{lowRiskCount}</div>
-          <div style={{ ...styles.statSub, color: '#22c55e' }}>สถานะปกติ</div>
-        </div>
-
-        <div 
-          onClick={() => setCardFilter('NEXT_DUE_1')}
-          style={{
-            ...styles.statCard,
-            border: cardFilter === 'NEXT_DUE_1' ? '2px solid #7c3aed' : '1px solid #bfdbfe',
-            boxShadow: cardFilter === 'NEXT_DUE_1' ? '0 4px 12px rgba(124, 58, 237, 0.15)' : 'none',
-            cursor: 'pointer'
-          }}
-        >
-          <div style={styles.statLabel}>ครบกำหนด Next Due 1</div>
-          <div style={{ ...styles.statValue, color: '#7c3aed' }}>{nextDue1Count}</div>
-          <div style={{ ...styles.statSub, color: '#8b5cf6' }}>มีกำหนดรอบถัดไปแล้ว</div>
+          <div style={{ ...styles.statValue, color: '#059669' }}>{lowRiskCount}</div>
+          <div style={{ ...styles.statSub, color: '#10b981' }}>สถานะปกติ</div>
         </div>
       </div>
 
@@ -434,13 +405,6 @@ export default function MedicalEquipment() {
             <option value="ทำแผล ชั้น 2">ทำแผล ชั้น 2</option>
             <option value="OPD ชั้น 1">OPD ชั้น 1</option>
             <option value="คลัง">คลัง</option>
-          </select>
-
-          <select value={riskFilter} onChange={(e) => setRiskFilter(e.target.value)} style={styles.selectInput}>
-            <option value="">ทุกระดับ Risk</option>
-            <option value="High">High Risk</option>
-            <option value="Medium">Medium Risk</option>
-            <option value="Low">Low Risk</option>
           </select>
 
           {/* ตัวเลือกกรองเดือน (Next Due 1) */}
@@ -475,7 +439,6 @@ export default function MedicalEquipment() {
               onClick={() => {
                 setCardFilter('ALL');
                 setDeptFilter('');
-                setRiskFilter('');
                 setMonthFilter('');
                 setYearFilter('');
                 setSearch('');
@@ -488,7 +451,7 @@ export default function MedicalEquipment() {
                 backgroundColor: '#fff1f2',
                 color: '#dc2626',
                 cursor: 'pointer',
-                fontWeight: '500'
+                fontWeight: '400'
               }}
             >
               ✕ ล้างการกรองทั้งหมด
@@ -501,8 +464,8 @@ export default function MedicalEquipment() {
       {editingId && (
         <div style={styles.editingBanner}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ fontSize: '16px' }}>✏️</span>
-            <span style={{ color: '#92400e', fontWeight: '500', fontSize: '13px' }}>
+            <span style={{ fontSize: '15px' }}>✏️</span>
+            <span style={{ color: '#92400e', fontWeight: '400', fontSize: '13px' }}>
               กำลังแก้ไขรายการ: <strong>{editFormData.asset_name || editFormData.asset_no || 'รายการนี้'}</strong>
             </span>
             <span style={{ color: '#b45309', fontSize: '11px', marginLeft: '8px' }}>
@@ -526,9 +489,9 @@ export default function MedicalEquipment() {
       {/* Full Table */}
       <div style={styles.tableCard}>
         {loading ? (
-          <div style={styles.loadingBox}>กำลังดึงข้อมูลจาก Supabase...</div>
+          <div style={styles.loadingBox}>กำลังดึงข้อมูลระบบ...</div>
         ) : filteredItems.length === 0 ? (
-          <div style={styles.loadingBox}>ไม่พบข้อมูลที่ตรงกับเงื่อนไขการค้นหา</div>
+          <div style={styles.loadingBox}>ไม่พบข้อมูลตามเงื่อนไขการค้นหา</div>
         ) : (
           <div style={{ overflowX: 'auto', maxHeight: '72vh' }}>
             <table style={styles.table}>
@@ -559,10 +522,10 @@ export default function MedicalEquipment() {
                   const rowBg = isEditing
                     ? '#fffbeb'
                     : isHovered
-                    ? '#eff6ff'
+                    ? '#f8fafc'
                     : index % 2 === 0
                     ? '#ffffff'
-                    : '#f8fafc';
+                    : '#fdfdfd';
 
                   return (
                     <tr
@@ -578,7 +541,7 @@ export default function MedicalEquipment() {
                         transition: 'background-color 0.15s ease'
                       }}
                     >
-                      <td style={{ ...styles.td, textAlign: 'center', color: '#000000', fontFamily: 'monospace' }}>
+                      <td style={{ ...styles.td, textAlign: 'center', color: '#64748b', fontFamily: 'monospace' }}>
                         {index + 1}
                       </td>
                       <td style={styles.td}>
@@ -604,7 +567,7 @@ export default function MedicalEquipment() {
                             onClick={(e) => e.stopPropagation()}
                           />
                         ) : (
-                          <span style={{ color: '#000000', fontWeight: '400' }}>{item.asset_name}</span>
+                          <span style={{ color: '#0f172a', fontWeight: '400' }}>{item.asset_name}</span>
                         )}
                       </td>
                       <td style={styles.td}>
@@ -727,7 +690,7 @@ export default function MedicalEquipment() {
                           item.vendor || '-'
                         )}
                       </td>
-                      <td style={{ ...styles.td, fontFamily: 'monospace', color: '#b45309' }}>
+                      <td style={{ ...styles.td, fontFamily: 'monospace', color: '#d97706' }}>
                         {isEditing ? (
                           <input
                             style={styles.cellInput}
@@ -766,7 +729,7 @@ export default function MedicalEquipment() {
                           item.next_due_1 || '-'
                         )}
                       </td>
-                      <td style={{ ...styles.td, color: '#000000' }}>
+                      <td style={{ ...styles.td, color: '#475569' }}>
                         {isEditing ? (
                           <input
                             style={styles.cellInput}
@@ -788,67 +751,78 @@ export default function MedicalEquipment() {
         )}
       </div>
 
-      {/* Pop-up Modal แจ้งเตือนแบบ interactive */}
+      {/* Pop-up Modal แจ้งเตือนรูปแบบใหม่ มืออาชีพ ตัวอักษรธรรมดา */}
       {isDueModalOpen && (
         <div style={styles.modalOverlay} onClick={handleCloseDueModal}>
           <div
             style={{
-              ...styles.modalContent,
-              maxWidth: '850px',
-              padding: '32px',
-              borderRadius: '16px',
-              borderTop: `6px solid ${dueStatusInfo.themeColor}`,
-              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.3)'
+              backgroundColor: '#ffffff',
+              borderRadius: '12px',
+              width: '100%',
+              maxWidth: '820px',
+              padding: '28px 32px',
+              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.01)',
+              border: '1px solid #e2e8f0'
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
-              <h3
+            {/* Header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span style={{ fontSize: '20px' }}>🔔</span>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '500', color: '#0f172a' }}>
+                    รายงานสรุปการแจ้งเตือนรอบบำรุงรักษา (Cal/PM)
+                  </h3>
+                  <p style={{ margin: '2px 0 0 0', fontSize: '12px', color: '#64748b' }}>
+                    การติดตามกำหนดเวลาบำรุงรักษาอุปกรณ์ทางการแพทย์ล่วงหน้า
+                  </p>
+                </div>
+              </div>
+              <button 
+                onClick={handleCloseDueModal}
                 style={{
-                  margin: 0,
-                  fontSize: '22px',
-                  fontWeight: '700',
-                  color: dueStatusInfo.themeColor,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '10px'
+                  border: 'none',
+                  background: 'none',
+                  fontSize: '18px',
+                  cursor: 'pointer',
+                  color: '#94a3b8',
+                  padding: '4px 8px',
+                  borderRadius: '4px'
                 }}
               >
-                🔔 สรุปการแจ้งเตือน (Next Due 1)
-              </h3>
-              <button style={{ ...styles.closeBtn, fontSize: '24px' }} onClick={handleCloseDueModal}>
                 ✕
               </button>
             </div>
 
-            {/* แถบแจ้งสถานะหลัก */}
+            {/* Alert Status Banner */}
             <div
               style={{
-                backgroundColor: dueStatusInfo.hasAlertItem ? (dueStatusInfo.themeColor === '#dc2626' ? '#fef2f2' : '#fffbe5') : '#f0fdf4',
-                border: `2px solid ${dueStatusInfo.hasAlertItem ? (dueStatusInfo.themeColor === '#dc2626' ? '#fecdd3' : '#fef08a') : '#bbf7d0'}`,
-                color: dueStatusInfo.hasAlertItem ? (dueStatusInfo.themeColor === '#dc2626' ? '#991b1b' : '#854d0e') : '#166534',
-                padding: '14px 18px',
-                borderRadius: '10px',
-                fontWeight: '600',
-                fontSize: '15px',
-                marginBottom: '18px',
+                backgroundColor: dueStatusInfo.hasAlertItem ? (dueStatusInfo.themeColor === '#ef4444' ? '#fef2f2' : '#fffbeb') : '#f0fdf4',
+                border: `1px solid ${dueStatusInfo.hasAlertItem ? (dueStatusInfo.themeColor === '#ef4444' ? '#fecdd3' : '#fef3c7') : '#bbf7d0'}`,
+                color: dueStatusInfo.hasAlertItem ? (dueStatusInfo.themeColor === '#ef4444' ? '#991b1b' : '#92400e') : '#166534',
+                padding: '12px 16px',
+                borderRadius: '8px',
+                fontWeight: '400',
+                fontSize: '13.5px',
+                marginBottom: '20px',
                 lineHeight: '1.5'
               }}
             >
               {dueStatusInfo.text}
             </div>
 
-            {/* แสดงตารางรายการแจ้งเตือนทั้งหมด (ถ้ามี) - สามารถคลิกที่แถวเพื่อไปที่อุปกรณ์ชิ้นนั้นได้เลย */}
+            {/* Alert Items Table */}
             {dueStatusInfo.hasAlertItem && dueModalItems.length > 0 && (
-              <div style={{ maxHeight: '45vh', overflowY: 'auto', border: '1px solid #e2e8f0', borderRadius: '10px' }}>
+              <div style={{ maxHeight: '42vh', overflowY: 'auto', border: '1px solid #e2e8f0', borderRadius: '8px' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
                   <thead>
-                    <tr style={{ backgroundColor: '#f1f5f9', color: '#334155', textAlign: 'left' }}>
-                      <th style={{ padding: '10px 12px', borderBottom: '1px solid #cbd5e1' }}>รหัสทรัพย์สิน</th>
-                      <th style={{ padding: '10px 12px', borderBottom: '1px solid #cbd5e1' }}>ชื่อเครื่องมือแพทย์</th>
-                      <th style={{ padding: '10px 12px', borderBottom: '1px solid #cbd5e1' }}>แผนก</th>
-                      <th style={{ padding: '10px 12px', borderBottom: '1px solid #cbd5e1' }}>Next Due 1</th>
-                      <th style={{ padding: '10px 12px', borderBottom: '1px solid #cbd5e1', textAlign: 'center' }}>สถานะ</th>
+                    <tr style={{ backgroundColor: '#f8fafc', color: '#475569', textAlign: 'left', borderBottom: '1px solid #e2e8f0' }}>
+                      <th style={{ padding: '10px 14px', fontWeight: '500', fontSize: '12px', color: '#475569' }}>รหัสทรัพย์สิน</th>
+                      <th style={{ padding: '10px 14px', fontWeight: '500', fontSize: '12px', color: '#475569' }}>ชื่อเครื่องมือแพทย์</th>
+                      <th style={{ padding: '10px 14px', fontWeight: '500', fontSize: '12px', color: '#475569' }}>แผนก</th>
+                      <th style={{ padding: '10px 14px', fontWeight: '500', fontSize: '12px', color: '#475569' }}>วันครบกำหนด</th>
+                      <th style={{ padding: '10px 14px', fontWeight: '500', fontSize: '12px', color: '#475569', textAlign: 'center' }}>สถานะ</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -858,34 +832,36 @@ export default function MedicalEquipment() {
                         <tr
                           key={dueItem.id || idx}
                           onClick={() => handleSelectSpecificItem(dueItem.asset_no || dueItem.asset_name)}
-                          title="คลิกเพื่อไปรายการนี้ในตารางหลัก"
+                          title="คลิกเพื่อตรวจสอบรายการนี้ในตารางหลัก"
                           style={{
-                            borderBottom: '1px solid #e2e8f0',
-                            backgroundColor: idx % 2 === 0 ? '#ffffff' : '#f8fafc',
-                            cursor: 'pointer'
+                            borderBottom: '1px solid #f1f5f9',
+                            backgroundColor: '#ffffff',
+                            cursor: 'pointer',
+                            transition: 'background-color 0.12s ease'
                           }}
                         >
-                          <td style={{ padding: '10px 12px', fontFamily: 'monospace', fontWeight: 'bold', color: '#2563eb', textDecoration: 'underline' }}>
+                          <td style={{ padding: '10px 14px', fontFamily: 'monospace', color: '#2563eb', fontWeight: '400' }}>
                             {dueItem.asset_no || '-'}
                           </td>
-                          <td style={{ padding: '10px 12px', color: '#0f172a' }}>{dueItem.asset_name}</td>
-                          <td style={{ padding: '10px 12px', color: '#475569' }}>{dueItem.department || '-'}</td>
-                          <td style={{ padding: '10px 12px', fontFamily: 'monospace', fontWeight: 'bold', color: isOverdue ? '#dc2626' : '#d97706' }}>
+                          <td style={{ padding: '10px 14px', color: '#334155', fontWeight: '400' }}>{dueItem.asset_name}</td>
+                          <td style={{ padding: '10px 14px', color: '#64748b', fontWeight: '400' }}>{dueItem.department || '-'}</td>
+                          <td style={{ padding: '10px 14px', fontFamily: 'monospace', color: isOverdue ? '#dc2626' : '#d97706', fontWeight: '400' }}>
                             {dueItem.next_due_1}
                           </td>
-                          <td style={{ padding: '10px 12px', textAlign: 'center' }}>
+                          <td style={{ padding: '10px 14px', textAlign: 'center' }}>
                             <span
                               style={{
                                 display: 'inline-block',
                                 padding: '3px 10px',
-                                borderRadius: '12px',
-                                fontSize: '12px',
-                                fontWeight: '600',
-                                backgroundColor: isOverdue ? '#ffe4e6' : '#fef3c7',
-                                color: isOverdue ? '#be123c' : '#b45309'
+                                borderRadius: '6px',
+                                fontSize: '11.5px',
+                                fontWeight: '400',
+                                backgroundColor: isOverdue ? '#fef2f2' : '#fffbeb',
+                                color: isOverdue ? '#991b1b' : '#92400e',
+                                border: `1px solid ${isOverdue ? '#fecdd3' : '#fef3c7'}`
                               }}
                             >
-                              {isOverdue ? `เลย ${Math.abs(dueItem.diffDays)} วัน` : `อีก ${dueItem.diffDays} วัน`}
+                              {isOverdue ? `เกินกำหนด ${Math.abs(dueItem.diffDays)} วัน` : `คงเหลือ ${dueItem.diffDays} วัน`}
                             </span>
                           </td>
                         </tr>
@@ -896,38 +872,39 @@ export default function MedicalEquipment() {
               </div>
             )}
 
-            <div style={{ marginTop: '24px', display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+            {/* Footer Buttons */}
+            <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
               {dueStatusInfo.hasAlertItem && (
                 <button
                   style={{
                     backgroundColor: '#2563eb',
                     color: '#ffffff',
                     border: 'none',
-                    borderRadius: '8px',
-                    padding: '10px 20px',
-                    fontSize: '14px',
-                    fontWeight: '600',
+                    borderRadius: '6px',
+                    padding: '8px 16px',
+                    fontSize: '13px',
+                    fontWeight: '400',
                     cursor: 'pointer'
                   }}
                   onClick={handleJumpToAlertedItems}
                 >
-                  🔍 ดูรายการที่ต้องดำเนินการในตาราง ({dueModalItems.length} รายการ)
+                  🔍 แสดงรายการในตารางหลัก ({dueModalItems.length} รายการ)
                 </button>
               )}
               <button
                 style={{
-                  backgroundColor: dueStatusInfo.hasAlertItem ? '#e2e8f0' : dueStatusInfo.themeColor,
-                  color: dueStatusInfo.hasAlertItem ? '#0f172a' : '#ffffff',
-                  border: 'none',
-                  borderRadius: '8px',
-                  padding: '10px 24px',
-                  fontSize: '14px',
-                  fontWeight: '600',
+                  backgroundColor: '#ffffff',
+                  color: '#475569',
+                  border: '1px solid #cbd5e1',
+                  borderRadius: '6px',
+                  padding: '8px 16px',
+                  fontSize: '13px',
+                  fontWeight: '400',
                   cursor: 'pointer'
                 }}
                 onClick={handleCloseDueModal}
               >
-                {dueStatusInfo.hasAlertItem ? 'ปิดหน้าต่าง' : 'รับทราบ / ปิดหน้าต่าง'}
+                ปิดหน้าต่าง
               </button>
             </div>
           </div>
@@ -941,47 +918,47 @@ export default function MedicalEquipment() {
             style={{
               ...styles.modalContent,
               maxWidth: '380px',
-              padding: '28px 24px',
+              padding: '24px',
               textAlign: 'center',
-              borderRadius: '16px'
+              borderRadius: '12px'
             }}
             onClick={(e) => e.stopPropagation()}
           >
             <div
               style={{
-                width: '56px',
-                height: '56px',
+                width: '48px',
+                height: '48px',
                 borderRadius: '50%',
-                backgroundColor: '#ffe4e6',
-                color: '#e11d48',
+                backgroundColor: '#fef2f2',
+                color: '#ef4444',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: '24px',
-                margin: '0 auto 16px'
+                fontSize: '20px',
+                margin: '0 auto 12px'
               }}
             >
               🗑️
             </div>
-            <h3 style={{ fontSize: '17px', fontWeight: '600', color: '#000000', margin: '0 0 8px' }}>
+            <h3 style={{ fontSize: '16px', fontWeight: '500', color: '#0f172a', margin: '0 0 8px' }}>
               ยืนยันการลบรายการ
             </h3>
-            <p style={{ fontSize: '13px', color: '#475569', margin: '0 0 24px', lineHeight: 1.5 }}>
+            <p style={{ fontSize: '13px', color: '#64748b', margin: '0 0 20px', lineHeight: 1.5, fontWeight: '400' }}>
               คุณต้องการลบรายการเครื่องมือแพทย์ <br />
-              <strong style={{ color: '#000000' }}>"{deleteTarget.name || 'รายการนี้'}"</strong> ใช่หรือไม่?
+              <span style={{ color: '#0f172a' }}>"{deleteTarget.name || 'รายการนี้'}"</span> ใช่หรือไม่?
             </p>
 
-            <div style={{ display: 'flex', gap: '10px' }}>
+            <div style={{ display: 'flex', gap: '8px' }}>
               <button
                 type="button"
-                style={{ ...styles.secondaryBtn, flex: 1, height: '38px' }}
+                style={{ ...styles.secondaryBtn, flex: 1, height: '36px' }}
                 onClick={() => setDeleteTarget(null)}
               >
                 ยกเลิก
               </button>
               <button
                 type="button"
-                style={{ ...styles.deleteBtn, flex: 1, height: '38px' }}
+                style={{ ...styles.deleteBtn, flex: 1, height: '36px' }}
                 onClick={handleExecuteDelete}
                 disabled={deleting}
               >
@@ -997,7 +974,7 @@ export default function MedicalEquipment() {
         <div style={styles.modalOverlay}>
           <div style={styles.modalContent}>
             <div style={styles.modalHeader}>
-              <h3 style={{ margin: 0, fontSize: '15px', fontWeight: '500', color: '#000000' }}>
+              <h3 style={{ margin: 0, fontSize: '15px', fontWeight: '500', color: '#0f172a' }}>
                 ➕ เพิ่มเครื่องมือแพทย์รายการใหม่
               </h3>
               <button style={styles.closeBtn} onClick={() => setIsAddModalOpen(false)}>
@@ -1157,7 +1134,7 @@ const styles = {
     padding: '24px',
     backgroundColor: '#f8fafc',
     minHeight: '100vh',
-    fontFamily: '"Sarabun", "Prompt", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+    fontFamily: '"Sarabun", "Inter", system-ui, -apple-system, sans-serif',
     boxSizing: 'border-box'
   },
   header: {
@@ -1170,19 +1147,19 @@ const styles = {
   },
   title: {
     margin: 0,
-    fontSize: '22px',
-    fontWeight: '600',
-    color: '#000000'
+    fontSize: '20px',
+    fontWeight: '500',
+    color: '#0f172a'
   },
   subtitle: {
     margin: '4px 0 0 0',
     fontSize: '13px',
-    color: '#475569',
+    color: '#64748b',
     fontWeight: '400'
   },
   statsGrid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
     gap: '12px',
     marginBottom: '20px'
   },
@@ -1190,18 +1167,18 @@ const styles = {
     backgroundColor: '#ffffff',
     padding: '16px',
     borderRadius: '8px',
-    border: '1px solid #bfdbfe',
+    border: '1px solid #e2e8f0',
     boxShadow: '0 1px 2px rgba(0,0,0,0.02)',
     transition: 'all 0.15s ease'
   },
   statLabel: {
     fontSize: '12px',
-    color: '#000000',
-    fontWeight: '500'
+    color: '#475569',
+    fontWeight: '400'
   },
   statValue: {
-    fontSize: '24px',
-    fontWeight: '600',
+    fontSize: '22px',
+    fontWeight: '500',
     marginTop: '4px'
   },
   statSub: {
@@ -1214,7 +1191,7 @@ const styles = {
     backgroundColor: '#ffffff',
     padding: '12px 16px',
     borderRadius: '8px',
-    border: '1px solid #bfdbfe',
+    border: '1px solid #e2e8f0',
     marginBottom: '12px',
     display: 'flex',
     justifyContent: 'space-between',
@@ -1223,34 +1200,33 @@ const styles = {
     flexWrap: 'wrap'
   },
   editingBanner: {
-    backgroundColor: '#fef3c7',
-    border: '1px solid #fde68a',
+    backgroundColor: '#fffbeb',
+    border: '1px solid #fef3c7',
     borderRadius: '8px',
     padding: '10px 16px',
     marginBottom: '12px',
     display: 'flex',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    boxShadow: '0 2px 4px rgba(0,0,0,0.04)'
+    alignItems: 'center'
   },
   searchInput: {
     padding: '8px 12px',
     fontSize: '13px',
-    border: '1px solid #93c5fd',
+    border: '1px solid #cbd5e1',
     borderRadius: '6px',
     width: '260px',
     outline: 'none',
-    backgroundColor: '#f0f9ff',
-    color: '#000000',
+    backgroundColor: '#ffffff',
+    color: '#0f172a',
     fontWeight: '400'
   },
   selectInput: {
     padding: '8px 12px',
     fontSize: '13px',
-    border: '1px solid #93c5fd',
+    border: '1px solid #cbd5e1',
     borderRadius: '6px',
     backgroundColor: '#ffffff',
-    color: '#000000',
+    color: '#0f172a',
     outline: 'none',
     cursor: 'pointer',
     fontWeight: '400'
@@ -1258,9 +1234,9 @@ const styles = {
   tableCard: {
     backgroundColor: '#ffffff',
     borderRadius: '8px',
-    border: '1px solid #93c5fd',
+    border: '1px solid #e2e8f0',
     overflow: 'hidden',
-    boxShadow: '0 1px 3px rgba(0,0,0,0.04)'
+    boxShadow: '0 1px 2px rgba(0,0,0,0.02)'
   },
   table: {
     width: '100%',
@@ -1268,10 +1244,10 @@ const styles = {
     fontSize: '13px'
   },
   th: {
-    backgroundColor: '#dbeafe',
-    color: '#000000',
+    backgroundColor: '#f8fafc',
+    color: '#475569',
     padding: '10px 8px',
-    border: '1px solid #93c5fd',
+    borderBottom: '1px solid #e2e8f0',
     fontWeight: '500',
     textAlign: 'left',
     position: 'sticky',
@@ -1280,41 +1256,41 @@ const styles = {
   },
   td: {
     padding: '8px 8px',
-    border: '1px solid #e2e8f0',
-    color: '#000000',
+    borderBottom: '1px solid #f1f5f9',
+    color: '#0f172a',
     fontWeight: '400',
     verticalAlign: 'middle'
   },
   assetBadge: {
     fontFamily: 'monospace',
-    fontWeight: '500',
-    color: '#000000',
+    fontWeight: '400',
+    color: '#2563eb',
     backgroundColor: '#eff6ff',
     padding: '2px 6px',
     borderRadius: '4px',
-    border: '1px solid #bfdbfe',
+    border: '1px solid #dbeafe',
     display: 'inline-block'
   },
   riskBadge: {
     display: 'inline-block',
     padding: '2px 8px',
-    borderRadius: '12px',
+    borderRadius: '6px',
     fontSize: '11px',
-    fontWeight: '500'
+    fontWeight: '400'
   },
   riskHigh: {
-    backgroundColor: '#ffe4e6',
-    color: '#be123c',
+    backgroundColor: '#fef2f2',
+    color: '#991b1b',
     border: '1px solid #fecdd3'
   },
   riskMedium: {
-    backgroundColor: '#fef3c7',
-    color: '#b45309',
-    border: '1px solid #fde68a'
+    backgroundColor: '#fffbeb',
+    color: '#92400e',
+    border: '1px solid #fef3c7'
   },
   riskLow: {
-    backgroundColor: '#dcfce7',
-    color: '#15803d',
+    backgroundColor: '#f0fdf4',
+    color: '#166534',
     border: '1px solid #bbf7d0'
   },
   cellInput: {
@@ -1324,27 +1300,27 @@ const styles = {
     border: '1px solid #3b82f6',
     borderRadius: '4px',
     boxSizing: 'border-box',
-    color: '#000000',
+    color: '#0f172a',
     fontWeight: '400',
     backgroundColor: '#ffffff'
   },
   primaryBtn: {
-    backgroundColor: '#dbeafe',
-    color: '#000000',
-    border: '1px solid #60a5fa',
+    backgroundColor: '#2563eb',
+    color: '#ffffff',
+    border: 'none',
     padding: '8px 16px',
     borderRadius: '6px',
-    fontWeight: '500',
+    fontWeight: '400',
     fontSize: '13px',
     cursor: 'pointer'
   },
   secondaryBtn: {
-    backgroundColor: '#e2e8f0',
-    color: '#000000',
+    backgroundColor: '#ffffff',
+    color: '#475569',
     padding: '8px 16px',
-    border: 'none',
+    border: '1px solid #cbd5e1',
     borderRadius: '6px',
-    fontWeight: '500',
+    fontWeight: '400',
     fontSize: '13px',
     cursor: 'pointer'
   },
@@ -1355,17 +1331,17 @@ const styles = {
     borderRadius: '6px',
     padding: '6px 12px',
     fontSize: '12px',
-    fontWeight: '500',
+    fontWeight: '400',
     cursor: 'pointer'
   },
   saveBtn: {
-    backgroundColor: '#16a34a',
+    backgroundColor: '#059669',
     color: '#ffffff',
     border: 'none',
     borderRadius: '6px',
     padding: '6px 12px',
     fontSize: '12px',
-    fontWeight: '500',
+    fontWeight: '400',
     cursor: 'pointer'
   },
   cancelBtn: {
@@ -1375,14 +1351,14 @@ const styles = {
     borderRadius: '6px',
     padding: '6px 12px',
     fontSize: '12px',
-    fontWeight: '500',
+    fontWeight: '400',
     cursor: 'pointer'
   },
   loadingBox: {
     padding: '40px',
     textAlign: 'center',
-    color: '#000000',
-    fontSize: '14px'
+    color: '#64748b',
+    fontSize: '13.5px'
   },
   modalOverlay: {
     position: 'fixed',
@@ -1390,37 +1366,37 @@ const styles = {
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(15, 23, 42, 0.4)',
+    backgroundColor: 'rgba(15, 23, 42, 0.35)',
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 1000,
-    backdropFilter: 'blur(3px)'
+    backdropFilter: 'blur(2px)'
   },
   modalContent: {
     backgroundColor: '#ffffff',
     borderRadius: '12px',
     width: '100%',
-    maxWidth: '650px',
+    maxWidth: '620px',
     maxHeight: '90vh',
     overflowY: 'auto',
-    boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)',
-    border: '1px solid #bfdbfe'
+    boxShadow: '0 20px 25px -5px rgba(0,0,0,0.08)',
+    border: '1px solid #e2e8f0'
   },
   modalHeader: {
     padding: '16px 20px',
-    borderBottom: '1px solid #bfdbfe',
+    borderBottom: '1px solid #e2e8f0',
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#dbeafe'
+    backgroundColor: '#f8fafc'
   },
   closeBtn: {
     border: 'none',
     background: 'none',
-    fontSize: '18px',
+    fontSize: '16px',
     cursor: 'pointer',
-    color: '#000000'
+    color: '#64748b'
   },
   formGrid: {
     display: 'grid',
@@ -1430,8 +1406,8 @@ const styles = {
   label: {
     display: 'block',
     fontSize: '12px',
-    fontWeight: '500',
-    color: '#000000',
+    fontWeight: '400',
+    color: '#475569',
     marginBottom: '4px'
   },
   formInput: {
@@ -1442,7 +1418,7 @@ const styles = {
     borderRadius: '6px',
     boxSizing: 'border-box',
     outline: 'none',
-    color: '#000000'
+    color: '#0f172a'
   },
   modalFooter: {
     marginTop: '20px',
