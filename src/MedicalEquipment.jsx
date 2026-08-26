@@ -748,7 +748,7 @@ export default function MedicalEquipment() {
         )}
       </div>
 
-      {/* Pop-up Modal แจ้งเตือน (รองรับการลากคุมคัดลอกข้อความ) */}
+      {/* Pop-up Modal แจ้งเตือน (ดีไซน์เดิม สะอาดตา และลากคุมข้อความได้ตามปกติ) */}
       {isDueModalOpen && (
         <div style={styles.modalOverlay} onClick={handleCloseDueModal}>
           <div
@@ -829,14 +829,8 @@ export default function MedicalEquipment() {
                       return (
                         <tr
                           key={dueItem.id || idx}
-                          onClick={() => {
-                            // ถ้าผู้ใช้กำลังลากคุมข้อความเพื่อ Copy จะไม่สั่งย้ายหน้าหรือปิด Modal
-                            const selectedText = window.getSelection() ? window.getSelection().toString().trim() : '';
-                            if (!selectedText) {
-                              handleSelectSpecificItem(dueItem.asset_no || dueItem.asset_name);
-                            }
-                          }}
-                          title="คลิกเพื่อค้นหาในตารางหลัก หรือลากคุมเพื่อคัดลอกข้อความ"
+                          onClick={() => handleSelectSpecificItem(dueItem.asset_no || dueItem.asset_name)}
+                          title="คลิกเพื่อตรวจสอบรายการนี้ในตารางหลัก"
                           style={{
                             borderBottom: '1px solid #f1f5f9',
                             backgroundColor: '#ffffff',
@@ -848,7 +842,7 @@ export default function MedicalEquipment() {
                           <td style={{ padding: '10px 14px', fontFamily: 'monospace', color: '#2563eb', fontWeight: '400', userSelect: 'text' }}>
                             {dueItem.asset_no || '-'}
                           </td>
-                          <td style={{ padding: '10px 14px', color: '#334155', fontWeight: '400', userSelect: 'text' }}>
+                          <td style={{ padding: '10px 14px', color: '#334155', fontWeight: '400', userSelect: 'text', lineHeight: '1.4' }}>
                             {dueItem.asset_name}
                           </td>
                           <td style={{ padding: '10px 14px', color: '#64748b', fontWeight: '400', userSelect: 'text' }}>
