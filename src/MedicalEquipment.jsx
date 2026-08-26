@@ -30,7 +30,8 @@ export default function MedicalEquipment() {
   const [riskFilter, setRiskFilter] = useState('');
 
   // Dashboard Interactive Card & Date Filters State
-  const [cardFilter, setCardFilter] = useState('ALL'); // 'ALL' | 'High' | 'Medium' | 'Low' | 'NEXT_DUE_1'
+  // cardFilter: 'ALL' | 'High' | 'Medium' | 'Low' | 'NEXT_DUE_1' | 'ALERTED_DUE'
+  const [cardFilter, setCardFilter] = useState('ALL'); 
   const [monthFilter, setMonthFilter] = useState('');
   const [yearFilter, setYearFilter] = useState('');
 
@@ -61,7 +62,7 @@ export default function MedicalEquipment() {
     loadData();
   }, []);
 
-  // ฟังก์ชันแปลงข้อความวันที่แบบ DD/MM/YYYY หรือ -/MM/YYYY อย่างถูกต้อง
+  // แปลงข้อความวันที่แบบ DD/MM/YYYY หรือ -/MM/YYYY
   const parseDateStr = (dateStr) => {
     if (!dateStr) return null;
     let s = dateStr.trim();
@@ -82,7 +83,7 @@ export default function MedicalEquipment() {
     return null;
   };
 
-  // Helper สำหรับเช็กความตรงกันของเดือนและปีในช่อง Next Due 1 (รองรับทั้ง -/3/2027, 2/4/2026, warranty 11/2026)
+  // Helper สำหรับเช็กความตรงกันของเดือนและปีในช่อง Next Due 1
   const checkDateMatch = (dateStr, month, year) => {
     if (!dateStr || dateStr === '-') return false;
     const matches = String(dateStr).match(/\d+/g);
@@ -169,6 +170,18 @@ export default function MedicalEquipment() {
   const handleCloseDueModal = () => {
     sessionStorage.setItem('dismissed_due_alert', 'true');
     setIsDueModalOpen(false);
+  };
+
+  // สลับไปกรองเฉพาะรายการที่เข้าเงื่อนไขเตือนด่วน (<= 30 วัน) ในตาราง
+  const handleJumpToAlertedItems = () => {
+    setCardFilter('ALERTED_DUE');
+    handleCloseDueModal();
+  };
+
+  // ค้นหาและเจาะจงอุปกรณ์เดี่ยวจาก Modal
+  const handleSelectSpecificItem = (assetNoOrName) => {
+    setSearch(assetNoOrName);
+    handleCloseDueModal();
   };
 
   const loadData = async () => {
@@ -262,7 +275,7 @@ export default function MedicalEquipment() {
     setSaving(false);
   };
 
-  // รวมตัวกรองทั้งหมด (Search, Department, Risk, Card Selected, Month/Year จาก Next Due 1)
+  // รวมตัวกรองทั้งหมด
   const filteredItems = items.filter((item) => {
     const matchesSearch =
       (item.asset_no?.toLowerCase() || '').includes(search.toLowerCase()) ||
@@ -273,12 +286,33 @@ export default function MedicalEquipment() {
     const matchesDept = deptFilter ? item.department === deptFilter : true;
     const matchesRisk = riskFilter ? item.risk_level === riskFilter : true;
 
-    // Filter จากการคลิกการ์ด Dashboard
+    // Filter จากการคลิกการ์ด หรือการกดปุ่มจาก Modal แจ้งเตือน
     let matchesCard = true;
-    if (cardFilter === 'High') matchesCard = item.risk_level === 'High';
-    else if (cardFilter === 'Medium') matchesCard = item.risk_level === 'Medium';
-    else if (cardFilter === 'Low') matchesCard = item.risk_level === 'Low' || !item.risk_level;
-    else if (cardFilter === 'NEXT_DUE_1') matchesCard = Boolean(item.next_due_1 && item.next_due_1 !== '-');
+    if (cardFilter === 'High') {
+      matchesCard = item.risk_level === 'High';
+    } else if (cardFilter === 'Medium') {
+      matchesCard = item.risk_level === 'Medium';
+    } else if (cardFilter === 'Low') {
+      matchesCard = item.risk_level === 'Low' || !item.risk_level;
+    } else if (cardFilter === 'NEXT_DUE_1') {
+      matchesCard = Boolean(item.next_due_1 && item.next_due_1 !== '-');
+    } else if (cardFilter === 'ALERTED_DUE') {
+      // โหมดเฉพาะ: คัดเฉพาะรายการที่เลยกำหนด หรือกำลังจะถึงกำหนดภายใน 30 วันเท่านั้น
+      if (!item.next_due_1 || item.next_due_1 === '-') {
+        matchesCard = false;
+      } else {
+        const targetDate = parseDateStr(item.next_due_1);
+        if (!targetDate) {
+          matchesCard = false;
+        } else {
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          const diffTime = targetDate.getTime() - today.getTime();
+          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+          matchesCard = diffDays <= 30;
+        }
+      }
+    }
 
     // Filter จากเดือน/ปี (เช็กเฉพาะช่อง Next Due 1 อย่างเดียว)
     let matchesMonthYear = true;
@@ -754,7 +788,7 @@ export default function MedicalEquipment() {
         )}
       </div>
 
-      {/* Pop-up Modal แจ้งเตือนแบบแสดงครบทุกรายการ */}
+      {/* Pop-up Modal แจ้งเตือนแบบ interactive */}
       {isDueModalOpen && (
         <div style={styles.modalOverlay} onClick={handleCloseDueModal}>
           <div
@@ -804,7 +838,7 @@ export default function MedicalEquipment() {
               {dueStatusInfo.text}
             </div>
 
-            {/* แสดงตารางรายการแจ้งเตือนทั้งหมด (ถ้ามี) */}
+            {/* แสดงตารางรายการแจ้งเตือนทั้งหมด (ถ้ามี) - สามารถคลิกที่แถวเพื่อไปที่อุปกรณ์ชิ้นนั้นได้เลย */}
             {dueStatusInfo.hasAlertItem && dueModalItems.length > 0 && (
               <div style={{ maxHeight: '45vh', overflowY: 'auto', border: '1px solid #e2e8f0', borderRadius: '10px' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
@@ -821,8 +855,19 @@ export default function MedicalEquipment() {
                     {dueModalItems.map((dueItem, idx) => {
                       const isOverdue = dueItem.diffDays <= 0;
                       return (
-                        <tr key={dueItem.id || idx} style={{ borderBottom: '1px solid #e2e8f0', backgroundColor: idx % 2 === 0 ? '#ffffff' : '#f8fafc' }}>
-                          <td style={{ padding: '10px 12px', fontFamily: 'monospace', fontWeight: 'bold' }}>{dueItem.asset_no || '-'}</td>
+                        <tr
+                          key={dueItem.id || idx}
+                          onClick={() => handleSelectSpecificItem(dueItem.asset_no || dueItem.asset_name)}
+                          title="คลิกเพื่อไปรายการนี้ในตารางหลัก"
+                          style={{
+                            borderBottom: '1px solid #e2e8f0',
+                            backgroundColor: idx % 2 === 0 ? '#ffffff' : '#f8fafc',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          <td style={{ padding: '10px 12px', fontFamily: 'monospace', fontWeight: 'bold', color: '#2563eb', textDecoration: 'underline' }}>
+                            {dueItem.asset_no || '-'}
+                          </td>
                           <td style={{ padding: '10px 12px', color: '#0f172a' }}>{dueItem.asset_name}</td>
                           <td style={{ padding: '10px 12px', color: '#475569' }}>{dueItem.department || '-'}</td>
                           <td style={{ padding: '10px 12px', fontFamily: 'monospace', fontWeight: 'bold', color: isOverdue ? '#dc2626' : '#d97706' }}>
@@ -851,21 +896,38 @@ export default function MedicalEquipment() {
               </div>
             )}
 
-            <div style={{ marginTop: '24px', display: 'flex', justifyContent: 'flex-end' }}>
+            <div style={{ marginTop: '24px', display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+              {dueStatusInfo.hasAlertItem && (
+                <button
+                  style={{
+                    backgroundColor: '#2563eb',
+                    color: '#ffffff',
+                    border: 'none',
+                    borderRadius: '8px',
+                    padding: '10px 20px',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    cursor: 'pointer'
+                  }}
+                  onClick={handleJumpToAlertedItems}
+                >
+                  🔍 ดูรายการที่ต้องดำเนินการในตาราง ({dueModalItems.length} รายการ)
+                </button>
+              )}
               <button
                 style={{
-                  backgroundColor: dueStatusInfo.themeColor,
-                  color: '#ffffff',
+                  backgroundColor: dueStatusInfo.hasAlertItem ? '#e2e8f0' : dueStatusInfo.themeColor,
+                  color: dueStatusInfo.hasAlertItem ? '#0f172a' : '#ffffff',
                   border: 'none',
                   borderRadius: '8px',
                   padding: '10px 24px',
-                  fontSize: '15px',
+                  fontSize: '14px',
                   fontWeight: '600',
                   cursor: 'pointer'
                 }}
                 onClick={handleCloseDueModal}
               >
-                รับทราบ / ปิดหน้าต่าง
+                {dueStatusInfo.hasAlertItem ? 'ปิดหน้าต่าง' : 'รับทราบ / ปิดหน้าต่าง'}
               </button>
             </div>
           </div>
