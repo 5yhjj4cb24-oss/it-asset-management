@@ -142,7 +142,10 @@ function getAssetTypeIcon(typeStr) {
 function getSoftwareExpireStatus(expireStr) {
   if (!expireStr) return { statusKey: 'unknown', label: 'ไม่ระบุข้อมูล', color: '#64748b', bg: '#f1f5f9' }
   const str = String(expireStr).trim()
-  if (str.toLowerCase().includes('lifetime')) {
+  if (!str || str === '-' || str.toLowerCase() === 'n/a' || str.toLowerCase() === 'null') {
+    return { statusKey: 'unknown', label: 'ไม่ระบุข้อมูล', color: '#64748b', bg: '#f1f5f9' }
+  }
+  if (str.toLowerCase().includes('lifetime') || str.includes('ตลอดชีพ')) {
     return { statusKey: 'lifetime', label: 'ตลอดชีพ (Lifetime)', color: '#15803d', bg: '#dcfce7' }
   }
 
@@ -179,7 +182,7 @@ function getSoftwareExpireStatus(expireStr) {
     }
   }
 
-  return { statusKey: 'custom', label: expireStr, color: '#0369a1', bg: '#e0f2fe' }
+  return { statusKey: 'unknown', label: 'ไม่ระบุข้อมูล', color: '#64748b', bg: '#f1f5f9' }
 }
 
 const emptyHardwareForm = {
@@ -1149,6 +1152,7 @@ function MainAssetApp() {
   const swExpiringList = softwareList.filter(item => getSoftwareExpireStatus(item['Expire Date'] || item.expire_date).statusKey === 'expiring')
   const swLifetimeCount = softwareList.filter(item => getSoftwareExpireStatus(item['Expire Date'] || item.expire_date).statusKey === 'lifetime').length
   const swActiveCount = softwareList.filter(item => getSoftwareExpireStatus(item['Expire Date'] || item.expire_date).statusKey === 'active').length
+  const swUnknownCount = softwareList.filter(item => getSoftwareExpireStatus(item['Expire Date'] || item.expire_date).statusKey === 'unknown').length
 
   const deptCountMap = {}
   allRawAssets.forEach(item => {
@@ -1888,25 +1892,30 @@ function MainAssetApp() {
                   <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 400 }}>การจำแนกสถานะสัญญา</span>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '10px' }}>
                   <div style={{ backgroundColor: '#fef2f2', border: '1px solid #fecaca', padding: '12px', borderRadius: '6px' }}>
-                    <div style={{ fontSize: '12px', color: '#9f1239', fontWeight: 500 }}>หมดอายุ (Expired)</div>
-                    <div style={{ fontSize: '20px', fontWeight: 700, color: '#9f1239', marginTop: '4px' }}>{swExpiredList.length} <span style={{ fontSize: '11px', fontWeight: 400 }}>รายการ</span></div>
+                    <div style={{ fontSize: '11px', color: '#9f1239', fontWeight: 500 }}>หมดอายุ (Expired)</div>
+                    <div style={{ fontSize: '18px', fontWeight: 700, color: '#9f1239', marginTop: '4px' }}>{swExpiredList.length} <span style={{ fontSize: '11px', fontWeight: 400 }}>รายการ</span></div>
                   </div>
 
                   <div style={{ backgroundColor: '#fffbeb', border: '1px solid #fde68a', padding: '12px', borderRadius: '6px' }}>
-                    <div style={{ fontSize: '12px', color: '#92400e', fontWeight: 500 }}>ใกล้หมดอายุ (Expiring in 60 days)</div>
-                    <div style={{ fontSize: '20px', fontWeight: 700, color: '#92400e', marginTop: '4px' }}>{swExpiringList.length} <span style={{ fontSize: '11px', fontWeight: 400 }}>รายการ</span></div>
+                    <div style={{ fontSize: '11px', color: '#92400e', fontWeight: 500 }}>ใกล้หมดอายุ (in 60d)</div>
+                    <div style={{ fontSize: '18px', fontWeight: 700, color: '#92400e', marginTop: '4px' }}>{swExpiringList.length} <span style={{ fontSize: '11px', fontWeight: 400 }}>รายการ</span></div>
                   </div>
 
                   <div style={{ backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0', padding: '12px', borderRadius: '6px' }}>
-                    <div style={{ fontSize: '12px', color: '#166534', fontWeight: 500 }}>ตลอดชีพ (Lifetime)</div>
-                    <div style={{ fontSize: '20px', fontWeight: 700, color: '#166534', marginTop: '4px' }}>{swLifetimeCount} <span style={{ fontSize: '11px', fontWeight: 400 }}>รายการ</span></div>
+                    <div style={{ fontSize: '11px', color: '#166534', fontWeight: 500 }}>ตลอดชีพ (Lifetime)</div>
+                    <div style={{ fontSize: '18px', fontWeight: 700, color: '#166534', marginTop: '4px' }}>{swLifetimeCount} <span style={{ fontSize: '11px', fontWeight: 400 }}>รายการ</span></div>
                   </div>
 
                   <div style={{ backgroundColor: '#f0f9ff', border: '1px solid #bae6fd', padding: '12px', borderRadius: '6px' }}>
-                    <div style={{ fontSize: '12px', color: '#0369a1', fontWeight: 500 }}>ปกติ (Active)</div>
-                    <div style={{ fontSize: '20px', fontWeight: 700, color: '#0369a1', marginTop: '4px' }}>{swActiveCount} <span style={{ fontSize: '11px', fontWeight: 400 }}>รายการ</span></div>
+                    <div style={{ fontSize: '11px', color: '#0369a1', fontWeight: 500 }}>ปกติ (Active)</div>
+                    <div style={{ fontSize: '18px', fontWeight: 700, color: '#0369a1', marginTop: '4px' }}>{swActiveCount} <span style={{ fontSize: '11px', fontWeight: 400 }}>รายการ</span></div>
+                  </div>
+
+                  <div style={{ backgroundColor: '#f8fafc', border: '1px solid #e2e8f0', padding: '12px', borderRadius: '6px' }}>
+                    <div style={{ fontSize: '11px', color: '#64748b', fontWeight: 500 }}>ไม่ระบุข้อมูล (Unknown)</div>
+                    <div style={{ fontSize: '18px', fontWeight: 700, color: '#475569', marginTop: '4px' }}>{swUnknownCount} <span style={{ fontSize: '11px', fontWeight: 400 }}>รายการ</span></div>
                   </div>
                 </div>
               </div>
