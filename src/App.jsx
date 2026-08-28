@@ -2030,7 +2030,7 @@ function MainAssetApp() {
 
             </div>
 
-            {/* Bottom Section: Top Departments (Vertical Column Chart) & Top Vendors (Donut/Pie Chart) */}
+            {/* Bottom Section: Top Departments & Top Vendors */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(450px, 1fr))', gap: '20px' }}>
               
               {/* Top Departments - Vertical Bar Chart */}
@@ -2039,46 +2039,60 @@ function MainAssetApp() {
                   5 แผนกที่มีฮาร์ดแวร์สูงสุด (จำนวนรายการ)
                 </h3>
 
-                <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: '12px', height: '200px', paddingTop: '24px', paddingBottom: '8px', borderBottom: '2px solid #f1f5f9' }}>
-                  {topDepts.map(([deptName, count], idx) => {
-                    const maxCount = topDepts[0]?.[1] || 1
-                    const heightPct = Math.max(Math.round((count / maxCount) * 100), 12)
+                {(() => {
+                  const deptGradients = [
+                    'linear-gradient(180deg, #6366f1 0%, #4338ca 100%)',
+                    'linear-gradient(180deg, #06b6d4 0%, #0e7490 100%)',
+                    'linear-gradient(180deg, #10b981 0%, #047857 100%)',
+                    'linear-gradient(180deg, #f59e0b 0%, #b45309 100%)',
+                    'linear-gradient(180deg, #f43f5e 0%, #be123c 100%)'
+                  ]
 
-                    return (
-                      <div key={idx} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1, height: '100%', justifyContent: 'flex-end' }}>
-                        <span style={{ fontSize: '12px', fontWeight: 700, color: '#4f46e5', marginBottom: '6px' }}>
-                          {count}
-                        </span>
-                        <div 
-                          style={{ 
-                            width: '100%', 
-                            maxWidth: '44px', 
-                            height: `${heightPct}%`, 
-                            background: 'linear-gradient(180deg, #818cf8 0%, #4f46e5 100%)', 
-                            borderRadius: '6px 6px 0 0',
-                            transition: 'height 0.3s ease'
-                          }} 
-                        />
-                        <span 
-                          style={{ 
-                            fontSize: '11px', 
-                            fontWeight: 600, 
-                            color: '#475569', 
-                            marginTop: '10px', 
-                            textAlign: 'center', 
-                            whiteSpace: 'nowrap', 
-                            overflow: 'hidden', 
-                            textOverflow: 'ellipsis', 
-                            width: '100%' 
-                          }} 
-                          title={deptName}
-                        >
-                          {deptName}
-                        </span>
-                      </div>
-                    )
-                  })}
-                </div>
+                  return (
+                    <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: '12px', height: '200px', paddingTop: '24px', paddingBottom: '8px', borderBottom: '2px solid #f1f5f9' }}>
+                      {topDepts.map(([deptName, count], idx) => {
+                        const maxCount = topDepts[0]?.[1] || 1
+                        const heightPct = Math.max(Math.round((count / maxCount) * 100), 12)
+                        const barGradient = deptGradients[idx % deptGradients.length]
+
+                        return (
+                          <div key={idx} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1, height: '100%', justifyContent: 'flex-end' }}>
+                            <span style={{ fontSize: '12px', fontWeight: 700, color: '#0f172a', marginBottom: '6px' }}>
+                              {count}
+                            </span>
+                            <div 
+                              style={{ 
+                                width: '100%', 
+                                maxWidth: '44px', 
+                                height: `${heightPct}%`, 
+                                background: barGradient, 
+                                borderRadius: '6px 6px 0 0',
+                                transition: 'height 0.3s ease',
+                                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.08)'
+                              }} 
+                            />
+                            <span 
+                              style={{ 
+                                fontSize: '11px', 
+                                fontWeight: 600, 
+                                color: '#475569', 
+                                marginTop: '10px', 
+                                textAlign: 'center', 
+                                whiteSpace: 'nowrap', 
+                                overflow: 'hidden', 
+                                textOverflow: 'ellipsis', 
+                                width: '100%' 
+                              }} 
+                              title={deptName}
+                            >
+                              {deptName}
+                            </span>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  )
+                })()}
               </div>
 
               {/* Top Vendors - Pie / Donut Chart */}
@@ -2088,7 +2102,7 @@ function MainAssetApp() {
                 </h3>
 
                 {(() => {
-                  const vendorColors = ['#0284c7', '#38bdf8', '#818cf8', '#a855f7', '#cbd5e1']
+                  const vendorColors = ['#0284c7', '#ea580c', '#8b5cf6', '#10b981', '#f43f5e']
                   const totalVendorCount = topVendors.reduce((sum, [, count]) => sum + count, 0) || 1
                   
                   let cumulativePercent = 0
