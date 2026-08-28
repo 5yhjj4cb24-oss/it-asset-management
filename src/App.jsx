@@ -178,7 +178,7 @@ function getSoftwareExpireStatus(expireStr) {
     } else if (diffDays <= 60) {
       return { statusKey: 'expiring', label: `ใกล้หมดอายุ (${formattedDate})`, color: '#92400e', bg: '#fef3c7' }
     } else {
-      return { statusKey: 'active', label: `ปกติ (${formattedDate})`, color: '#15803d', bg: '#dcfce7' }
+      return { statusKey: 'active', label: `ปกติ (${formattedDate})`, color: '#0369a1', bg: '#e0f2fe' }
     }
   }
 
@@ -1785,193 +1785,377 @@ function MainAssetApp() {
 
         {/* VIEW 0: ANALYTICS DASHBOARD */}
         {mainTab === 'dashboard' && (
-          <div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', marginBottom: '20px' }}>
-              <div style={{ backgroundColor: '#ffffff', borderRadius: '8px', padding: '16px', boxShadow: '0 1px 3px rgba(0,0,0,0.02)', border: '1px solid #e2e8f0' }}>
-                <span style={{ color: '#64748b', fontWeight: 400, fontSize: '12px' }}>จำนวนอุปกรณ์ฮาร์ดแวร์ทั้งหมด</span>
-                <div style={{ marginTop: '8px', display: 'flex', alignItems: 'baseline', gap: '8px' }}>
-                  <span style={{ color: '#0f172a', fontWeight: 700, fontSize: '24px' }}>{allRawAssets.length.toLocaleString()}</span>
-                  <span style={{ color: '#64748b', fontSize: '12px', fontWeight: 400 }}>รายการ</span>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            
+            {/* Top KPI Summary Cards */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '16px' }}>
+              
+              {/* Card 1: Hardware */}
+              <div style={{
+                backgroundColor: '#ffffff',
+                borderRadius: '14px',
+                padding: '20px',
+                border: '1px solid #f1f5f9',
+                boxShadow: '0 4px 20px -2px rgba(15, 23, 42, 0.05)',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                position: 'relative',
+                overflow: 'hidden'
+              }}>
+                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '4px', background: 'linear-gradient(90deg, #6366f1, #818cf8)' }} />
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                  <div>
+                    <span style={{ color: '#64748b', fontWeight: 500, fontSize: '12px', letterSpacing: '0.2px' }}>ฮาร์ดแวร์ทั้งหมด</span>
+                    <div style={{ marginTop: '6px', display: 'flex', alignItems: 'baseline', gap: '6px' }}>
+                      <span style={{ color: '#0f172a', fontWeight: 800, fontSize: '28px', letterSpacing: '-0.5px' }}>{allRawAssets.length.toLocaleString()}</span>
+                      <span style={{ color: '#94a3b8', fontSize: '12px', fontWeight: 500 }}>รายการ</span>
+                    </div>
+                  </div>
+                  <div style={{ width: '40px', height: '40px', borderRadius: '10px', backgroundColor: '#eef2ff', color: '#4f46e5', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px' }}>📦</div>
                 </div>
-                <div style={{ marginTop: '8px', fontSize: '11px', color: hwAgeOldCount > 0 ? '#e11d48' : '#166534', fontWeight: 400 }}>
-                  ครบรอบการเปลี่ยนเครื่อง: {hwAgeOldCount} รายการ ({allRawAssets.length ? Math.round((hwAgeOldCount / allRawAssets.length) * 100) : 0}%)
-                </div>
-              </div>
-
-              <div style={{ backgroundColor: '#ffffff', borderRadius: '8px', padding: '16px', boxShadow: '0 1px 3px rgba(0,0,0,0.02)', border: '1px solid #e2e8f0' }}>
-                <span style={{ color: '#64748b', fontWeight: 400, fontSize: '12px' }}>จำนวนลิขสิทธิ์ซอฟต์แวร์ทั้งหมด</span>
-                <div style={{ marginTop: '8px', display: 'flex', alignItems: 'baseline', gap: '8px' }}>
-                  <span style={{ color: '#0f172a', fontWeight: 700, fontSize: '24px' }}>{totalSoftwareLicenseCount.toLocaleString()}</span>
-                  <span style={{ color: '#64748b', fontSize: '12px', fontWeight: 400 }}>สิทธิ์</span>
-                </div>
-                <div style={{ marginTop: '8px', fontSize: '11px', color: '#0369a1', fontWeight: 400 }}>
-                  สิทธิ์ประเภทตลอดชีพ (Lifetime): {swLifetimeCount} รายการ
-                </div>
-              </div>
-
-              <div style={{ backgroundColor: '#ffffff', borderRadius: '8px', padding: '16px', boxShadow: '0 1px 3px rgba(0,0,0,0.02)', border: '1px solid #e2e8f0' }}>
-                <span style={{ color: '#64748b', fontWeight: 400, fontSize: '12px' }}>จำนวนอุปกรณ์เช่า (Leasing)</span>
-                <div style={{ marginTop: '8px', display: 'flex', alignItems: 'baseline', gap: '8px' }}>
-                  <span style={{ color: '#0f172a', fontWeight: 700, fontSize: '24px' }}>{leasingList.length.toLocaleString()}</span>
-                  <span style={{ color: '#64748b', fontSize: '12px', fontWeight: 400 }}>รายการ</span>
-                </div>
-                <div style={{ marginTop: '8px', fontSize: '11px', color: '#6b21a8', fontWeight: 400 }}>
-                  อุปกรณ์ภายใต้สัญญาเช่าองค์กร
-                </div>
-              </div>
-
-              <div style={{ backgroundColor: '#ffffff', borderRadius: '8px', padding: '16px', boxShadow: '0 1px 3px rgba(0,0,0,0.02)', border: '1px solid #e2e8f0' }}>
-                <span style={{ color: '#64748b', fontWeight: 400, fontSize: '12px' }}>การจัดการความเสี่ยงลิขสิทธิ์</span>
-                <div style={{ marginTop: '8px', display: 'flex', alignItems: 'baseline', gap: '8px' }}>
-                  <span style={{ color: (swExpiredList.length + swExpiringList.length) > 0 ? '#b91c1c' : '#166534', fontWeight: 700, fontSize: '24px' }}>
-                    {swExpiredList.length + swExpiringList.length}
+                <div style={{ marginTop: '16px', paddingTop: '12px', borderTop: '1px solid #f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: '11px', color: '#64748b' }}>ครบรอบเปลี่ยนเครื่อง</span>
+                  <span style={{ fontSize: '11px', fontWeight: 600, color: hwAgeOldCount > 0 ? '#e11d48' : '#10b981', backgroundColor: hwAgeOldCount > 0 ? '#ffe4e6' : '#dcfce7', padding: '2px 8px', borderRadius: '20px' }}>
+                    {hwAgeOldCount} รายการ ({allRawAssets.length ? Math.round((hwAgeOldCount / allRawAssets.length) * 100) : 0}%)
                   </span>
-                  <span style={{ color: '#64748b', fontSize: '12px', fontWeight: 400 }}>รายการ</span>
-                </div>
-                <div style={{ marginTop: '8px', fontSize: '11px', color: swExpiredList.length > 0 ? '#dc2626' : '#d97706', fontWeight: 400 }}>
-                  หมดอายุแล้ว: {swExpiredList.length} | ใกล้หมดอายุ: {swExpiringList.length}
                 </div>
               </div>
+
+              {/* Card 2: Software */}
+              <div style={{
+                backgroundColor: '#ffffff',
+                borderRadius: '14px',
+                padding: '20px',
+                border: '1px solid #f1f5f9',
+                boxShadow: '0 4px 20px -2px rgba(15, 23, 42, 0.05)',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                position: 'relative',
+                overflow: 'hidden'
+              }}>
+                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '4px', background: 'linear-gradient(90deg, #0284c7, #38bdf8)' }} />
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                  <div>
+                    <span style={{ color: '#64748b', fontWeight: 500, fontSize: '12px', letterSpacing: '0.2px' }}>ลิขสิทธิ์ซอฟต์แวร์รวม</span>
+                    <div style={{ marginTop: '6px', display: 'flex', alignItems: 'baseline', gap: '6px' }}>
+                      <span style={{ color: '#0f172a', fontWeight: 800, fontSize: '28px', letterSpacing: '-0.5px' }}>{totalSoftwareLicenseCount.toLocaleString()}</span>
+                      <span style={{ color: '#94a3b8', fontSize: '12px', fontWeight: 500 }}>สิทธิ์</span>
+                    </div>
+                  </div>
+                  <div style={{ width: '40px', height: '40px', borderRadius: '10px', backgroundColor: '#e0f2fe', color: '#0284c7', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px' }}>💻</div>
+                </div>
+                <div style={{ marginTop: '16px', paddingTop: '12px', borderTop: '1px solid #f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: '11px', color: '#64748b' }}>สิทธิ์ตลอดชีพ (Lifetime)</span>
+                  <span style={{ fontSize: '11px', fontWeight: 600, color: '#0369a1', backgroundColor: '#e0f2fe', padding: '2px 8px', borderRadius: '20px' }}>
+                    {swLifetimeCount} รายการ
+                  </span>
+                </div>
+              </div>
+
+              {/* Card 3: Leasing */}
+              <div style={{
+                backgroundColor: '#ffffff',
+                borderRadius: '14px',
+                padding: '20px',
+                border: '1px solid #f1f5f9',
+                boxShadow: '0 4px 20px -2px rgba(15, 23, 42, 0.05)',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                position: 'relative',
+                overflow: 'hidden'
+              }}>
+                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '4px', background: 'linear-gradient(90deg, #9333ea, #c084fc)' }} />
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                  <div>
+                    <span style={{ color: '#64748b', fontWeight: 500, fontSize: '12px', letterSpacing: '0.2px' }}>อุปกรณ์เช่า (Leasing)</span>
+                    <div style={{ marginTop: '6px', display: 'flex', alignItems: 'baseline', gap: '6px' }}>
+                      <span style={{ color: '#0f172a', fontWeight: 800, fontSize: '28px', letterSpacing: '-0.5px' }}>{leasingList.length.toLocaleString()}</span>
+                      <span style={{ color: '#94a3b8', fontSize: '12px', fontWeight: 500 }}>รายการ</span>
+                    </div>
+                  </div>
+                  <div style={{ width: '40px', height: '40px', borderRadius: '10px', backgroundColor: '#f3e8ff', color: '#9333ea', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px' }}>📋</div>
+                </div>
+                <div style={{ marginTop: '16px', paddingTop: '12px', borderTop: '1px solid #f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: '11px', color: '#64748b' }}>สัญญาเช่าองค์กร</span>
+                  <span style={{ fontSize: '11px', fontWeight: 600, color: '#6b21a8', backgroundColor: '#f3e8ff', padding: '2px 8px', borderRadius: '20px' }}>Active</span>
+                </div>
+              </div>
+
+              {/* Card 4: Risk */}
+              <div style={{
+                backgroundColor: '#ffffff',
+                borderRadius: '14px',
+                padding: '20px',
+                border: '1px solid #f1f5f9',
+                boxShadow: '0 4px 20px -2px rgba(15, 23, 42, 0.05)',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                position: 'relative',
+                overflow: 'hidden'
+              }}>
+                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '4px', background: 'linear-gradient(90deg, #f43f5e, #fb7185)' }} />
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                  <div>
+                    <span style={{ color: '#64748b', fontWeight: 500, fontSize: '12px', letterSpacing: '0.2px' }}>ความเสี่ยงลิขสิทธิ์</span>
+                    <div style={{ marginTop: '6px', display: 'flex', alignItems: 'baseline', gap: '6px' }}>
+                      <span style={{ color: (swExpiredList.length + swExpiringList.length) > 0 ? '#e11d48' : '#10b981', fontWeight: 800, fontSize: '28px', letterSpacing: '-0.5px' }}>
+                        {swExpiredList.length + swExpiringList.length}
+                      </span>
+                      <span style={{ color: '#94a3b8', fontSize: '12px', fontWeight: 500 }}>รายการ</span>
+                    </div>
+                  </div>
+                  <div style={{ width: '40px', height: '40px', borderRadius: '10px', backgroundColor: '#ffe4e6', color: '#e11d48', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px' }}>⚠️</div>
+                </div>
+                <div style={{ marginTop: '16px', paddingTop: '12px', borderTop: '1px solid #f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: '11px', color: '#64748b' }}>หมดอายุ / ใกล้หมด</span>
+                  <span style={{ fontSize: '11px', fontWeight: 600, color: '#9f1239', backgroundColor: '#ffe4e6', padding: '2px 8px', borderRadius: '20px' }}>
+                    หมดแล้ว: {swExpiredList.length} | ใกล้หมด: {swExpiringList.length}
+                  </span>
+                </div>
+              </div>
+
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '20px' }}>
-              <div style={{ backgroundColor: '#ffffff', borderRadius: '8px', padding: '20px', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.02)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                  <span style={{ fontSize: '14px', fontWeight: 600, color: '#0f172a' }}>วิเคราะห์วงจรชีวิตฮาร์ดแวร์ (Hardware Lifecycle)</span>
-                  <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 400 }}>การประเมินตามอายุการใช้งาน</span>
+            {/* Middle Section: Lifecycle & Health */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(450px, 1fr))', gap: '20px' }}>
+              
+              {/* Hardware Lifecycle Progress */}
+              <div style={{ backgroundColor: '#ffffff', borderRadius: '14px', padding: '24px', border: '1px solid #f1f5f9', boxShadow: '0 4px 20px -2px rgba(15, 23, 42, 0.05)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                  <div>
+                    <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#0f172a', margin: 0 }}>วงจรชีวิตฮาร์ดแวร์ (Hardware Lifecycle)</h3>
+                    <p style={{ fontSize: '12px', color: '#64748b', margin: '2px 0 0 0' }}>วิเคราะห์ตามอายุการใช้งานอุปกรณ์</p>
+                  </div>
+                  <span style={{ fontSize: '11px', fontWeight: 600, color: '#4f46e5', backgroundColor: '#eef2ff', padding: '4px 10px', borderRadius: '20px' }}>Total {allRawAssets.length}</span>
                 </div>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                   <div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '4px' }}>
-                      <span style={{ color: '#e11d48', fontWeight: 500 }}>ควรวางแผนทดแทน (อายุ ≥ 4 ปี)</span>
-                      <span style={{ fontWeight: 600, color: '#0f172a' }}>{hwAgeOldCount} รายการ ({allRawAssets.length ? Math.round((hwAgeOldCount / allRawAssets.length) * 100) : 0}%)</span>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '6px' }}>
+                      <span style={{ color: '#e11d48', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#f43f5e' }}></span>
+                        ควรวางแผนทดแทน (อายุ ≥ 4 ปี)
+                      </span>
+                      <span style={{ fontWeight: 700, color: '#0f172a' }}>{hwAgeOldCount} รายการ <span style={{ color: '#94a3b8', fontWeight: 400 }}>({allRawAssets.length ? Math.round((hwAgeOldCount / allRawAssets.length) * 100) : 0}%)</span></span>
                     </div>
-                    <div style={{ width: '100%', height: '8px', backgroundColor: '#f1f5f9', borderRadius: '4px', overflow: 'hidden' }}>
-                      <div style={{ width: `${allRawAssets.length ? (hwAgeOldCount / allRawAssets.length) * 100 : 0}%`, height: '100%', backgroundColor: '#f43f5e' }}></div>
+                    <div style={{ width: '100%', height: '10px', backgroundColor: '#f8fafc', borderRadius: '999px', overflow: 'hidden', border: '1px solid #f1f5f9' }}>
+                      <div style={{ width: `${allRawAssets.length ? (hwAgeOldCount / allRawAssets.length) * 100 : 0}%`, height: '100%', background: 'linear-gradient(90deg, #f43f5e, #fb7185)', borderRadius: '999px' }}></div>
                     </div>
                   </div>
 
                   <div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '4px' }}>
-                      <span style={{ color: '#d97706', fontWeight: 500 }}>ระยะเวลาใช้งานปานกลาง (อายุ 2 - 4 ปี)</span>
-                      <span style={{ fontWeight: 600, color: '#0f172a' }}>{hwAgeMidCount} รายการ ({allRawAssets.length ? Math.round((hwAgeMidCount / allRawAssets.length) * 100) : 0}%)</span>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '6px' }}>
+                      <span style={{ color: '#d97706', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#f59e0b' }}></span>
+                        ระยะเวลาใช้งานปานกลาง (อายุ 2 - 4 ปี)
+                      </span>
+                      <span style={{ fontWeight: 700, color: '#0f172a' }}>{hwAgeMidCount} รายการ <span style={{ color: '#94a3b8', fontWeight: 400 }}>({allRawAssets.length ? Math.round((hwAgeMidCount / allRawAssets.length) * 100) : 0}%)</span></span>
                     </div>
-                    <div style={{ width: '100%', height: '8px', backgroundColor: '#f1f5f9', borderRadius: '4px', overflow: 'hidden' }}>
-                      <div style={{ width: `${allRawAssets.length ? (hwAgeMidCount / allRawAssets.length) * 100 : 0}%`, height: '100%', backgroundColor: '#f59e0b' }}></div>
+                    <div style={{ width: '100%', height: '10px', backgroundColor: '#f8fafc', borderRadius: '999px', overflow: 'hidden', border: '1px solid #f1f5f9' }}>
+                      <div style={{ width: `${allRawAssets.length ? (hwAgeMidCount / allRawAssets.length) * 100 : 0}%`, height: '100%', background: 'linear-gradient(90deg, #f59e0b, #fbbf24)', borderRadius: '999px' }}></div>
                     </div>
                   </div>
 
                   <div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '4px' }}>
-                      <span style={{ color: '#166534', fontWeight: 500 }}>ระยะเริ่มต้นการใช้งาน (อายุ &lt; 2 ปี)</span>
-                      <span style={{ fontWeight: 600, color: '#0f172a' }}>{hwAgeNewCount} รายการ ({allRawAssets.length ? Math.round((hwAgeNewCount / allRawAssets.length) * 100) : 0}%)</span>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '6px' }}>
+                      <span style={{ color: '#166534', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#10b981' }}></span>
+                        ระยะเริ่มต้นการใช้งาน (อายุ &lt; 2 ปี)
+                      </span>
+                      <span style={{ fontWeight: 700, color: '#0f172a' }}>{hwAgeNewCount} รายการ <span style={{ color: '#94a3b8', fontWeight: 400 }}>({allRawAssets.length ? Math.round((hwAgeNewCount / allRawAssets.length) * 100) : 0}%)</span></span>
                     </div>
-                    <div style={{ width: '100%', height: '8px', backgroundColor: '#f1f5f9', borderRadius: '4px', overflow: 'hidden' }}>
-                      <div style={{ width: `${allRawAssets.length ? (hwAgeNewCount / allRawAssets.length) * 100 : 0}%`, height: '100%', backgroundColor: '#10b981' }}></div>
+                    <div style={{ width: '100%', height: '10px', backgroundColor: '#f8fafc', borderRadius: '999px', overflow: 'hidden', border: '1px solid #f1f5f9' }}>
+                      <div style={{ width: `${allRawAssets.length ? (hwAgeNewCount / allRawAssets.length) * 100 : 0}%`, height: '100%', background: 'linear-gradient(90deg, #10b981, #34d399)', borderRadius: '999px' }}></div>
                     </div>
                   </div>
 
                   {hwAgeUnknownCount > 0 && (
                     <div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '4px' }}>
-                        <span style={{ color: '#64748b', fontWeight: 400 }}>ไม่ระบุข้อมูลปีจัดซื้อ</span>
-                        <span style={{ fontWeight: 500, color: '#475569' }}>{hwAgeUnknownCount} รายการ</span>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '6px' }}>
+                        <span style={{ color: '#64748b', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#cbd5e1' }}></span>
+                          ไม่ระบุข้อมูลปีจัดซื้อ
+                        </span>
+                        <span style={{ fontWeight: 600, color: '#475569' }}>{hwAgeUnknownCount} รายการ</span>
                       </div>
-                      <div style={{ width: '100%', height: '8px', backgroundColor: '#f1f5f9', borderRadius: '4px', overflow: 'hidden' }}>
-                        <div style={{ width: `${allRawAssets.length ? (hwAgeUnknownCount / allRawAssets.length) * 100 : 0}%`, height: '100%', backgroundColor: '#94a3b8' }}></div>
+                      <div style={{ width: '100%', height: '10px', backgroundColor: '#f8fafc', borderRadius: '999px', overflow: 'hidden', border: '1px solid #f1f5f9' }}>
+                        <div style={{ width: `${allRawAssets.length ? (hwAgeUnknownCount / allRawAssets.length) * 100 : 0}%`, height: '100%', backgroundColor: '#cbd5e1', borderRadius: '999px' }}></div>
                       </div>
                     </div>
                   )}
                 </div>
               </div>
 
-              <div style={{ backgroundColor: '#ffffff', borderRadius: '8px', padding: '20px', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.02)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                  <span style={{ fontSize: '14px', fontWeight: 600, color: '#0f172a' }}>สถานะและสุขภาพลิขสิทธิ์ซอฟต์แวร์ (License Health)</span>
-                  <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 400 }}>การจำแนกสถานะสัญญา</span>
+              {/* License Health Grid */}
+              <div style={{ backgroundColor: '#ffffff', borderRadius: '14px', padding: '24px', border: '1px solid #f1f5f9', boxShadow: '0 4px 20px -2px rgba(15, 23, 42, 0.05)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                  <div>
+                    <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#0f172a', margin: 0 }}>สุขภาพลิขสิทธิ์ซอฟต์แวร์ (License Health)</h3>
+                    <p style={{ fontSize: '12px', color: '#64748b', margin: '2px 0 0 0' }}>จำแนกตามเงื่อนไขและอายุสัญญา</p>
+                  </div>
+                  <span style={{ fontSize: '11px', fontWeight: 600, color: '#0284c7', backgroundColor: '#e0f2fe', padding: '4px 10px', borderRadius: '20px' }}>Total {softwareList.length}</span>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '10px' }}>
-                  <div style={{ backgroundColor: '#fef2f2', border: '1px solid #fecaca', padding: '12px', borderRadius: '6px' }}>
-                    <div style={{ fontSize: '11px', color: '#9f1239', fontWeight: 500 }}>หมดอายุ (Expired)</div>
-                    <div style={{ fontSize: '18px', fontWeight: 700, color: '#9f1239', marginTop: '4px' }}>{swExpiredList.length} <span style={{ fontSize: '11px', fontWeight: 400 }}>รายการ</span></div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '12px' }}>
+                  <div style={{ backgroundColor: '#fff1f2', border: '1px solid #ffe4e6', padding: '14px', borderRadius: '10px' }}>
+                    <div style={{ fontSize: '11px', color: '#9f1239', fontWeight: 600 }}>หมดอายุ (Expired)</div>
+                    <div style={{ fontSize: '22px', fontWeight: 800, color: '#9f1239', marginTop: '6px' }}>{swExpiredList.length} <span style={{ fontSize: '11px', fontWeight: 400 }}>รายการ</span></div>
                   </div>
 
-                  <div style={{ backgroundColor: '#fffbeb', border: '1px solid #fde68a', padding: '12px', borderRadius: '6px' }}>
-                    <div style={{ fontSize: '11px', color: '#92400e', fontWeight: 500 }}>ใกล้หมดอายุ (in 60d)</div>
-                    <div style={{ fontSize: '18px', fontWeight: 700, color: '#92400e', marginTop: '4px' }}>{swExpiringList.length} <span style={{ fontSize: '11px', fontWeight: 400 }}>รายการ</span></div>
+                  <div style={{ backgroundColor: '#fffbeb', border: '1px solid #fef3c7', padding: '14px', borderRadius: '10px' }}>
+                    <div style={{ fontSize: '11px', color: '#92400e', fontWeight: 600 }}>ใกล้หมดอายุ (60วัน)</div>
+                    <div style={{ fontSize: '22px', fontWeight: 800, color: '#92400e', marginTop: '6px' }}>{swExpiringList.length} <span style={{ fontSize: '11px', fontWeight: 400 }}>รายการ</span></div>
                   </div>
 
-                  <div style={{ backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0', padding: '12px', borderRadius: '6px' }}>
-                    <div style={{ fontSize: '11px', color: '#166534', fontWeight: 500 }}>ตลอดชีพ (Lifetime)</div>
-                    <div style={{ fontSize: '18px', fontWeight: 700, color: '#166534', marginTop: '4px' }}>{swLifetimeCount} <span style={{ fontSize: '11px', fontWeight: 400 }}>รายการ</span></div>
+                  <div style={{ backgroundColor: '#f0fdf4', border: '1px solid #dcfce7', padding: '14px', borderRadius: '10px' }}>
+                    <div style={{ fontSize: '11px', color: '#166534', fontWeight: 600 }}>ตลอดชีพ (Lifetime)</div>
+                    <div style={{ fontSize: '22px', fontWeight: 800, color: '#166534', marginTop: '6px' }}>{swLifetimeCount} <span style={{ fontSize: '11px', fontWeight: 400 }}>รายการ</span></div>
                   </div>
 
-                  <div style={{ backgroundColor: '#f0f9ff', border: '1px solid #bae6fd', padding: '12px', borderRadius: '6px' }}>
-                    <div style={{ fontSize: '11px', color: '#0369a1', fontWeight: 500 }}>ปกติ (Active)</div>
-                    <div style={{ fontSize: '18px', fontWeight: 700, color: '#0369a1', marginTop: '4px' }}>{swActiveCount} <span style={{ fontSize: '11px', fontWeight: 400 }}>รายการ</span></div>
+                  <div style={{ backgroundColor: '#f0f9ff', border: '1px solid #e0f2fe', padding: '14px', borderRadius: '10px' }}>
+                    <div style={{ fontSize: '11px', color: '#0369a1', fontWeight: 600 }}>ปกติ (Active)</div>
+                    <div style={{ fontSize: '22px', fontWeight: 800, color: '#0369a1', marginTop: '6px' }}>{swActiveCount} <span style={{ fontSize: '11px', fontWeight: 400 }}>รายการ</span></div>
                   </div>
 
-                  <div style={{ backgroundColor: '#f8fafc', border: '1px solid #e2e8f0', padding: '12px', borderRadius: '6px' }}>
-                    <div style={{ fontSize: '11px', color: '#64748b', fontWeight: 500 }}>ไม่ระบุข้อมูล (Unknown)</div>
-                    <div style={{ fontSize: '18px', fontWeight: 700, color: '#475569', marginTop: '4px' }}>{swUnknownCount} <span style={{ fontSize: '11px', fontWeight: 400 }}>รายการ</span></div>
+                  <div style={{ backgroundColor: '#f8fafc', border: '1px solid #f1f5f9', padding: '14px', borderRadius: '10px' }}>
+                    <div style={{ fontSize: '11px', color: '#64748b', fontWeight: 600 }}>ไม่ระบุ (Unknown)</div>
+                    <div style={{ fontSize: '22px', fontWeight: 800, color: '#475569', marginTop: '6px' }}>{swUnknownCount} <span style={{ fontSize: '11px', fontWeight: 400 }}>รายการ</span></div>
                   </div>
                 </div>
               </div>
+
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-              <div style={{ backgroundColor: '#ffffff', borderRadius: '8px', padding: '20px', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.02)' }}>
-                <span style={{ fontSize: '14px', fontWeight: 600, color: '#0f172a', display: 'block', marginBottom: '14px' }}>
-                  5 แผนกที่มีจำนวนฮาร์ดแวร์สูงสุด
-                </span>
+            {/* Bottom Section: Top Departments (Vertical Column Chart) & Top Vendors (Donut/Pie Chart) */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(450px, 1fr))', gap: '20px' }}>
+              
+              {/* Top Departments - Vertical Bar Chart */}
+              <div style={{ backgroundColor: '#ffffff', borderRadius: '14px', padding: '24px', border: '1px solid #f1f5f9', boxShadow: '0 4px 20px -2px rgba(15, 23, 42, 0.05)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#0f172a', margin: '0 0 20px 0' }}>
+                  5 แผนกที่มีฮาร์ดแวร์สูงสุด (จำนวนรายการ)
+                </h3>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: '12px', height: '200px', paddingTop: '24px', paddingBottom: '8px', borderBottom: '2px solid #f1f5f9' }}>
                   {topDepts.map(([deptName, count], idx) => {
-                    const maxCount = topDepts[0][1] || 1
-                    const pct = Math.round((count / maxCount) * 100)
+                    const maxCount = topDepts[0]?.[1] || 1
+                    const heightPct = Math.max(Math.round((count / maxCount) * 100), 12)
 
                     return (
-                      <div key={idx}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '2px' }}>
-                          <span style={{ fontWeight: 400, color: '#0f172a' }}>{idx + 1}. {deptName}</span>
-                          <span style={{ fontWeight: 500, color: '#475569' }}>{count} รายการ</span>
-                        </div>
-                        <div style={{ width: '100%', height: '8px', backgroundColor: '#f1f5f9', borderRadius: '4px', overflow: 'hidden' }}>
-                          <div style={{ width: `${pct}%`, height: '100%', backgroundColor: '#4f46e5' }}></div>
-                        </div>
+                      <div key={idx} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1, height: '100%', justifyContent: 'flex-end' }}>
+                        <span style={{ fontSize: '12px', fontWeight: 700, color: '#4f46e5', marginBottom: '6px' }}>
+                          {count}
+                        </span>
+                        <div 
+                          style={{ 
+                            width: '100%', 
+                            maxWidth: '44px', 
+                            height: `${heightPct}%`, 
+                            background: 'linear-gradient(180deg, #818cf8 0%, #4f46e5 100%)', 
+                            borderRadius: '6px 6px 0 0',
+                            transition: 'height 0.3s ease'
+                          }} 
+                        />
+                        <span 
+                          style={{ 
+                            fontSize: '11px', 
+                            fontWeight: 600, 
+                            color: '#475569', 
+                            marginTop: '10px', 
+                            textAlign: 'center', 
+                            whiteSpace: 'nowrap', 
+                            overflow: 'hidden', 
+                            textOverflow: 'ellipsis', 
+                            width: '100%' 
+                          }} 
+                          title={deptName}
+                        >
+                          {deptName}
+                        </span>
                       </div>
                     )
                   })}
                 </div>
               </div>
 
-              <div style={{ backgroundColor: '#ffffff', borderRadius: '8px', padding: '20px', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.02)' }}>
-                <span style={{ fontSize: '14px', fontWeight: 600, color: '#0f172a', display: 'block', marginBottom: '14px' }}>
+              {/* Top Vendors - Pie / Donut Chart */}
+              <div style={{ backgroundColor: '#ffffff', borderRadius: '14px', padding: '24px', border: '1px solid #f1f5f9', boxShadow: '0 4px 20px -2px rgba(15, 23, 42, 0.05)' }}>
+                <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#0f172a', margin: '0 0 20px 0' }}>
                   5 ผู้จัดจำหน่ายซอฟต์แวร์หลัก (Vendors)
-                </span>
+                </h3>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  {topVendors.map(([vendorName, count], idx) => {
-                    const maxCount = topVendors[0][1] || 1
-                    const pct = Math.round((count / maxCount) * 100)
+                {(() => {
+                  const vendorColors = ['#0284c7', '#38bdf8', '#818cf8', '#a855f7', '#cbd5e1']
+                  const totalVendorCount = topVendors.reduce((sum, [, count]) => sum + count, 0) || 1
+                  
+                  let cumulativePercent = 0
+                  const gradientStops = topVendors.map(([_, count], idx) => {
+                    const startPct = cumulativePercent
+                    cumulativePercent += (count / totalVendorCount) * 100
+                    return `${vendorColors[idx % vendorColors.length]} ${startPct}% ${cumulativePercent}%`
+                  }).join(', ')
 
-                    return (
-                      <div key={idx}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '2px' }}>
-                          <span style={{ fontWeight: 400, color: '#0f172a' }}>{idx + 1}. {vendorName}</span>
-                          <span style={{ fontWeight: 500, color: '#0369a1' }}>{count} รายการ</span>
-                        </div>
-                        <div style={{ width: '100%', height: '8px', backgroundColor: '#f1f5f9', borderRadius: '4px', overflow: 'hidden' }}>
-                          <div style={{ width: `${pct}%`, height: '100%', backgroundColor: '#0284c7' }}></div>
+                  return (
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-around', gap: '20px', flexWrap: 'wrap', minHeight: '200px' }}>
+                      {/* Pie / Donut Circle */}
+                      <div style={{ position: 'relative', width: '160px', height: '160px', flexShrink: 0 }}>
+                        <div style={{
+                          width: '100%',
+                          height: '100%',
+                          borderRadius: '50%',
+                          background: gradientStops ? `conic-gradient(${gradientStops})` : '#f1f5f9'
+                        }} />
+                        <div style={{
+                          position: 'absolute',
+                          top: '50%',
+                          left: '50%',
+                          transform: 'translate(-50%, -50%)',
+                          width: '90px',
+                          height: '90px',
+                          backgroundColor: '#ffffff',
+                          borderRadius: '50%',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.04)'
+                        }}>
+                          <span style={{ fontSize: '18px', fontWeight: 800, color: '#0f172a' }}>{totalVendorCount}</span>
+                          <span style={{ fontSize: '10px', color: '#64748b', fontWeight: 500 }}>รายการรวม</span>
                         </div>
                       </div>
-                    )
-                  })}
-                </div>
+
+                      {/* Legend Items */}
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', flex: 1, minWidth: '180px' }}>
+                        {topVendors.map(([vendorName, count], idx) => {
+                          const pct = Math.round((count / totalVendorCount) * 100)
+                          const color = vendorColors[idx % vendorColors.length]
+
+                          return (
+                            <div key={idx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '12px' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', overflow: 'hidden' }}>
+                                <span style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: color, flexShrink: 0 }} />
+                                <span style={{ color: '#0f172a', fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={vendorName}>
+                                  {vendorName}
+                                </span>
+                              </div>
+                              <span style={{ fontWeight: 700, color: '#475569', marginLeft: '8px' }}>
+                                {count} <span style={{ fontSize: '10px', color: '#94a3b8', fontWeight: 400 }}>({pct}%)</span>
+                              </span>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )
+                })()}
               </div>
+
             </div>
+
           </div>
         )}
 
