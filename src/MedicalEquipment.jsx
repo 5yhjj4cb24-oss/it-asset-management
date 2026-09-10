@@ -823,20 +823,20 @@ export default function MedicalEquipment() {
       </div>
 
       {/* Pop-up Modal แจ้งเตือน */}
-      {isDueModalOpen && (
-        <div style={styles.modalOverlay} onClick={handleCloseDueModal}>
-          <div
-            style={{
-              backgroundColor: '#ffffff',
-              borderRadius: '12px',
-              width: '100%',
-              maxWidth: '820px',
-              padding: '28px 32px',
-              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.01)',
-              border: '1px solid #e2e8f0'
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
+{isDueModalOpen && (
+  <div style={styles.modalOverlay} onClick={handleCloseDueModal}>
+    <div
+      style={{
+        backgroundColor: '#ffffff',
+        borderRadius: '12px',
+        width: '90%',          /* เปลี่ยนจาก 100% เป็น 90% เพื่อให้ยืดหยุ่นตามหน้าจอ */
+        maxWidth: '1100px',     /* เปลี่ยนจาก 820px เป็น 1100px เพื่อความกว้างที่โปร่งสบายขึ้น */
+        padding: '28px 32px',
+        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.01)',
+        border: '1px solid #e2e8f0'
+      }}
+      onClick={(e) => e.stopPropagation()}
+    >
             {/* Header */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
