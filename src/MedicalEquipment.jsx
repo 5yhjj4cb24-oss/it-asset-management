@@ -47,7 +47,7 @@ export default function MedicalEquipment() {
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
 
-  // Pop-up Alert State สำหรับ Next Due 1
+  // Pop-up Alert State สำหรับ Next Due และ Next Due 1
   const [dueModalItems, setDueModalItems] = useState([]);
   const [isDueModalOpen, setIsDueModalOpen] = useState(false);
   const [dueStatusInfo, setDueStatusInfo] = useState({
@@ -61,7 +61,7 @@ export default function MedicalEquipment() {
   }, []);
 
   const parseDateStr = (dateStr) => {
-    if (!dateStr) return null;
+    if (!dateStr || dateStr === '-') return null;
     let s = dateStr.trim();
     if (s.startsWith('-/')) s = '01/' + s.substring(2);
 
@@ -78,6 +78,35 @@ export default function MedicalEquipment() {
     if (!isNaN(d.getTime())) return d;
 
     return null;
+  };
+
+  // ฟังก์ชันคำนวณรอบ Next Due ที่ใกล้ถึงกำหนดที่สุดจากทั้ง Next Due และ Next Due 1
+  const getUpcomingDue = (item, today) => {
+    const dues = [];
+    if (item.next_due && item.next_due !== '-') {
+      const d = parseDateStr(item.next_due);
+      if (d) dues.push({ field: 'Next Due', dateStr: item.next_due, dateObj: d });
+    }
+    if (item.next_due_1 && item.next_due_1 !== '-') {
+      const d = parseDateStr(item.next_due_1);
+      if (d) dues.push({ field: 'Next Due 1', dateStr: item.next_due_1, dateObj: d });
+    }
+    if (dues.length === 0) return null;
+
+    // หาเฉพาะรอบที่ยังไม่ผ่านไป (dateObj >= today)
+    const upcoming = dues.find(d => d.dateObj >= today);
+    // หากผ่านไปหมดแล้วทุกรอบ ให้เลือกรอบล่าสุด (ตัวสุดท้าย)
+    const active = upcoming || dues[dues.length - 1];
+
+    const diffTime = active.dateObj.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    return {
+      field: active.field,
+      dateStr: active.dateStr,
+      dateObj: active.dateObj,
+      diffDays
+    };
   };
 
   const checkDateMatch = (dateStr, month, year) => {
@@ -119,17 +148,15 @@ export default function MedicalEquipment() {
       const urgentItems = [];
 
       items.forEach((item) => {
-        if (!item.next_due_1) return;
-        const targetDate = parseDateStr(item.next_due_1);
-        if (!targetDate) return;
+        const dueInfo = getUpcomingDue(item, today);
+        if (!dueInfo) return;
 
-        const diffTime = targetDate.getTime() - today.getTime();
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-        if (diffDays <= 30) {
+        if (dueInfo.diffDays <= 30) {
           urgentItems.push({
             ...item,
-            diffDays
+            diffDays: dueInfo.diffDays,
+            activeField: dueInfo.field,
+            activeDateStr: dueInfo.dateStr
           });
         }
       });
@@ -314,25 +341,16 @@ export default function MedicalEquipment() {
     } else if (cardFilter === 'Low') {
       matchesCard = item.risk_level === 'Low' || !item.risk_level;
     } else if (cardFilter === 'ALERTED_DUE') {
-      if (!item.next_due_1 || item.next_due_1 === '-') {
-        matchesCard = false;
-      } else {
-        const targetDate = parseDateStr(item.next_due_1);
-        if (!targetDate) {
-          matchesCard = false;
-        } else {
-          const today = new Date();
-          today.setHours(0, 0, 0, 0);
-          const diffTime = targetDate.getTime() - today.getTime();
-          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-          matchesCard = diffDays <= 30;
-        }
-      }
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const dueInfo = getUpcomingDue(item, today);
+      matchesCard = dueInfo ? dueInfo.diffDays <= 30 : false;
     }
 
     let matchesMonthYear = true;
     if (monthFilter || yearFilter) {
-      matchesMonthYear = checkDateMatch(item.next_due_1, monthFilter, yearFilter);
+      matchesMonthYear = checkDateMatch(item.next_due, monthFilter, yearFilter) ||
+                         checkDateMatch(item.next_due_1, monthFilter, yearFilter);
     }
 
     return matchesSearch && matchesDept && matchesCard && matchesMonthYear;
@@ -436,9 +454,9 @@ export default function MedicalEquipment() {
             <option value="คลัง">คลัง</option>
           </select>
 
-          {/* ตัวเลือกกรองเดือน (Next Due 1) */}
+          {/* ตัวเลือกกรองเดือน (Next Due / Next Due 1) */}
           <select value={monthFilter} onChange={(e) => setMonthFilter(e.target.value)} style={styles.selectInput}>
-            <option value="">-- เดือน (Next Due 1) --</option>
+            <option value="">-- เดือน (Next Due) --</option>
             <option value="1">มกราคม (01)</option>
             <option value="2">กุมภาพันธ์ (02)</option>
             <option value="3">มีนาคม (03)</option>
@@ -453,9 +471,9 @@ export default function MedicalEquipment() {
             <option value="12">ธันวาคม (12)</option>
           </select>
 
-          {/* ตัวเลือกกรองปี (Next Due 1) - สร้างตัวเลือก 2025 ถึง 2036 อัตโนมัติ */}
+          {/* ตัวเลือกกรองปี (Next Due / Next Due 1) */}
           <select value={yearFilter} onChange={(e) => setYearFilter(e.target.value)} style={styles.selectInput}>
-            <option value="">-- ปี (Next Due 1) --</option>
+            <option value="">-- ปี (Next Due) --</option>
             {Array.from({ length: 12 }, (_, i) => 2025 + i).map((year) => (
               <option key={year} value={String(year)}>
                 {year}
@@ -780,7 +798,7 @@ export default function MedicalEquipment() {
               </table>
             </div>
 
-            {/* Table Footer: แสดงจำนวนรายการ + ลิงก์ Export CSV มินิมอลที่มุมขวา */}
+            {/* Table Footer */}
             <div
               style={{
                 padding: '10px 16px',
@@ -918,7 +936,7 @@ export default function MedicalEquipment() {
                             {dueItem.department || '-'}
                           </td>
                           <td style={{ padding: '10px 14px', fontFamily: 'monospace', color: isOverdue ? '#dc2626' : '#d97706', fontWeight: '400', userSelect: 'text' }}>
-                            {dueItem.next_due_1}
+                            {dueItem.activeDateStr} <span style={{ fontSize: '11px', color: '#64748b' }}>({dueItem.activeField})</span>
                           </td>
                           <td style={{ padding: '10px 14px', textAlign: 'center', userSelect: 'text' }}>
                             <span
