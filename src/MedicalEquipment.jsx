@@ -47,7 +47,7 @@ export default function MedicalEquipment() {
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
 
-  // Pop-up Alert State สำหรับ Next Due และ Next Due 1
+  // Pop-up Alert State สำหรับ Next Due
   const [dueModalItems, setDueModalItems] = useState([]);
   const [isDueModalOpen, setIsDueModalOpen] = useState(false);
   const [dueStatusInfo, setDueStatusInfo] = useState({
@@ -80,31 +80,19 @@ export default function MedicalEquipment() {
     return null;
   };
 
-  // ฟังก์ชันคำนวณรอบ Next Due ที่ใกล้ถึงกำหนดที่สุดจากทั้ง Next Due และ Next Due 1
+  // คำนวณวันครบกำหนดเฉพาะช่อง Next Due เพียงช่องเดียว
   const getUpcomingDue = (item, today) => {
-    const dues = [];
-    if (item.next_due && item.next_due !== '-') {
-      const d = parseDateStr(item.next_due);
-      if (d) dues.push({ field: 'Next Due', dateStr: item.next_due, dateObj: d });
-    }
-    if (item.next_due_1 && item.next_due_1 !== '-') {
-      const d = parseDateStr(item.next_due_1);
-      if (d) dues.push({ field: 'Next Due 1', dateStr: item.next_due_1, dateObj: d });
-    }
-    if (dues.length === 0) return null;
+    if (!item.next_due || item.next_due === '-') return null;
+    const d = parseDateStr(item.next_due);
+    if (!d) return null;
 
-    // หาเฉพาะรอบที่ยังไม่ผ่านไป (dateObj >= today)
-    const upcoming = dues.find(d => d.dateObj >= today);
-    // หากผ่านไปหมดแล้วทุกรอบ ให้เลือกรอบล่าสุด (ตัวสุดท้าย)
-    const active = upcoming || dues[dues.length - 1];
-
-    const diffTime = active.dateObj.getTime() - today.getTime();
+    const diffTime = d.getTime() - today.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
     return {
-      field: active.field,
-      dateStr: active.dateStr,
-      dateObj: active.dateObj,
+      field: 'Next Due',
+      dateStr: item.next_due,
+      dateObj: d,
       diffDays
     };
   };
@@ -349,8 +337,7 @@ export default function MedicalEquipment() {
 
     let matchesMonthYear = true;
     if (monthFilter || yearFilter) {
-      matchesMonthYear = checkDateMatch(item.next_due, monthFilter, yearFilter) ||
-                         checkDateMatch(item.next_due_1, monthFilter, yearFilter);
+      matchesMonthYear = checkDateMatch(item.next_due, monthFilter, yearFilter);
     }
 
     return matchesSearch && matchesDept && matchesCard && matchesMonthYear;
@@ -454,7 +441,7 @@ export default function MedicalEquipment() {
             <option value="คลัง">คลัง</option>
           </select>
 
-          {/* ตัวเลือกกรองเดือน (Next Due / Next Due 1) */}
+          {/* ตัวเลือกกรองเดือน (Next Due) */}
           <select value={monthFilter} onChange={(e) => setMonthFilter(e.target.value)} style={styles.selectInput}>
             <option value="">-- เดือน (Next Due) --</option>
             <option value="1">มกราคม (01)</option>
@@ -471,7 +458,7 @@ export default function MedicalEquipment() {
             <option value="12">ธันวาคม (12)</option>
           </select>
 
-          {/* ตัวเลือกกรองปี (Next Due / Next Due 1) */}
+          {/* ตัวเลือกกรองปี (Next Due) */}
           <select value={yearFilter} onChange={(e) => setYearFilter(e.target.value)} style={styles.selectInput}>
             <option value="">-- ปี (Next Due) --</option>
             {Array.from({ length: 12 }, (_, i) => 2025 + i).map((year) => (
@@ -859,7 +846,7 @@ export default function MedicalEquipment() {
                     รายงานสรุปการแจ้งเตือนรอบบำรุงรักษา (Cal/PM)
                   </h3>
                   <p style={{ margin: '2px 0 0 0', fontSize: '12px', color: '#64748b' }}>
-                    การติดตามกำหนดเวลาบำรุงรักษาอุปกรณ์ทางการแพทย์ล่วงหน้า
+                    การติดตามกำหนดเวลาบำรุงรักษาอุปกรณ์ทางการแพทย์ล่วงหน้า (เฉพาะ Next Due)
                   </p>
                 </div>
               </div>
@@ -906,7 +893,7 @@ export default function MedicalEquipment() {
                       <th style={{ padding: '10px 14px', fontWeight: '500', fontSize: '12px', color: '#475569' }}>รหัสทรัพย์สิน</th>
                       <th style={{ padding: '10px 14px', fontWeight: '500', fontSize: '12px', color: '#475569' }}>ชื่อเครื่องมือแพทย์</th>
                       <th style={{ padding: '10px 14px', fontWeight: '500', fontSize: '12px', color: '#475569' }}>แผนก</th>
-                      <th style={{ padding: '10px 14px', fontWeight: '500', fontSize: '12px', color: '#475569' }}>วันครบกำหนด</th>
+                      <th style={{ padding: '10px 14px', fontWeight: '500', fontSize: '12px', color: '#475569' }}>วันครบกำหนด (Next Due)</th>
                       <th style={{ padding: '10px 14px', fontWeight: '500', fontSize: '12px', color: '#475569', textAlign: 'center' }}>สถานะ</th>
                     </tr>
                   </thead>
@@ -936,7 +923,7 @@ export default function MedicalEquipment() {
                             {dueItem.department || '-'}
                           </td>
                           <td style={{ padding: '10px 14px', fontFamily: 'monospace', color: isOverdue ? '#dc2626' : '#d97706', fontWeight: '400', userSelect: 'text' }}>
-                            {dueItem.activeDateStr} <span style={{ fontSize: '11px', color: '#64748b' }}>({dueItem.activeField})</span>
+                            {dueItem.activeDateStr}
                           </td>
                           <td style={{ padding: '10px 14px', textAlign: 'center', userSelect: 'text' }}>
                             <span
